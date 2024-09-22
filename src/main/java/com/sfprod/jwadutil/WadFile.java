@@ -66,69 +66,67 @@ public class WadFile {
 		f.close();
 	}
 
-public boolean SaveWadFile(QIODevice device) {
-    if(!device.isOpen() || !device.isWritable())
-        return false;
+	public boolean SaveWadFile(QIODevice device) {
+		if (!device.isOpen() || !device.isWritable())
+			return false;
 
-    WadInfo header;
+		WadInfo header;
 
-    header.numlumps = lumps.size();
+		header.numlumps = lumps.size();
 
-    header.identification[0] = 'I';
-    header.identification[1] = 'W';
-    header.identification[2] = 'A';
-    header.identification[3] = 'D';
+		header.identification[0] = 'I';
+		header.identification[1] = 'W';
+		header.identification[2] = 'A';
+		header.identification[3] = 'D';
 
-    header.infotableofs = sizeof(WadInfo);
+		header.infotableofs = sizeof(WadInfo);
 
-    device.write(header, sizeof(header));
+		device.write(header, sizeof(header));
 
-    int fileOffset = sizeof(WadInfo) + (sizeof(filelump_t)*lumps.count());
+		int fileOffset = sizeof(WadInfo) + (sizeof(filelump_t) * lumps.count());
 
-    fileOffset = ROUND_UP4(fileOffset);
+		fileOffset = ROUND_UP4(fileOffset);
 
+		// Write the file info blocks.
+		for (int i = 0; i < lumps.count(); i++) {
+			Lump l = lumps.at(i);
 
-    //Write the file info blocks.
-    for(int i = 0; i < lumps.count(); i++)
-    {
-        Lump l = lumps.at(i);
+			filelump_t fl;
 
-        filelump_t fl;
+			memset(fl.name, 0, 8);
+			strncpy(fl.name, l.name.toLatin1().toUpper().constData(), 8);
 
-        memset(fl.name, 0, 8);
-        strncpy(fl.name, l.name.toLatin1().toUpper().constData(), 8);
+			fl.size = l.length;
 
-        fl.size = l.length;
+			if (l.length > 0)
+				fl.filepos = fileOffset;
+			else
+				fl.filepos = 0;
 
-        if(l.length > 0)
-            fl.filepos = fileOffset;
-        else
-            fl.filepos = 0;
+			device.write(fl, sizeof(fl));
 
-        device.write(fl, sizeof(fl));
+			fileOffset += l.length;
+			fileOffset = ROUND_UP4(fileOffset);
+		}
 
-        fileOffset += l.length;
-        fileOffset = ROUND_UP4(fileOffset);
-    }
+		// Write the lump data out.
+		for (int i = 0; i < lumps.size(); i++) {
+			Lump l = lumps.get(i);
 
-    //Write the lump data out.
-    for(int i = 0; i < lumps.size(); i++)    {
-        Lump l = lumps.get(i);
+			if (l.length == 0)
+				continue;
 
-        if(l.length == 0)
-            continue;
+			int pos = device.pos();
 
-        int pos = device.pos();
+			pos = ROUND_UP4(pos);
 
-        pos = ROUND_UP4(pos);
+			device.seek(pos);
 
-        device.seek(pos);
+			device.write(l.data, l.length);
+		}
 
-        device.write(l.data, l.length);
-    }
-
-    return true;
-}
+		return true;
+	}
 
 	public int GetLumpByName(String name, Lump lump) {
 		for (int i = lumps.size() - 1; i >= 0; i--) {
