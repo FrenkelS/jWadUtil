@@ -13,23 +13,23 @@ public class Main {
 		}
 
 		if (outFile == null) {
-			throw new IllegalArgumentException("out is mandatory");
+			throw new IllegalArgumentException("-out is mandatory");
 		}
 
-		WadFile wf = new WadFile(inFile);
-		wf.LoadWadFile();
+		WadFile iwadFile = new WadFile(inFile);
+		iwadFile.LoadWadFile();
 
-		WadProcessor wp = new WadProcessor(wf);
+		WadProcessor wadProcessor = new WadProcessor(iwadFile);
 
 		// Also insert the GBADoom wad file. (Extra menu options etc)
-		WadFile pf = new WadFile("/gbadoom.wad");
-		pf.LoadWadFile();
+		WadFile pwadFile = new WadFile("/gbadoom.wad");
+		pwadFile.LoadWadFile();
 
-		wf.MergeWadFile(pf);
+		iwadFile.MergeWadFile(pwadFile);
 
-		wp.ProcessWad();
+		wadProcessor.ProcessWad();
 
-		wf.SaveWadFile(outFile);
+		iwadFile.SaveWadFile(outFile);
 	}
 
 }

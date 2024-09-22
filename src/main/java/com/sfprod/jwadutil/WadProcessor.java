@@ -4,66 +4,49 @@ package com.sfprod.jwadutil;
 
 public class WadProcessor {
 
+	// Lump order in a map WAD: each map needs a couple of lumps
+	// to provide a complete scene geometry description.
+	private static final int ML_LABEL = 0; // A separator, name, ExMx or MAPxx
+	private static final int ML_THINGS = 1; // Monsters, items..
+	private static final int ML_LINEDEFS = 2; // LineDefs, from editing
+	private static final int ML_SIDEDEFS = 3; // SideDefs, from editing
+	private static final int ML_VERTEXES = 4; // Vertices, edited and BSP splits generated
+	private static final int ML_SEGS = 5; // LineSegs, from LineDefs split by BSP
+	private static final int ML_SSECTORS = 6; // SubSectors, list of LineSegs
+	private static final int ML_NODES = 7; // BSP nodes
+	private static final int ML_SECTORS = 8; // Sectors, from editing
+	private static final int ML_REJECT = 9; // LUT, sector-sector visibility
+	private static final int ML_BLOCKMAP = 10; // LUT, motion clipping, walls/grid element
+
 	private WadFile wadFile;
 
 	public WadProcessor(WadFile wad) {
 		this.wadFile = wad;
 	}
 
-	public boolean ProcessWad() {
-		// Figure out if our IWAD is Doom or Doom2. (E1M1 or MAP01)
-
+	public void ProcessWad() {
 		Lump mapLump;
 
 		RemoveUnusedLumps();
 
-		int lumpNum = wadFile.GetLumpByName("MAP01", mapLump);
+		int lumpNum = wadFile.GetLumpByName("E1M1", mapLump);
 
-		if (lumpNum != -1) {
-			return ProcessD2Levels();
-		} else {
-			lumpNum = wadFile.GetLumpByName("E1M1", mapLump);
-
-			// Can't find any maps.
-			if (lumpNum == -1)
-				return false;
+		if (lumpNum == -1) {
+			throw new IllegalArgumentException("Can't find any maps.");
 		}
 
-		return ProcessD1Levels();
+		ProcessDoom1Levels();
 	}
 
-	private boolean ProcessD2Levels() {
-		for (int m = 1; m <= 32; m++) {
+	private void ProcessDoom1Levels() {
+		for (int map = 1; map <= 9; map++) {
 			Lump l;
 
-			String mapName = new String("MAP%1").arg(m, 2, 10, QChar('0'));
+			String mapName = "E1M" + map;
 
 			int lumpNum = wadFile.GetLumpByName(mapName, l);
-
-			if (lumpNum != -1) {
-				ProcessLevel(lumpNum);
-			}
+			ProcessLevel(lumpNum);
 		}
-
-		return true;
-	}
-
-	private boolean ProcessD1Levels() {
-		for (int e = 1; e <= 4; e++) {
-			for (int m = 1; m <= 9; m++) {
-				Lump l;
-
-				String mapName = new  QString("E%1M%2").arg(e).arg(m);
-
-				int lumpNum = wadFile.GetLumpByName(mapName, l);
-
-				if (lumpNum != -1) {
-					ProcessLevel(lumpNum);
-				}
-			}
-		}
-
-		return true;
 	}
 
 	private boolean ProcessLevel(int lumpNum) {
@@ -91,7 +74,7 @@ private boolean ProcessVertexes(int lumpNum)
     int vtxCount = vxl.length / sizeof(mapvertex_t);
 
     vertex_t* newVtx = new vertex_t[vtxCount];
-    const mapvertex_t* oldVtx = reinterpret_cast<const mapvertex_t*>(vxl.data.constData());
+     mapvertex_t* oldVtx = vxl.data.constData();
 
     for(int i = 0; i < vtxCount; i++)
     {
@@ -102,7 +85,7 @@ private boolean ProcessVertexes(int lumpNum)
     Lump newVxl;
     newVxl.name = vxl.name;
     newVxl.length = vtxCount * sizeof(vertex_t);
-    newVxl.data = QByteArray(reinterpret_cast<const char*>(newVtx), newVxl.length);
+    newVxl.data = QByteArray(newVtx, newVxl.length);
 
     delete[] newVtx;
 
@@ -127,7 +110,7 @@ private boolean ProcessLines(int lumpNum)
 
     line_t* newLines = new line_t[lineCount];
 
-    const maplinedef_t* oldLines = reinterpret_cast<const maplinedef_t*>(lines.data.constData());
+     maplinedef_t* oldLines = lines.data.constData();
 
     //We need vertexes for this...
 
@@ -141,9 +124,9 @@ private boolean ProcessLines(int lumpNum)
     if(vxl.length == 0)
         return false;
 
-    const vertex_t* vtx = reinterpret_cast<const vertex_t*>(vxl.data.constData());
+     vertex_t* vtx = vxl.data.constData();
 
-    for(unsigned int i = 0; i < lineCount; i++)
+    for( int i = 0; i < lineCount; i++)
     {
         newLines[i].v1.x = vtx[oldLines[i].v1].x;
         newLines[i].v1.y = vtx[oldLines[i].v1].y;
@@ -178,7 +161,7 @@ private boolean ProcessLines(int lumpNum)
     Lump newLine;
     newLine.name = lines.name;
     newLine.length = lineCount * sizeof(line_t);
-    newLine.data = QByteArray(reinterpret_cast<const char*>(newLines), newLine.length);
+    newLine.data = QByteArray(newLines, newLine.length);
 
     delete[] newLines;
 
@@ -203,7 +186,7 @@ private boolean ProcessSegs(int lumpNum)
 
     seg_t* newSegs = new seg_t[segCount];
 
-    const mapseg_t* oldSegs = reinterpret_cast<const mapseg_t*>(segs.data.constData());
+     mapseg_t* oldSegs = segs.data.constData();
 
     //We need vertexes for this...
 
@@ -217,7 +200,7 @@ private boolean ProcessSegs(int lumpNum)
     if(vxl.length == 0)
         return false;
 
-    const vertex_t* vtx = reinterpret_cast<const vertex_t*>(vxl.data.constData());
+     vertex_t* vtx = vxl.data.constData();
 
     //And LineDefs. Must process lines first.
 
@@ -231,7 +214,7 @@ private boolean ProcessSegs(int lumpNum)
     if(lxl.length == 0)
         return false;
 
-    const line_t* lines = reinterpret_cast<const line_t*>(lxl.data.constData());
+     line_t* lines = lxl.data.constData();
 
     //And sides too...
 
@@ -245,7 +228,7 @@ private boolean ProcessSegs(int lumpNum)
     if(sxl.length == 0)
         return false;
 
-    const mapsidedef_t* sides = reinterpret_cast<const mapsidedef_t*>(sxl.data.constData());
+     mapsidedef_t* sides = sxl.data.constData();
 
 
     //****************************
@@ -263,11 +246,11 @@ private boolean ProcessSegs(int lumpNum)
 
         newSegs[i].linenum = oldSegs[i].linedef;
 
-        const line_t* ldef = &lines[newSegs[i].linenum];
+         line_t* ldef = &lines[newSegs[i].linenum];
 
         int side = oldSegs[i].side;
 
-        newSegs[i].sidenum = ldef->sidenum[side];
+        newSegs[i].sidenum = ldef.sidenum[side];
 
         if(newSegs[i].sidenum != NO_INDEX)
         {
@@ -280,11 +263,11 @@ private boolean ProcessSegs(int lumpNum)
 
         newSegs[i].backsectornum = NO_INDEX;
 
-        if(ldef->flags & ML_TWOSIDED)
+        if(ldef.flags & ML_TWOSIDED)
         {
-            if(ldef->sidenum[side^1] != NO_INDEX)
+            if(ldef.sidenum[side^1] != NO_INDEX)
             {
-                newSegs[i].backsectornum = sides[ldef->sidenum[side^1]].sector;
+                newSegs[i].backsectornum = sides[ldef.sidenum[side^1]].sector;
             }
         }
     }
@@ -292,7 +275,7 @@ private boolean ProcessSegs(int lumpNum)
     Lump newSeg;
     newSeg.name = segs.name;
     newSeg.length = segCount * sizeof(seg_t);
-    newSeg.data = QByteArray(reinterpret_cast<const char*>(newSegs), newSeg.length);
+    newSeg.data = QByteArray(newSegs, newSeg.length);
 
     delete[] newSegs;
 
@@ -317,7 +300,7 @@ private boolean ProcessSides(int lumpNum)
 
     sidedef_t* newSides = new sidedef_t[sideCount];
 
-    const mapsidedef_t* oldSides = reinterpret_cast<const mapsidedef_t*>(sides.data.constData());
+     mapsidedef_t* oldSides = sides.data.constData();
 
     for(unsigned int i = 0; i < sideCount; i++)
     {
@@ -334,7 +317,7 @@ private boolean ProcessSides(int lumpNum)
     Lump newSide;
     newSide.name = sides.name;
     newSide.length = sideCount * sizeof(sidedef_t);
-    newSide.data = QByteArray(reinterpret_cast<const char*>(newSides), newSide.length);
+    newSide.data = QByteArray(newSides, newSide.length);
 
     delete[] newSides;
 
@@ -343,11 +326,11 @@ private boolean ProcessSides(int lumpNum)
     return true;
 }
 
-private int GetTextureNumForName(const char* tex_name)
+private int GetTextureNumForName( char* tex_name)
 {
-    const int  *maptex1, *maptex2;
+     int  *maptex1, *maptex2;
     int  numtextures1, numtextures2 = 0;
-    const int *directory1, *directory2;
+     int *directory1, *directory2;
 
 
     //Convert name to uppercase for comparison.
@@ -364,14 +347,14 @@ private int GetTextureNumForName(const char* tex_name)
     Lump tex1lump;
     wadFile.GetLumpByName("TEXTURE1", tex1lump);
 
-    maptex1 = (const int*)tex1lump.data.constData();
+    maptex1 = (int*)tex1lump.data.constData();
     numtextures1 = *maptex1;
     directory1 = maptex1+1;
 
     Lump tex2lump;
     if (wadFile.GetLumpByName("TEXTURE2", tex2lump) != -1)
     {
-        maptex2 = (const int*)tex2lump.data.constData();
+        maptex2 = (int*)tex2lump.data.constData();
         directory2 = maptex2+1;
         numtextures2 = *maptex2;
     }
@@ -381,8 +364,8 @@ private int GetTextureNumForName(const char* tex_name)
         directory2 = NULL;
     }
 
-    const int *directory = directory1;
-    const int *maptex = maptex1;
+     int *directory = directory1;
+     int *maptex = maptex1;
 
     int numtextures = (numtextures1 + numtextures2);
 
@@ -397,9 +380,9 @@ private int GetTextureNumForName(const char* tex_name)
 
         int offset = *directory;
 
-        const maptexture_t* mtexture = (const maptexture_t *) ( (const quint8*)maptex + offset);
+         maptexture_t* mtexture = maptex + offset;
 
-        if(!strncmp(tex_name_upper, mtexture->name, 8))
+        if(!strncmp(tex_name_upper, mtexture.name, 8))
         {
             return i;
         }
@@ -416,13 +399,13 @@ private boolean ProcessPNames()
     if(lumpNum == -1)
         return false;
 
-    const char* pnamesData = (const char*)pnamesLump.data.constData();
+    char* pnamesData = (char*)pnamesLump.data.constData();
 
-    int count = *((quint32*)pnamesData);
+    int count = *((int*)pnamesData);
 
     pnamesData += 4; //Fist 4 bytes are count.
 
-    QStringList pnamesUpper;
+    List<String> pnamesUpper;
 
     for(int i = 0; i < count; i++)
     {
@@ -454,7 +437,7 @@ private boolean ProcessPNames()
     Lump newLump;
     newLump.name = "PNAMES";
     newLump.length = (count * 8) + 4;
-    newLump.data = QByteArray(reinterpret_cast<const char*>(newPnames), newLump.length);
+    newLump.data = QByteArray(newPnames, newLump.length);
 
     delete[] newPnames;
 
