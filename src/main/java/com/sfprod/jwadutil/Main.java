@@ -1,99 +1,35 @@
-#include <QCoreApplication>
+package com.sfprod.jwadutil;
 
-#include "wadfile.h"
-#include "wadprocessor.h"
+public class Main {
 
-void SaveBytesAsCFile(QByteArray& bytes, QString file);
+	public static void main(String[] args) {
+		String inFile = "doom1.wad";
+		String outFile = null;
 
+		for (int i = 0; i < args.length - 1; i++) {
+			if (args[i].equals("-out")) {
+				outFile = args[++i];
+			}
+		}
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication a(argc, argv);
+		if (outFile == null) {
+			throw new IllegalArgumentException("out is mandatory");
+		}
 
-    QStringList args = QCoreApplication::arguments();
+		WadFile wf = new WadFile(inFile);
+		wf.LoadWadFile();
 
-    QString inFile;
-    QString outFile;
-    QString cFile;
-    QStringList pwads;
+		WadProcessor wp = new WadProcessor(wf);
 
-    for(int i = 0; i < args.count()-1; i++)
-    {
-        if(args.at(i) == "-in")
-            inFile = args.at(++i);
-        else if(args.at(i) == "-out")
-            outFile = args.at(++i);
-        else if(args.at(i) == "-cfile")
-            cFile = args.at(++i);
-        else if(args.at(i) == "-pwad")
-        {
-            i++;
+		// Also insert the GBADoom wad file. (Extra menu options etc)
+		WadFile pf = new WadFile("/gbadoom.wad");
+		pf.LoadWadFile();
 
-            while( (i < args.count()) && !args.at(i).startsWith("-"))
-            {
-                pwads.append(args.at(i));
-                i++;
-            }
-        }
-    }
+		wf.MergeWadFile(pf);
 
-    //Also insert the GBADoom wad file. (Extra menu options etc)
-    pwads.append(QCoreApplication::applicationDirPath().append("/gbadoom.wad"));
+		wp.ProcessWad();
 
-    WadFile wf(inFile);
-    wf.LoadWadFile();
+		wf.SaveWadFile(outFile);
+	}
 
-    WadProcessor wp(wf);
-
-    for(int i = 0; i < pwads.length(); i++)
-    {
-        WadFile pf(pwads.at(i));
-        pf.LoadWadFile();
-
-        wf.MergeWadFile(pf);
-    }
-
-
-    wp.ProcessWad();
-
-    if(outFile.length())
-        wf.SaveWadFile(outFile);
-
-    if(cFile.length())
-    {
-        QByteArray byteArray;
-        QBuffer buffer(&byteArray);
-        buffer.open(QIODevice::WriteOnly);
-
-        wf.SaveWadFile(&buffer);
-
-        SaveBytesAsCFile(byteArray, cFile);
-    }
-}
-
-void SaveBytesAsCFile(QByteArray& bytes, QString file)
-{
-    QFile f(file);
-
-    if(!f.open(QIODevice::Truncate | QIODevice::ReadWrite))
-        return;
-
-    QString decl = QString("const unsigned char doom_iwad[%1UL] = {\n").arg(bytes.size());
-
-    f.write(decl.toLatin1());
-
-    for(int i = 0; i < bytes.size(); i++)
-    {
-        QString element = QString("0x%1,").arg((quint8)bytes.at(i),2, 16, QChar('0'));
-
-        if(( (i+1) % 40) == 0)
-            element += "\n";
-
-        f.write(element.toLatin1());
-    }
-
-    QString close = QString("\n};");
-    f.write(close.toLatin1());
-
-    f.close();
 }

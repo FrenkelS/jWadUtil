@@ -1,93 +1,84 @@
-#include "wadprocessor.h"
-#include "doomtypes.h"
+package com.sfprod.jwadutil;
 
-WadProcessor::WadProcessor(WadFile& wad, QObject *parent)
-    : QObject(parent), wadFile(wad)
+//#include "doomtypes.h"
+
+public class WadProcessor {
+
+	private WadFile wadFile;
+
+	public WadProcessor(WadFile wad) {
+		this.wadFile = wad;
+	}
+
+	public boolean ProcessWad() {
+		// Figure out if our IWAD is Doom or Doom2. (E1M1 or MAP01)
+
+		Lump mapLump;
+
+		RemoveUnusedLumps();
+
+		int lumpNum = wadFile.GetLumpByName("MAP01", mapLump);
+
+		if (lumpNum != -1) {
+			return ProcessD2Levels();
+		} else {
+			lumpNum = wadFile.GetLumpByName("E1M1", mapLump);
+
+			// Can't find any maps.
+			if (lumpNum == -1)
+				return false;
+		}
+
+		return ProcessD1Levels();
+	}
+
+	private boolean ProcessD2Levels() {
+		for (int m = 1; m <= 32; m++) {
+			Lump l;
+
+			String mapName = new String("MAP%1").arg(m, 2, 10, QChar('0'));
+
+			int lumpNum = wadFile.GetLumpByName(mapName, l);
+
+			if (lumpNum != -1) {
+				ProcessLevel(lumpNum);
+			}
+		}
+
+		return true;
+	}
+
+	private boolean ProcessD1Levels() {
+		for (int e = 1; e <= 4; e++) {
+			for (int m = 1; m <= 9; m++) {
+				Lump l;
+
+				String mapName = new  QString("E%1M%2").arg(e).arg(m);
+
+				int lumpNum = wadFile.GetLumpByName(mapName, l);
+
+				if (lumpNum != -1) {
+					ProcessLevel(lumpNum);
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private boolean ProcessLevel(int lumpNum) {
+		ProcessVertexes(lumpNum);
+		ProcessLines(lumpNum);
+		ProcessSegs(lumpNum);
+		ProcessSides(lumpNum);
+		ProcessPNames();
+
+		return true;
+	}
+
+private boolean ProcessVertexes(int lumpNum)
 {
-
-}
-
-bool WadProcessor::ProcessWad()
-{
-    //Figure out if our IWAD is Doom or Doom2. (E1M1 or MAP01)
-
-    Lump mapLump;
-
-    RemoveUnusedLumps();
-
-    int lumpNum = wadFile.GetLumpByName("MAP01", mapLump);
-
-    if(lumpNum != -1)
-    {
-        return ProcessD2Levels();
-    }
-    else
-    {
-        int lumpNum = wadFile.GetLumpByName("E1M1", mapLump);
-
-        //Can't find any maps.
-        if(lumpNum == -1)
-            return false;
-    }
-
-    return ProcessD1Levels();
-}
-
-bool WadProcessor::ProcessD2Levels()
-{
-    for(int m = 1; m <= 32; m++)
-    {
-        Lump l;
-
-        QString mapName = QString("MAP%1").arg(m, 2, 10, QChar('0'));
-
-        int lumpNum = wadFile.GetLumpByName(mapName, l);
-
-        if(lumpNum != -1)
-        {
-            ProcessLevel(lumpNum);
-        }
-    }
-
-    return true;
-}
-
-bool WadProcessor::ProcessD1Levels()
-{
-    for(int e = 1; e <= 4; e++)
-    {
-        for(int m = 1; m <= 9; m++)
-        {
-            Lump l;
-
-            QString mapName = QString("E%1M%2").arg(e).arg(m);
-
-            int lumpNum = wadFile.GetLumpByName(mapName, l);
-
-            if(lumpNum != -1)
-            {
-                ProcessLevel(lumpNum);
-            }
-        }
-    }
-
-    return true;
-}
-
-bool WadProcessor::ProcessLevel(quint32 lumpNum)
-{
-    ProcessVertexes(lumpNum);
-    ProcessLines(lumpNum);
-    ProcessSegs(lumpNum);
-    ProcessSides(lumpNum);
-    ProcessPNames();
-
-    return true;
-}
-
-bool WadProcessor::ProcessVertexes(quint32 lumpNum)
-{
-    quint32 vtxLumpNum = lumpNum+ML_VERTEXES;
+    int vtxLumpNum = lumpNum+ML_VERTEXES;
 
     Lump vxl;
 
@@ -97,12 +88,12 @@ bool WadProcessor::ProcessVertexes(quint32 lumpNum)
     if(vxl.length == 0)
         return false;
 
-    quint32 vtxCount = vxl.length / sizeof(mapvertex_t);
+    int vtxCount = vxl.length / sizeof(mapvertex_t);
 
     vertex_t* newVtx = new vertex_t[vtxCount];
     const mapvertex_t* oldVtx = reinterpret_cast<const mapvertex_t*>(vxl.data.constData());
 
-    for(quint32 i = 0; i < vtxCount; i++)
+    for(int i = 0; i < vtxCount; i++)
     {
         newVtx[i].x = (oldVtx[i].x << 16);
         newVtx[i].y = (oldVtx[i].y << 16);
@@ -120,9 +111,9 @@ bool WadProcessor::ProcessVertexes(quint32 lumpNum)
     return true;
 }
 
-bool WadProcessor::ProcessLines(quint32 lumpNum)
+private boolean ProcessLines(int lumpNum)
 {
-    quint32 lineLumpNum = lumpNum+ML_LINEDEFS;
+	int lineLumpNum = lumpNum+ML_LINEDEFS;
 
     Lump lines;
 
@@ -132,7 +123,7 @@ bool WadProcessor::ProcessLines(quint32 lumpNum)
     if(lines.length == 0)
         return false;
 
-    quint32 lineCount = lines.length / sizeof(maplinedef_t);
+    int lineCount = lines.length / sizeof(maplinedef_t);
 
     line_t* newLines = new line_t[lineCount];
 
@@ -140,7 +131,7 @@ bool WadProcessor::ProcessLines(quint32 lumpNum)
 
     //We need vertexes for this...
 
-    quint32 vtxLumpNum = lumpNum+ML_VERTEXES;
+    int vtxLumpNum = lumpNum+ML_VERTEXES;
 
     Lump vxl;
 
@@ -196,9 +187,9 @@ bool WadProcessor::ProcessLines(quint32 lumpNum)
     return true;
 }
 
-bool WadProcessor::ProcessSegs(quint32 lumpNum)
+private boolean ProcessSegs(int lumpNum)
 {
-    quint32 segsLumpNum = lumpNum+ML_SEGS;
+	int segsLumpNum = lumpNum+ML_SEGS;
 
     Lump segs;
 
@@ -208,7 +199,7 @@ bool WadProcessor::ProcessSegs(quint32 lumpNum)
     if(segs.length == 0)
         return false;
 
-    quint32 segCount = segs.length / sizeof(mapseg_t);
+    int segCount = segs.length / sizeof(mapseg_t);
 
     seg_t* newSegs = new seg_t[segCount];
 
@@ -216,7 +207,7 @@ bool WadProcessor::ProcessSegs(quint32 lumpNum)
 
     //We need vertexes for this...
 
-    quint32 vtxLumpNum = lumpNum+ML_VERTEXES;
+    int vtxLumpNum = lumpNum+ML_VERTEXES;
 
     Lump vxl;
 
@@ -230,7 +221,7 @@ bool WadProcessor::ProcessSegs(quint32 lumpNum)
 
     //And LineDefs. Must process lines first.
 
-    quint32 linesLumpNum = lumpNum+ML_LINEDEFS;
+    int linesLumpNum = lumpNum+ML_LINEDEFS;
 
     Lump lxl;
 
@@ -244,7 +235,7 @@ bool WadProcessor::ProcessSegs(quint32 lumpNum)
 
     //And sides too...
 
-    quint32 sidesLumpNum = lumpNum+ML_SIDEDEFS;
+    int sidesLumpNum = lumpNum+ML_SIDEDEFS;
 
     Lump sxl;
 
@@ -310,9 +301,9 @@ bool WadProcessor::ProcessSegs(quint32 lumpNum)
     return true;
 }
 
-bool WadProcessor::ProcessSides(quint32 lumpNum)
+private boolean ProcessSides(int lumpNum)
 {
-    quint32 sidesLumpNum = lumpNum+ML_SIDEDEFS;
+	int sidesLumpNum = lumpNum+ML_SIDEDEFS;
 
     Lump sides;
 
@@ -322,7 +313,7 @@ bool WadProcessor::ProcessSides(quint32 lumpNum)
     if(sides.length == 0)
         return false;
 
-    quint32 sideCount = sides.length / sizeof(mapsidedef_t);
+    int sideCount = sides.length / sizeof(mapsidedef_t);
 
     sidedef_t* newSides = new sidedef_t[sideCount];
 
@@ -352,7 +343,7 @@ bool WadProcessor::ProcessSides(quint32 lumpNum)
     return true;
 }
 
-int WadProcessor::GetTextureNumForName(const char* tex_name)
+private int GetTextureNumForName(const char* tex_name)
 {
     const int  *maptex1, *maptex2;
     int  numtextures1, numtextures2 = 0;
@@ -417,42 +408,43 @@ int WadProcessor::GetTextureNumForName(const char* tex_name)
     return 0;
 }
 
-bool WadProcessor::ProcessPNames()
+private boolean ProcessPNames()
 {
     Lump pnamesLump;
-    qint32 lumpNum = wadFile.GetLumpByName("PNAMES", pnamesLump);
+    int lumpNum = wadFile.GetLumpByName("PNAMES", pnamesLump);
 
     if(lumpNum == -1)
         return false;
 
     const char* pnamesData = (const char*)pnamesLump.data.constData();
 
-    quint32 count = *((quint32*)pnamesData);
+    int count = *((quint32*)pnamesData);
 
     pnamesData += 4; //Fist 4 bytes are count.
 
     QStringList pnamesUpper;
 
-    for(quint32 i = 0; i < count; i++)
+    for(int i = 0; i < count; i++)
     {
         char n[9] = {0};
         strncpy(n, &pnamesData[i*8], 8);
 
+	QLatin1String nl(n);
 
-        QLatin1String nl(n);
-        QString newName(nl);
+	String newName(nl);
 
        pnamesUpper.push_back(newName.toUpper());
     }
 
-    char* newPnames = new char[(count * 8) + 4];
-    memset(newPnames, 0, (count * 8) + 4);
+	char*newPnames=new char[(count*8)+4];
 
-    *((quint32*)newPnames) = count; //Write count of pnames.
+	memset(newPnames, 0, (count * 8) + 4);
+
+    *((int*)newPnames) = count; //Write count of pnames.
 
     char* newPnames2 = &newPnames[4]; //Start of name list.
 
-    for(quint32 i = 0; i < count; i++)
+    for(int i = 0; i < count; i++)
     {
         QByteArray pl = pnamesUpper[i].toLatin1();
 
@@ -471,23 +463,20 @@ bool WadProcessor::ProcessPNames()
     return true;
 }
 
-bool WadProcessor::RemoveUnusedLumps()
-{
-    for(quint32 i = 0; i < wadFile.LumpCount(); i++)
-    {
-        Lump l;
+	private boolean RemoveUnusedLumps() {
+		for (int i = 0; i < wadFile.LumpCount(); i++) {
+			Lump l;
 
-        wadFile.GetLumpByNum(i, l);
+			wadFile.GetLumpByNum(i, l);
 
-        if(     l.name.startsWith("D_") ||
-                l.name.startsWith("DP") ||
-                l.name.startsWith("DS") ||
-                l.name.startsWith("GENMIDI"))
-        {
-            wadFile.RemoveLump(i);
-            i--;
-        }
-    }
+			if (l.name.startsWith("D_") || l.name.startsWith("DP") || l.name.startsWith("DS")
+					|| l.name.startsWith("GENMIDI")) {
+				wadFile.RemoveLump(i);
+				i--;
+			}
+		}
 
-    return true;
+		return true;
+	}
+
 }

@@ -1,17 +1,25 @@
-#include "wadfile.h"
-#include "doomtypes.h"
+package com.sfprod.jwadutil;
 
-#define ROUND_UP4(x) ((x+3) & -4)
+import java.util.List;
 
-WadFile::WadFile(QString filePath, QObject *parent)
-    : QObject(parent)
-{
-    wadPath = filePath;
-}
+//#include "doomtypes.h"
 
-bool WadFile::LoadWadFile()
-{
-    QFile f(wadPath);
+public class WadFile {
+
+	private String wadPath;
+
+	private List<Lump> lumps;
+
+	public WadFile(String filePath) {
+		this.wadPath = filePath;
+	}
+
+	private int ROUND_UP(int x) {
+		return (x + 3) & -4;
+	}
+
+	public boolean LoadWadFile() {
+		QFile f(wadPath);
 
     if(!f.open(QIODevice::ReadOnly))
         return false;
@@ -40,16 +48,15 @@ bool WadFile::LoadWadFile()
         l.name = QString(QLatin1String(l.name.toLatin1().constData()));
 
         l.length = fileinfo[i].size;
-        l.data = QByteArray(&wadData[fileinfo[i].filepos], fileinfo[i].size);
+        l.data = QByteArray(wadData[fileinfo[i].filepos], fileinfo[i].size);
 
-        this->lumps.append(l);
+        this.lumps.append(l);
     }
 
     return true;
 }
 
-bool WadFile::SaveWadFile(QString filePath)
-{
+public boolean SaveWadFile(String filePath) {
     QFile f(filePath);
 
     if(!f.open(QIODevice::Truncate | QIODevice::ReadWrite))
@@ -61,8 +68,7 @@ bool WadFile::SaveWadFile(QString filePath)
     return ret;
 }
 
-bool WadFile::SaveWadFile(QIODevice* device)
-{
+public boolean SaveWadFile(QIODevice device) {
     if(!device->isOpen() || !device->isWritable())
         return false;
 
@@ -127,72 +133,64 @@ bool WadFile::SaveWadFile(QIODevice* device)
     return true;
 }
 
-qint32 WadFile::GetLumpByName(QString name, Lump& lump)
-{
-    for(int i = lumps.length()-1; i >= 0; i--)
-    {
-        if(!lumps.at(i).name.compare(name, Qt::CaseInsensitive))
-        {
-            lump = lumps.at(i);
-            return i;
-        }
-    }
+	public int GetLumpByName(String name, Lump lump) {
+		for (int i = lumps.length() - 1; i >= 0; i--) {
+			if (!lumps.at(i).name.compare(name, Qt::CaseInsensitive)) {
+				lump = lumps.at(i);
+				return i;
+			}
+		}
 
-    return -1;
-}
+		return -1;
+	}
 
-bool WadFile::GetLumpByNum(quint32 lumpnum, Lump& lump)
-{
-    if(lumpnum >= lumps.count())
-        return false;
+	public boolean GetLumpByNum(int lumpnum, Lump lump) {
+		if (lumpnum >= lumps.count())
+			return false;
 
-    lump = lumps.at(lumpnum);
+		lump = lumps.at(lumpnum);
 
-    return true;
-}
+		return true;
+	}
 
-bool WadFile::ReplaceLump(quint32 lumpnum, Lump newLump)
-{
-    if(lumpnum >= lumps.count())
-        return false;
+	public boolean ReplaceLump(int lumpnum, Lump newLump) {
+		if (lumpnum >= lumps.count())
+			return false;
 
-    lumps.replace(lumpnum, newLump);
+		lumps.replace(lumpnum, newLump);
 
-    return true;
-}
+		return true;
+	}
 
-bool WadFile::InsertLump(quint32 lumpnum, Lump newLump)
-{
-    lumps.insert(lumpnum, newLump);
+	public boolean InsertLump(int lumpnum, Lump newLump) {
+		lumps.insert(lumpnum, newLump);
 
-    return true;
-}
+		return true;
+	}
 
-bool WadFile::RemoveLump(quint32 lumpnum)
-{
-    if(lumpnum >= lumps.count())
-        return false;
+	public boolean RemoveLump(int lumpnum) {
+		if (lumpnum >= lumps.count())
+			return false;
 
-    lumps.removeAt(lumpnum);
+		lumps.removeAt(lumpnum);
 
-    return true;
-}
+		return true;
+	}
 
-quint32 WadFile::LumpCount()
-{
-    return lumps.count();
-}
+	public int LumpCount() {
+		return lumps.count();
+	}
 
-bool WadFile::MergeWadFile(WadFile& wadFile)
-{
-    for(quint32 i = 0; i < wadFile.LumpCount(); i++)
-    {
-        Lump l;
+	public boolean MergeWadFile(WadFile wadFile) {
+		for (int i = 0; i < wadFile.LumpCount(); i++) {
+			Lump l;
 
-        wadFile.GetLumpByNum(i, l);
+			wadFile.GetLumpByNum(i, l);
 
-        InsertLump(0xffff, l);
-    }
+			InsertLump(0xffff, l);
+		}
 
-    return true;
+		return true;
+	}
+
 }

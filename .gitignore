@@ -1,9 +1,4 @@
-
-*.user
-*.o
-.qmake.stash
-.vscode/settings.json
-GbaWadUtil
-Makefile
-moc_*.h
-moc_*.cpp
+.classpath
+.project
+.settings
+target
