@@ -8,19 +8,20 @@ import java.util.List;
 
 public class WadFile {
 
-	private String wadPath;
+	private final String wadPath;
 
-	private List<Lump> lumps = new ArrayList<>();
+	private final List<Lump> lumps = new ArrayList<>();
 
 	public WadFile(String filePath) {
 		this.wadPath = filePath;
+		LoadWadFile();
 	}
 
 	private int ROUND_UP4(int x) {
 		return (x + 3) & -4;
 	}
 
-	public void LoadWadFile() {
+	private void LoadWadFile() {
 		File f = new File(wadPath);
 
 //		if(!f.open(QIODevice::ReadOnly))
@@ -136,8 +137,9 @@ public class WadFile {
 	}
 
 	public boolean GetLumpByNum(int lumpnum, Lump lump) {
-		if (lumpnum >= lumps.size())
+		if (lumpnum >= lumps.size()) {
 			return false;
+		}
 
 		lump = lumps.get(lumpnum);
 
@@ -145,8 +147,8 @@ public class WadFile {
 	}
 
 	public void ReplaceLump(int lumpnum, Lump newLump) {
-		if (lumpnum >= lumps.size())
-			return;
+		if (lumpnum >= lumps.size()) {
+		}
 
 //		lumps.replace(lumpnum, newLump);
 	}
@@ -156,8 +158,9 @@ public class WadFile {
 	}
 
 	public void RemoveLump(int lumpnum) {
-		if (lumpnum >= lumps.size())
+		if (lumpnum >= lumps.size()) {
 			return;
+		}
 
 		lumps.remove(lumpnum);
 	}

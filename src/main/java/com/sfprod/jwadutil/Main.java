@@ -7,8 +7,9 @@ public class Main {
 		String outFile = null;
 
 		for (int i = 0; i < args.length - 1; i++) {
-			if (args[i].equals("-out")) {
-				outFile = args[++i];
+			if ("-out".equals(args[i])) {
+				i++;
+				outFile = args[i];
 			}
 		}
 
@@ -17,16 +18,13 @@ public class Main {
 		}
 
 		WadFile iwadFile = new WadFile(inFile);
-		iwadFile.LoadWadFile();
-
-		WadProcessor wadProcessor = new WadProcessor(iwadFile);
 
 		// Also insert the GBADoom wad file. (Extra menu options etc)
 		WadFile pwadFile = new WadFile("/gbadoom.wad");
-		pwadFile.LoadWadFile();
 
 		iwadFile.MergeWadFile(pwadFile);
 
+		WadProcessor wadProcessor = new WadProcessor(iwadFile);
 		wadProcessor.ProcessWad();
 
 		iwadFile.SaveWadFile(outFile);

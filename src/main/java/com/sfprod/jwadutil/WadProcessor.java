@@ -18,7 +18,7 @@ public class WadProcessor {
 	private static final int ML_REJECT = 9; // LUT, sector-sector visibility
 	private static final int ML_BLOCKMAP = 10; // LUT, motion clipping, walls/grid element
 
-	private WadFile wadFile;
+	private final WadFile wadFile;
 
 	public WadProcessor(WadFile wad) {
 		this.wadFile = wad;
@@ -352,7 +352,7 @@ public class WadProcessor {
 
 //		for (int i = 0; i < numtextures; i++, directory++) {
 //			if (i == numtextures1) {
-				// Start looking in second texture file.
+		// Start looking in second texture file.
 //				maptex = maptex2;
 //				directory = directory2;
 //			}
