@@ -125,16 +125,8 @@ public class WadFile {
 //		lumps.replace(lumpnum, newLump);
 	}
 
-	public void RemoveLump(int lumpnum) {
-		if (lumpnum >= lumps.size()) {
-			return;
-		}
-
-		lumps.remove(lumpnum);
-	}
-
-	public int LumpCount() {
-		return lumps.size();
+	public void removeLumps(String prefix) {
+		lumps.removeIf(l -> l.nameAsString().startsWith(prefix));
 	}
 
 	public void mergeWadFile(WadFile wadFile) {

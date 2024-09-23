@@ -13,8 +13,8 @@ public class Main {
 
 		iwadFile.mergeWadFile(pwadFile);
 
-//		WadProcessor wadProcessor = new WadProcessor(iwadFile);
-//		wadProcessor.processWad();
+		WadProcessor wadProcessor = new WadProcessor(iwadFile);
+		wadProcessor.processWad();
 
 		iwadFile.saveWadFile("/doom8088.wad");
 	}

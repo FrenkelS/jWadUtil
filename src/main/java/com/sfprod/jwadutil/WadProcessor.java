@@ -25,9 +25,9 @@ public class WadProcessor {
 	}
 
 	public void processWad() {
-		Lump mapLump;
+//		Lump mapLump;
 
-		RemoveUnusedLumps();
+		removeUnusedLumps();
 
 //		int lumpNum = wadFile.GetLumpByName("E1M1", mapLump);
 
@@ -35,7 +35,7 @@ public class WadProcessor {
 //			throw new IllegalArgumentException("Can't find any maps.");
 //		}
 
-		ProcessDoom1Levels();
+//		ProcessDoom1Levels();
 	}
 
 	private void ProcessDoom1Levels() {
@@ -421,20 +421,11 @@ public class WadProcessor {
 //		wadFile.ReplaceLump(lumpNum, newLump);
 	}
 
-	private boolean RemoveUnusedLumps() {
-		for (int i = 0; i < wadFile.LumpCount(); i++) {
-			Lump l;
-
-//			wadFile.GetLumpByNum(i, l);
-
-//			if (l.name.startsWith("D_") || l.name.startsWith("DP") || l.name.startsWith("DS")
-//					|| l.name.startsWith("GENMIDI")) {
-//				wadFile.RemoveLump(i);
-//				i--;
-//			}
-		}
-
-		return true;
+	private void removeUnusedLumps() {
+		wadFile.removeLumps("D_");
+		wadFile.removeLumps("DP");
+		wadFile.removeLumps("DS");
+		wadFile.removeLumps("GENMIDI");
 	}
 
 }
