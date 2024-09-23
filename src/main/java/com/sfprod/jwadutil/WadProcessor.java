@@ -29,11 +29,11 @@ public class WadProcessor {
 
 		RemoveUnusedLumps();
 
-		int lumpNum = wadFile.GetLumpByName("E1M1", mapLump);
+//		int lumpNum = wadFile.GetLumpByName("E1M1", mapLump);
 
-		if (lumpNum == -1) {
-			throw new IllegalArgumentException("Can't find any maps.");
-		}
+//		if (lumpNum == -1) {
+//			throw new IllegalArgumentException("Can't find any maps.");
+//		}
 
 		ProcessDoom1Levels();
 	}
@@ -44,8 +44,8 @@ public class WadProcessor {
 
 			String mapName = "E1M" + map;
 
-			int lumpNum = wadFile.GetLumpByName(mapName, l);
-			ProcessLevel(lumpNum);
+//			int lumpNum = wadFile.GetLumpByName(mapName, l);
+//			ProcessLevel(lumpNum);
 		}
 	}
 
@@ -59,404 +59,379 @@ public class WadProcessor {
 		return true;
 	}
 
-private boolean ProcessVertexes(int lumpNum)
-{
-    int vtxLumpNum = lumpNum+ML_VERTEXES;
+	private void ProcessVertexes(int lumpNum) {
+		int vtxLumpNum = lumpNum + ML_VERTEXES;
 
-    Lump vxl;
+		Lump vxl;
 
-    if(!wadFile.GetLumpByNum(vtxLumpNum, vxl))
-        return false;
+//		if (!wadFile.GetLumpByNum(vtxLumpNum, vxl))
+//			return;
 
-    if(vxl.length == 0)
-        return false;
+//		if (vxl.length == 0)
+//			return;
 
-    int vtxCount = vxl.length / sizeof(mapvertex_t);
+//    int vtxCount = vxl.length / sizeof(mapvertex_t);
 
-    vertex_t* newVtx = new vertex_t[vtxCount];
-     mapvertex_t* oldVtx = vxl.data.constData();
+//    vertex_t* newVtx = new vertex_t[vtxCount];
+//     mapvertex_t* oldVtx = vxl.data.constData();
 
-    for(int i = 0; i < vtxCount; i++)
-    {
-        newVtx[i].x = (oldVtx[i].x << 16);
-        newVtx[i].y = (oldVtx[i].y << 16);
-    }
+//    for(int i = 0; i < vtxCount; i++)
+//    {
+//        newVtx[i].x = (oldVtx[i].x << 16);
+//        newVtx[i].y = (oldVtx[i].y << 16);
+//    }
 
-    Lump newVxl;
-    newVxl.name = vxl.name;
-    newVxl.length = vtxCount * sizeof(vertex_t);
-    newVxl.data = QByteArray(newVtx, newVxl.length);
+		Lump newVxl;
+//		newVxl.name = vxl.name;
+//    newVxl.length = vtxCount * sizeof(vertex_t);
+//    newVxl.data = QByteArray(newVtx, newVxl.length);
 
-    delete[] newVtx;
+//    delete[] newVtx;
 
-    wadFile.ReplaceLump(vtxLumpNum, newVxl);
+//		wadFile.ReplaceLump(vtxLumpNum, newVxl);
+	}
 
-    return true;
-}
+	private void ProcessLines(int lumpNum) {
+		int lineLumpNum = lumpNum + ML_LINEDEFS;
 
-private boolean ProcessLines(int lumpNum)
-{
-	int lineLumpNum = lumpNum+ML_LINEDEFS;
+		Lump lines;
 
-    Lump lines;
+//		if (!wadFile.GetLumpByNum(lineLumpNum, lines))
+//			return;
 
-    if(!wadFile.GetLumpByNum(lineLumpNum, lines))
-        return false;
+//		if (lines.length == 0)
+//			return;
 
-    if(lines.length == 0)
-        return false;
+//    int lineCount = lines.length / sizeof(maplinedef_t);
 
-    int lineCount = lines.length / sizeof(maplinedef_t);
+//    line_t* newLines = new line_t[lineCount];
 
-    line_t* newLines = new line_t[lineCount];
+//     maplinedef_t* oldLines = lines.data.constData();
 
-     maplinedef_t* oldLines = lines.data.constData();
+		// We need vertexes for this...
 
-    //We need vertexes for this...
+		int vtxLumpNum = lumpNum + ML_VERTEXES;
 
-    int vtxLumpNum = lumpNum+ML_VERTEXES;
+		Lump vxl;
 
-    Lump vxl;
+//		if (!wadFile.GetLumpByNum(vtxLumpNum, vxl))
+//			return;
 
-    if(!wadFile.GetLumpByNum(vtxLumpNum, vxl))
-        return false;
+//		if (vxl.length == 0)
+//			return;
 
-    if(vxl.length == 0)
-        return false;
+//     vertex_t* vtx = vxl.data.constData();
 
-     vertex_t* vtx = vxl.data.constData();
+//    for( int i = 0; i < lineCount; i++)
+//    {
+//        newLines[i].v1.x = vtx[oldLines[i].v1].x;
+//        newLines[i].v1.y = vtx[oldLines[i].v1].y;
 
-    for( int i = 0; i < lineCount; i++)
-    {
-        newLines[i].v1.x = vtx[oldLines[i].v1].x;
-        newLines[i].v1.y = vtx[oldLines[i].v1].y;
+//        newLines[i].v2.x = vtx[oldLines[i].v2].x;
+//        newLines[i].v2.y = vtx[oldLines[i].v2].y;
 
-        newLines[i].v2.x = vtx[oldLines[i].v2].x;
-        newLines[i].v2.y = vtx[oldLines[i].v2].y;
+//        newLines[i].special = oldLines[i].special;
+//        newLines[i].flags = oldLines[i].flags;
+//        newLines[i].tag = oldLines[i].tag;
 
-        newLines[i].special = oldLines[i].special;
-        newLines[i].flags = oldLines[i].flags;
-        newLines[i].tag = oldLines[i].tag;
+//        newLines[i].dx = newLines[i].v2.x - newLines[i].v1.x;
+//        newLines[i].dy = newLines[i].v2.y - newLines[i].v1.y;
 
-        newLines[i].dx = newLines[i].v2.x - newLines[i].v1.x;
-        newLines[i].dy = newLines[i].v2.y - newLines[i].v1.y;
+//        newLines[i].slopetype =
+//                !newLines[i].dx ? ST_VERTICAL : !newLines[i].dy ? ST_HORIZONTAL :
+//                FixedDiv(newLines[i].dy, newLines[i].dx) > 0 ? ST_POSITIVE : ST_NEGATIVE;
 
-        newLines[i].slopetype =
-                !newLines[i].dx ? ST_VERTICAL : !newLines[i].dy ? ST_HORIZONTAL :
-                FixedDiv(newLines[i].dy, newLines[i].dx) > 0 ? ST_POSITIVE : ST_NEGATIVE;
+//        newLines[i].sidenum[0] = oldLines[i].sidenum[0];
+//        newLines[i].sidenum[1] = oldLines[i].sidenum[1];
 
-        newLines[i].sidenum[0] = oldLines[i].sidenum[0];
-        newLines[i].sidenum[1] = oldLines[i].sidenum[1];
+//        newLines[i].bbox[BOXLEFT] = (newLines[i].v1.x < newLines[i].v2.x ? newLines[i].v1.x : newLines[i].v2.x);
+//        newLines[i].bbox[BOXRIGHT] = (newLines[i].v1.x < newLines[i].v2.x ? newLines[i].v2.x : newLines[i].v1.x);
 
-        newLines[i].bbox[BOXLEFT] = (newLines[i].v1.x < newLines[i].v2.x ? newLines[i].v1.x : newLines[i].v2.x);
-        newLines[i].bbox[BOXRIGHT] = (newLines[i].v1.x < newLines[i].v2.x ? newLines[i].v2.x : newLines[i].v1.x);
+//        newLines[i].bbox[BOXTOP] = (newLines[i].v1.y < newLines[i].v2.y ? newLines[i].v2.y : newLines[i].v1.y);
+//        newLines[i].bbox[BOXBOTTOM] = (newLines[i].v1.y < newLines[i].v2.y ? newLines[i].v1.y : newLines[i].v2.y);
 
-        newLines[i].bbox[BOXTOP] = (newLines[i].v1.y < newLines[i].v2.y ? newLines[i].v2.y : newLines[i].v1.y);
-        newLines[i].bbox[BOXBOTTOM] = (newLines[i].v1.y < newLines[i].v2.y ? newLines[i].v1.y : newLines[i].v2.y);
+//        newLines[i].lineno = i;
 
-        newLines[i].lineno = i;
+//    }
 
-    }
+		Lump newLine;
+//		newLine.name = lines.name;
+//    newLine.length = lineCount * sizeof(line_t);
+//    newLine.data = QByteArray(newLines, newLine.length);
 
-    Lump newLine;
-    newLine.name = lines.name;
-    newLine.length = lineCount * sizeof(line_t);
-    newLine.data = QByteArray(newLines, newLine.length);
+//    delete[] newLines;
 
-    delete[] newLines;
+//		wadFile.ReplaceLump(lineLumpNum, newLine);
+	}
 
-    wadFile.ReplaceLump(lineLumpNum, newLine);
+	private void ProcessSegs(int lumpNum) {
+		int segsLumpNum = lumpNum + ML_SEGS;
 
-    return true;
-}
+		Lump segs;
 
-private boolean ProcessSegs(int lumpNum)
-{
-	int segsLumpNum = lumpNum+ML_SEGS;
+//		if (!wadFile.GetLumpByNum(segsLumpNum, segs))
+//			return;
 
-    Lump segs;
+//		if (segs.length == 0)
+//			return;
 
-    if(!wadFile.GetLumpByNum(segsLumpNum, segs))
-        return false;
+//    int segCount = segs.length / sizeof(mapseg_t);
 
-    if(segs.length == 0)
-        return false;
+//    seg_t* newSegs = new seg_t[segCount];
 
-    int segCount = segs.length / sizeof(mapseg_t);
+//     mapseg_t* oldSegs = segs.data.constData();
 
-    seg_t* newSegs = new seg_t[segCount];
+		// We need vertexes for this...
 
-     mapseg_t* oldSegs = segs.data.constData();
+		int vtxLumpNum = lumpNum + ML_VERTEXES;
 
-    //We need vertexes for this...
+		Lump vxl;
 
-    int vtxLumpNum = lumpNum+ML_VERTEXES;
+//		if (!wadFile.GetLumpByNum(vtxLumpNum, vxl))
+//			return;
 
-    Lump vxl;
+//		if (vxl.length == 0)
+//			return;
 
-    if(!wadFile.GetLumpByNum(vtxLumpNum, vxl))
-        return false;
+//     vertex_t* vtx = vxl.data.constData();
 
-    if(vxl.length == 0)
-        return false;
+		// And LineDefs. Must process lines first.
 
-     vertex_t* vtx = vxl.data.constData();
+		int linesLumpNum = lumpNum + ML_LINEDEFS;
 
-    //And LineDefs. Must process lines first.
+		Lump lxl;
 
-    int linesLumpNum = lumpNum+ML_LINEDEFS;
+//		if (!wadFile.GetLumpByNum(linesLumpNum, lxl))
+//			return;
 
-    Lump lxl;
+//		if (lxl.length == 0)
+//			return;
 
-    if(!wadFile.GetLumpByNum(linesLumpNum, lxl))
-        return false;
+//     line_t* lines = lxl.data.constData();
 
-    if(lxl.length == 0)
-        return false;
+		// And sides too...
 
-     line_t* lines = lxl.data.constData();
+		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
 
-    //And sides too...
+		Lump sxl;
 
-    int sidesLumpNum = lumpNum+ML_SIDEDEFS;
+//		if (!wadFile.GetLumpByNum(sidesLumpNum, sxl))
+//			return;
 
-    Lump sxl;
+//		if (sxl.length == 0)
+//			return;
 
-    if(!wadFile.GetLumpByNum(sidesLumpNum, sxl))
-        return false;
+//     mapsidedef_t* sides = sxl.data.constData();
 
-    if(sxl.length == 0)
-        return false;
+		// ****************************
 
-     mapsidedef_t* sides = sxl.data.constData();
+//    for(unsigned int i = 0; i < segCount; i++)
+//    {
+//        newSegs[i].v1.x = vtx[oldSegs[i].v1].x;
+//        newSegs[i].v1.y = vtx[oldSegs[i].v1].y;
 
+//        newSegs[i].v2.x = vtx[oldSegs[i].v2].x;
+//        newSegs[i].v2.y = vtx[oldSegs[i].v2].y;
 
-    //****************************
+//        newSegs[i].angle = oldSegs[i].angle << 16;
+//        newSegs[i].offset = oldSegs[i].offset << 16;
 
-    for(unsigned int i = 0; i < segCount; i++)
-    {
-        newSegs[i].v1.x = vtx[oldSegs[i].v1].x;
-        newSegs[i].v1.y = vtx[oldSegs[i].v1].y;
+//        newSegs[i].linenum = oldSegs[i].linedef;
 
-        newSegs[i].v2.x = vtx[oldSegs[i].v2].x;
-        newSegs[i].v2.y = vtx[oldSegs[i].v2].y;
+//         line_t* ldef = &lines[newSegs[i].linenum];
 
-        newSegs[i].angle = oldSegs[i].angle << 16;
-        newSegs[i].offset = oldSegs[i].offset << 16;
+//        int side = oldSegs[i].side;
 
-        newSegs[i].linenum = oldSegs[i].linedef;
+//        newSegs[i].sidenum = ldef.sidenum[side];
 
-         line_t* ldef = &lines[newSegs[i].linenum];
+//        if(newSegs[i].sidenum != NO_INDEX)
+//        {
+//            newSegs[i].frontsectornum = sides[newSegs[i].sidenum].sector;
+//        }
+//        else
+//        {
+//            newSegs[i].frontsectornum = NO_INDEX;
+//        }
 
-        int side = oldSegs[i].side;
+//        newSegs[i].backsectornum = NO_INDEX;
 
-        newSegs[i].sidenum = ldef.sidenum[side];
+//        if(ldef.flags & ML_TWOSIDED)
+//        {
+//            if(ldef.sidenum[side^1] != NO_INDEX)
+//            {
+//                newSegs[i].backsectornum = sides[ldef.sidenum[side^1]].sector;
+//            }
+//        }
+//    }
 
-        if(newSegs[i].sidenum != NO_INDEX)
-        {
-            newSegs[i].frontsectornum = sides[newSegs[i].sidenum].sector;
-        }
-        else
-        {
-            newSegs[i].frontsectornum = NO_INDEX;
-        }
+		Lump newSeg;
+//		newSeg.name = segs.name;
+//    newSeg.length = segCount * sizeof(seg_t);
+//    newSeg.data = QByteArray(newSegs, newSeg.length);
 
-        newSegs[i].backsectornum = NO_INDEX;
+//    delete[] newSegs;
 
-        if(ldef.flags & ML_TWOSIDED)
-        {
-            if(ldef.sidenum[side^1] != NO_INDEX)
-            {
-                newSegs[i].backsectornum = sides[ldef.sidenum[side^1]].sector;
-            }
-        }
-    }
+//		wadFile.ReplaceLump(segsLumpNum, newSeg);
+	}
 
-    Lump newSeg;
-    newSeg.name = segs.name;
-    newSeg.length = segCount * sizeof(seg_t);
-    newSeg.data = QByteArray(newSegs, newSeg.length);
+	private void ProcessSides(int lumpNum) {
+		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
 
-    delete[] newSegs;
+		Lump sides;
 
-    wadFile.ReplaceLump(segsLumpNum, newSeg);
+//		if (!wadFile.GetLumpByNum(sidesLumpNum, sides))
+//			return;
 
-    return true;
-}
+//		if (sides.length == 0)
+//			return;
 
-private boolean ProcessSides(int lumpNum)
-{
-	int sidesLumpNum = lumpNum+ML_SIDEDEFS;
+//    int sideCount = sides.length / sizeof(mapsidedef_t);
 
-    Lump sides;
+//    sidedef_t* newSides = new sidedef_t[sideCount];
 
-    if(!wadFile.GetLumpByNum(sidesLumpNum, sides))
-        return false;
+//     mapsidedef_t* oldSides = sides.data.constData();
 
-    if(sides.length == 0)
-        return false;
+//    for(unsigned int i = 0; i < sideCount; i++)
+//    {
+//        newSides[i].textureoffset = oldSides[i].textureoffset;
+//        newSides[i].rowoffset = oldSides[i].rowoffset;
 
-    int sideCount = sides.length / sizeof(mapsidedef_t);
+//        newSides[i].toptexture = GetTextureNumForName(oldSides[i].toptexture);
+//        newSides[i].bottomtexture = GetTextureNumForName(oldSides[i].bottomtexture);
+//        newSides[i].midtexture = GetTextureNumForName(oldSides[i].midtexture);
 
-    sidedef_t* newSides = new sidedef_t[sideCount];
+//        newSides[i].sector = oldSides[i].sector;
+//    }
 
-     mapsidedef_t* oldSides = sides.data.constData();
+		Lump newSide;
+//		newSide.name = sides.name;
+//    newSide.length = sideCount * sizeof(sidedef_t);
+//    newSide.data = QByteArray(newSides, newSide.length);
 
-    for(unsigned int i = 0; i < sideCount; i++)
-    {
-        newSides[i].textureoffset = oldSides[i].textureoffset;
-        newSides[i].rowoffset = oldSides[i].rowoffset;
+//    delete[] newSides;
 
-        newSides[i].toptexture = GetTextureNumForName(oldSides[i].toptexture);
-        newSides[i].bottomtexture = GetTextureNumForName(oldSides[i].bottomtexture);
-        newSides[i].midtexture = GetTextureNumForName(oldSides[i].midtexture);
+//		wadFile.ReplaceLump(sidesLumpNum, newSide);
+	}
 
-        newSides[i].sector = oldSides[i].sector;
-    }
+	private int GetTextureNumForName(char tex_name) {
+//     int  *maptex1, *maptex2;
+//    int  numtextures1, numtextures2 = 0;
+//     int *directory1, *directory2;
 
-    Lump newSide;
-    newSide.name = sides.name;
-    newSide.length = sideCount * sizeof(sidedef_t);
-    newSide.data = QByteArray(newSides, newSide.length);
+		// Convert name to uppercase for comparison.
+//    char tex_name_upper[9];
 
-    delete[] newSides;
+//		strncpy(tex_name_upper, tex_name, 8);
+//		tex_name_upper[8] = 0; // Ensure null terminated.
 
-    wadFile.ReplaceLump(sidesLumpNum, newSide);
+//		for (int i = 0; i < 8; i++) {
+//			tex_name_upper[i] = toupper(tex_name_upper[i]);
+//		}
 
-    return true;
-}
+		Lump tex1lump;
+//		wadFile.GetLumpByName("TEXTURE1", tex1lump);
 
-private int GetTextureNumForName( char* tex_name)
-{
-     int  *maptex1, *maptex2;
-    int  numtextures1, numtextures2 = 0;
-     int *directory1, *directory2;
+//    maptex1 = (int*)tex1lump.data.constData();
+//    numtextures1 = *maptex1;
+//		directory1 = maptex1 + 1;
 
+		Lump tex2lump;
+//		if (wadFile.GetLumpByName("TEXTURE2", tex2lump) != -1) {
+//        maptex2 = (int*)tex2lump.data.constData();
+//			directory2 = maptex2 + 1;
+//        numtextures2 = *maptex2;
+//		} else {
+//			maptex2 = NULL;
+//			directory2 = NULL;
+//		}
 
-    //Convert name to uppercase for comparison.
-    char tex_name_upper[9];
+//     int *directory = directory1;
+//     int *maptex = maptex1;
 
-    strncpy(tex_name_upper, tex_name, 8);
-    tex_name_upper[8] = 0; //Ensure null terminated.
+//		int numtextures = (numtextures1 + numtextures2);
 
-    for (int i = 0; i < 8; i++)
-    {
-        tex_name_upper[i] = toupper(tex_name_upper[i]);
-    }
+//		for (int i = 0; i < numtextures; i++, directory++) {
+//			if (i == numtextures1) {
+				// Start looking in second texture file.
+//				maptex = maptex2;
+//				directory = directory2;
+//			}
 
-    Lump tex1lump;
-    wadFile.GetLumpByName("TEXTURE1", tex1lump);
+//        int offset = *directory;
 
-    maptex1 = (int*)tex1lump.data.constData();
-    numtextures1 = *maptex1;
-    directory1 = maptex1+1;
+//         maptexture_t* mtexture = maptex + offset;
 
-    Lump tex2lump;
-    if (wadFile.GetLumpByName("TEXTURE2", tex2lump) != -1)
-    {
-        maptex2 = (int*)tex2lump.data.constData();
-        directory2 = maptex2+1;
-        numtextures2 = *maptex2;
-    }
-    else
-    {
-        maptex2 = NULL;
-        directory2 = NULL;
-    }
+//			if (!strncmp(tex_name_upper, mtexture.name, 8)) {
+//				return i;
+//			}
+//		}
 
-     int *directory = directory1;
-     int *maptex = maptex1;
+		return 0;
+	}
 
-    int numtextures = (numtextures1 + numtextures2);
+	private void ProcessPNames() {
+		Lump pnamesLump;
+//		int lumpNum = wadFile.GetLumpByName("PNAMES", pnamesLump);
 
-    for (int i=0 ; i<numtextures; i++, directory++)
-    {
-        if (i == numtextures1)
-        {
-            // Start looking in second texture file.
-            maptex = maptex2;
-            directory = directory2;
-        }
+//		if (lumpNum == -1)
+//			return;
 
-        int offset = *directory;
+//    char* pnamesData = (char*)pnamesLump.data.constData();
 
-         maptexture_t* mtexture = maptex + offset;
+//    int count = *((int*)pnamesData);
 
-        if(!strncmp(tex_name_upper, mtexture.name, 8))
-        {
-            return i;
-        }
-    }
+//    pnamesData += 4; //Fist 4 bytes are count.
 
-    return 0;
-}
+//    List<String> pnamesUpper;
 
-private boolean ProcessPNames()
-{
-    Lump pnamesLump;
-    int lumpNum = wadFile.GetLumpByName("PNAMES", pnamesLump);
+//    for(int i = 0; i < count; i++)
+//    {
+//        char n[9] = {0};
+//        strncpy(n, &pnamesData[i*8], 8);
 
-    if(lumpNum == -1)
-        return false;
+//	QLatin1String nl(n);
 
-    char* pnamesData = (char*)pnamesLump.data.constData();
+//	String newName(nl);
 
-    int count = *((int*)pnamesData);
+//       pnamesUpper.push_back(newName.toUpper());
+//    }
 
-    pnamesData += 4; //Fist 4 bytes are count.
+//	char*newPnames=new char[(count*8)+4];
 
-    List<String> pnamesUpper;
+//	memset(newPnames, 0, (count * 8) + 4);
 
-    for(int i = 0; i < count; i++)
-    {
-        char n[9] = {0};
-        strncpy(n, &pnamesData[i*8], 8);
+//    *((int*)newPnames) = count; //Write count of pnames.
 
-	QLatin1String nl(n);
+//    char* newPnames2 = &newPnames[4]; //Start of name list.
 
-	String newName(nl);
+//    for(int i = 0; i < count; i++)
+//    {
+//        QByteArray pl = pnamesUpper[i].toLatin1();
 
-       pnamesUpper.push_back(newName.toUpper());
-    }
+//        strncpy(&newPnames2[i*8], pl.constData(), 8);
+//    }
 
-	char*newPnames=new char[(count*8)+4];
+		Lump newLump;
+//		newLump.name = "PNAMES";
+//    newLump.length = (count * 8) + 4;
+//    newLump.data = QByteArray(newPnames, newLump.length);
 
-	memset(newPnames, 0, (count * 8) + 4);
+//    delete[] newPnames;
 
-    *((int*)newPnames) = count; //Write count of pnames.
-
-    char* newPnames2 = &newPnames[4]; //Start of name list.
-
-    for(int i = 0; i < count; i++)
-    {
-        QByteArray pl = pnamesUpper[i].toLatin1();
-
-        strncpy(&newPnames2[i*8], pl.constData(), 8);
-    }
-
-    Lump newLump;
-    newLump.name = "PNAMES";
-    newLump.length = (count * 8) + 4;
-    newLump.data = QByteArray(newPnames, newLump.length);
-
-    delete[] newPnames;
-
-    wadFile.ReplaceLump(lumpNum, newLump);
-
-    return true;
-}
+//		wadFile.ReplaceLump(lumpNum, newLump);
+	}
 
 	private boolean RemoveUnusedLumps() {
 		for (int i = 0; i < wadFile.LumpCount(); i++) {
 			Lump l;
 
-			wadFile.GetLumpByNum(i, l);
+//			wadFile.GetLumpByNum(i, l);
 
-			if (l.name.startsWith("D_") || l.name.startsWith("DP") || l.name.startsWith("DS")
-					|| l.name.startsWith("GENMIDI")) {
-				wadFile.RemoveLump(i);
-				i--;
-			}
+//			if (l.name.startsWith("D_") || l.name.startsWith("DP") || l.name.startsWith("DS")
+//					|| l.name.startsWith("GENMIDI")) {
+//				wadFile.RemoveLump(i);
+//				i--;
+//			}
 		}
 
 		return true;

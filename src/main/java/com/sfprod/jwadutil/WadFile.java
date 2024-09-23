@@ -23,109 +23,105 @@ public class WadFile {
 	public void LoadWadFile() {
 		File f = new File(wadPath);
 
-    if(!f.open(QIODevice::ReadOnly))
-        return ;
+//		if(!f.open(QIODevice::ReadOnly))
+//			return ;
 
-    byte[] fd = f.readAll();
+//		byte[] fd = f.readAll();
 
-    char* wadData = fd.constData();
+//		char* wadData = fd.constData();
 
+//		f.close();
 
+//		WadInfo header = wadData;
 
-    f.close();
+//		String id = new String(QLatin1String(header.identification, 4));
 
-    WadInfo header = wadData;
+//		if(String.compare(id, "IWAD") && String.compare(id, "PWAD"))
+//			return ;
 
-    String id = new String(QLatin1String(header.identification, 4));
+//		filelump_t* fileinfo = wadData[header.infotableofs];
 
-    if(String.compare(id, "IWAD") && String.compare(id, "PWAD"))
-        return ;
+//		for(int i = 0; i < header.numlumps; i++)
+//		{
+//			Lump l;
+//			l.name = new String(QLatin1String(fileinfo[i].name, 8));
+//			l.name = new String(QLatin1String(l.name.toLatin1().constData()));
 
-    filelump_t* fileinfo = wadData[header.infotableofs];
+//			l.length = fileinfo[i].size;
+//			l.data = QByteArray(wadData[fileinfo[i].filepos], fileinfo[i].size);
 
-    for(int i = 0; i < header.numlumps; i++)
-    {
-        Lump l;
-        l.name = new String(QLatin1String(fileinfo[i].name, 8));
-        l.name = new String(QLatin1String(l.name.toLatin1().constData()));
-
-        l.length = fileinfo[i].size;
-        l.data = QByteArray(wadData[fileinfo[i].filepos], fileinfo[i].size);
-
-        this.lumps.append(l);
-    }
-}
+//			this.lumps.append(l);
+//		}
+	}
 
 	public void SaveWadFile(String filePath) {
 		File f = new File(filePath);
 
-		if (!f.open(QIODevice::Truncate | QIODevice::ReadWrite))
-			return;
+//		if (!f.open(QIODevice::Truncate | QIODevice::ReadWrite))
+//			return;
 
-		boolean ret = SaveWadFile(f);
-		f.close();
+//		SaveWadFile(f);
+//		f.close();
 	}
 
-	public boolean SaveWadFile(QIODevice device) {
-		if (!device.isOpen() || !device.isWritable())
-			return false;
+	public void SaveWadFile(File device) {
+//		if (!device.isOpen() || !device.isWritable())
+//			return;
 
-		WadInfo header;
+//		WadInfo header;
 
-		header.numlumps = lumps.size();
+//		header.numlumps = lumps.size();
 
-		header.identification[0] = 'I';
-		header.identification[1] = 'W';
-		header.identification[2] = 'A';
-		header.identification[3] = 'D';
+//		header.identification[0] = 'I';
+//		header.identification[1] = 'W';
+//		header.identification[2] = 'A';
+//		header.identification[3] = 'D';
 
-		header.infotableofs = sizeof(WadInfo);
+//		header.infotableofs = sizeof(WadInfo);
 
-		device.write(header, sizeof(header));
+//		device.write(header, sizeof(header));
 
-		int fileOffset = sizeof(WadInfo) + (sizeof(filelump_t) * lumps.count());
+//		int fileOffset = sizeof(WadInfo) + (sizeof(filelump_t) * lumps.count());
 
-		fileOffset = ROUND_UP4(fileOffset);
+//		fileOffset = ROUND_UP4(fileOffset);
 
 		// Write the file info blocks.
-		for (int i = 0; i < lumps.count(); i++) {
-			Lump l = lumps.at(i);
+//		for (int i = 0; i < lumps.count(); i++) {
+//			Lump l = lumps.at(i);
 
-			filelump_t fl;
+//			filelump_t fl;
 
-			memset(fl.name, 0, 8);
-			strncpy(fl.name, l.name.toLatin1().toUpper().constData(), 8);
+//			memset(fl.name, 0, 8);
+//			strncpy(fl.name, l.name.toLatin1().toUpper().constData(), 8);
 
-			fl.size = l.length;
+//			fl.size = l.length;
 
-			if (l.length > 0)
-				fl.filepos = fileOffset;
-			else
-				fl.filepos = 0;
+//			if (l.length > 0)
+//				fl.filepos = fileOffset;
+//			else
+//				fl.filepos = 0;
 
-			device.write(fl, sizeof(fl));
+//			device.write(fl, sizeof(fl));
 
-			fileOffset += l.length;
-			fileOffset = ROUND_UP4(fileOffset);
-		}
+//			fileOffset += l.length;
+//			fileOffset = ROUND_UP4(fileOffset);
+//		}
 
 		// Write the lump data out.
-		for (int i = 0; i < lumps.size(); i++) {
-			Lump l = lumps.get(i);
+//		for (int i = 0; i < lumps.size(); i++) {
+//			Lump l = lumps.get(i);
 
-			if (l.length == 0)
-				continue;
+//			if (l.length == 0)
+//				continue;
 
-			int pos = device.pos();
+//			int pos = device.pos();
 
-			pos = ROUND_UP4(pos);
+//			pos = ROUND_UP4(pos);
 
-			device.seek(pos);
+//			device.seek(pos);
 
-			device.write(l.data, l.length);
-		}
-
-		return true;
+//			device.write(l.data, l.length);
+//		}
 	}
 
 	public int GetLumpByName(String name, Lump lump) {
@@ -148,28 +144,22 @@ public class WadFile {
 		return true;
 	}
 
-	public boolean ReplaceLump(int lumpnum, Lump newLump) {
+	public void ReplaceLump(int lumpnum, Lump newLump) {
 		if (lumpnum >= lumps.size())
-			return false;
+			return;
 
-		lumps.replace(lumpnum, newLump);
-
-		return true;
+//		lumps.replace(lumpnum, newLump);
 	}
 
-	private boolean InsertLump(int lumpnum, Lump newLump) {
+	private void InsertLump(int lumpnum, Lump newLump) {
 		lumps.add(lumpnum, newLump);
-
-		return true;
 	}
 
-	public boolean RemoveLump(int lumpnum) {
+	public void RemoveLump(int lumpnum) {
 		if (lumpnum >= lumps.size())
-			return false;
+			return;
 
 		lumps.remove(lumpnum);
-
-		return true;
 	}
 
 	public int LumpCount() {
@@ -177,13 +167,13 @@ public class WadFile {
 	}
 
 	public void MergeWadFile(WadFile wadFile) {
-		for (int i = 0; i < wadFile.LumpCount(); i++) {
-			Lump l;
-
-			wadFile.GetLumpByNum(i, l);
-
-			InsertLump(0xffff, l);
-		}
+//		for (int i = 0; i < wadFile.LumpCount(); i++) {
+//			Lump l;
+//
+//			wadFile.GetLumpByNum(i, l);
+//
+//			InsertLump(0xffff, l);
+//		}
 	}
 
 }
