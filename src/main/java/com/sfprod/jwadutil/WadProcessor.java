@@ -24,7 +24,7 @@ public class WadProcessor {
 		this.wadFile = wad;
 	}
 
-	public void ProcessWad() {
+	public void processWad() {
 		Lump mapLump;
 
 		RemoveUnusedLumps();

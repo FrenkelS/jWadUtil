@@ -55,7 +55,7 @@ public class WadFile {
 //		}
 	}
 
-	public void SaveWadFile(String filePath) {
+	public void saveWadFile(String filePath) {
 		File f = new File(filePath);
 
 //		if (!f.open(QIODevice::Truncate | QIODevice::ReadWrite))
@@ -169,7 +169,7 @@ public class WadFile {
 		return lumps.size();
 	}
 
-	public void MergeWadFile(WadFile wadFile) {
+	public void mergeWadFile(WadFile wadFile) {
 //		for (int i = 0; i < wadFile.LumpCount(); i++) {
 //			Lump l;
 //
