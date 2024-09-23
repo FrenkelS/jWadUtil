@@ -1,7 +1,5 @@
 package com.sfprod.jwadutil;
 
-//#include "doomtypes.h"
-
 public class WadProcessor {
 
 	// Lump order in a map WAD: each map needs a couple of lumps

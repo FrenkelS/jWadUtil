@@ -1,58 +1,61 @@
 package com.sfprod.jwadutil;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-//#include "doomtypes.h"
-
 public class WadFile {
 
-	private final String wadPath;
+	private static final List<String> FILE_SIGNATURES = List.of("IWAD", "PWAD");
+
+	private final int numlumps;
+	private final int infotableofs;
 
 	private final List<Lump> lumps = new ArrayList<>();
 
-	public WadFile(String filePath) {
-		this.wadPath = filePath;
-		LoadWadFile();
+	private static record Filelump(int filepos, int size, byte[] name) {
 	}
 
-	private int ROUND_UP4(int x) {
-		return (x + 3) & -4;
-	}
+	public WadFile(String wadPath) throws IOException, URISyntaxException {
+		ByteBuffer byteBuffer = ByteBuffer
+				.wrap(Files.readAllBytes(Path.of(WadFile.class.getResource(wadPath).toURI())));
+		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-	private void LoadWadFile() {
-		File f = new File(wadPath);
+		byte[] identification = new byte[4];
+		byteBuffer.get(identification);
 
-//		if(!f.open(QIODevice::ReadOnly))
-//			return ;
+		String identificationAsString = new String(identification);
+		if (!FILE_SIGNATURES.contains(identificationAsString)) {
+			throw new IllegalArgumentException(wadPath + " is not a WAD file");
+		}
 
-//		byte[] fd = f.readAll();
+		this.numlumps = byteBuffer.getInt();
+		this.infotableofs = byteBuffer.getInt();
 
-//		char* wadData = fd.constData();
+		byteBuffer.position(infotableofs);
 
-//		f.close();
+		List<Filelump> filelumps = new ArrayList<>();
 
-//		WadInfo header = wadData;
+		for (int i = 0; i < numlumps; i++) {
+			int filepos = byteBuffer.getInt();
+			int size = byteBuffer.getInt();
+			byte[] name = new byte[8];
+			byteBuffer.get(name);
+			filelumps.add(new Filelump(filepos, size, name));
+		}
 
-//		String id = new String(QLatin1String(header.identification, 4));
-
-//		if(String.compare(id, "IWAD") && String.compare(id, "PWAD"))
-//			return ;
-
-//		filelump_t* fileinfo = wadData[header.infotableofs];
-
-//		for(int i = 0; i < header.numlumps; i++)
-//		{
-//			Lump l;
-//			l.name = new String(QLatin1String(fileinfo[i].name, 8));
-//			l.name = new String(QLatin1String(l.name.toLatin1().constData()));
-
-//			l.length = fileinfo[i].size;
-//			l.data = QByteArray(wadData[fileinfo[i].filepos], fileinfo[i].size);
-
-//			this.lumps.append(l);
-//		}
+		for (Filelump filelump : filelumps) {
+			byte[] data = new byte[filelump.size];
+			byteBuffer.position(filelump.filepos);
+			byteBuffer.get(data);
+			lumps.add(new Lump(new String(filelump.name).trim(), data));
+		}
 	}
 
 	public void saveWadFile(String filePath) {
@@ -63,6 +66,10 @@ public class WadFile {
 
 //		SaveWadFile(f);
 //		f.close();
+	}
+
+	private int ROUND_UP4(int x) {
+		return (x + 3) & -4;
 	}
 
 	public void SaveWadFile(File device) {
@@ -127,7 +134,7 @@ public class WadFile {
 
 	public int GetLumpByName(String name, Lump lump) {
 		for (int i = lumps.size() - 1; i >= 0; i--) {
-			if (lumps.get(i).name.compareToIgnoreCase(name) == 0) {
+			if (lumps.get(i).name().equalsIgnoreCase(name)) {
 				lump = lumps.get(i);
 				return i;
 			}
