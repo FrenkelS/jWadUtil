@@ -11,7 +11,7 @@ public class Main {
 		// Also insert the GBADoom wad file. (Extra menu options etc)
 		WadFile pwadFile = new WadFile("/gbadoom.wad");
 
-//		iwadFile.mergeWadFile(pwadFile);
+		iwadFile.mergeWadFile(pwadFile);
 
 //		WadProcessor wadProcessor = new WadProcessor(iwadFile);
 //		wadProcessor.processWad();

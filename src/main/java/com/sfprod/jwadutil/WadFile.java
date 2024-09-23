@@ -160,10 +160,6 @@ public class WadFile {
 //		lumps.replace(lumpnum, newLump);
 	}
 
-	private void InsertLump(int lumpnum, Lump newLump) {
-		lumps.add(lumpnum, newLump);
-	}
-
 	public void RemoveLump(int lumpnum) {
 		if (lumpnum >= lumps.size()) {
 			return;
@@ -177,13 +173,7 @@ public class WadFile {
 	}
 
 	public void mergeWadFile(WadFile wadFile) {
-//		for (int i = 0; i < wadFile.LumpCount(); i++) {
-//			Lump l;
-//
-//			wadFile.GetLumpByNum(i, l);
-//
-//			InsertLump(0xffff, l);
-//		}
+		lumps.addAll(wadFile.lumps);
 	}
 
 }
