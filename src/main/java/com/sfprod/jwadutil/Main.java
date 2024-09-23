@@ -16,7 +16,7 @@ public class Main {
 //		WadProcessor wadProcessor = new WadProcessor(iwadFile);
 //		wadProcessor.processWad();
 
-//		iwadFile.saveWadFile("doom8088.wad");
+		iwadFile.saveWadFile("/doom8088.wad");
 	}
 
 }

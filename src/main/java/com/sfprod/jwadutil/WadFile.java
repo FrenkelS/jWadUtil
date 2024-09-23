@@ -1,10 +1,10 @@
 package com.sfprod.jwadutil;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -20,6 +20,12 @@ public class WadFile {
 	private final List<Lump> lumps = new ArrayList<>();
 
 	private static record Filelump(int filepos, int size, byte[] name) {
+	}
+
+	public static record Lump(byte[] name, byte[] data) {
+		public String nameAsString() {
+			return new String(name, StandardCharsets.US_ASCII).trim();
+		}
 	}
 
 	public WadFile(String wadPath) throws IOException, URISyntaxException {
@@ -54,87 +60,46 @@ public class WadFile {
 			byte[] data = new byte[filelump.size];
 			byteBuffer.position(filelump.filepos);
 			byteBuffer.get(data);
-			lumps.add(new Lump(new String(filelump.name).trim(), data));
+			lumps.add(new Lump(filelump.name, data));
 		}
 	}
 
-	public void saveWadFile(String filePath) {
-		File f = new File(filePath);
+	public void saveWadFile(String wadPath) throws IOException, URISyntaxException {
+		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
+		int filesize = filepos + lumps.stream().mapToInt(lump -> lump.data().length).sum();
 
-//		if (!f.open(QIODevice::Truncate | QIODevice::ReadWrite))
-//			return;
+		ByteBuffer byteBuffer = ByteBuffer.allocate(filesize);
+		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-//		SaveWadFile(f);
-//		f.close();
-	}
+		byte[] fileSignature = "IWAD".getBytes(StandardCharsets.US_ASCII);
+		byteBuffer.put(fileSignature);
+		byteBuffer.putInt(lumps.size());
+		byteBuffer.putInt(4 + 4 + 4);
 
-	private int ROUND_UP4(int x) {
-		return (x + 3) & -4;
-	}
+		for (Lump lump : lumps) {
+			if (lump.data.length == 0) {
+				byteBuffer.putInt(0);
+			} else {
+				byteBuffer.putInt(filepos);
+			}
+			filepos += lump.data.length;
 
-	public void SaveWadFile(File device) {
-//		if (!device.isOpen() || !device.isWritable())
-//			return;
+			byteBuffer.putInt(lump.data.length);
+			byteBuffer.put(lump.name());
+		}
 
-//		WadInfo header;
+		for (Lump lump : lumps) {
+			byteBuffer.put(lump.data);
+		}
 
-//		header.numlumps = lumps.size();
-
-//		header.identification[0] = 'I';
-//		header.identification[1] = 'W';
-//		header.identification[2] = 'A';
-//		header.identification[3] = 'D';
-
-//		header.infotableofs = sizeof(WadInfo);
-
-//		device.write(header, sizeof(header));
-
-//		int fileOffset = sizeof(WadInfo) + (sizeof(filelump_t) * lumps.count());
-
-//		fileOffset = ROUND_UP4(fileOffset);
-
-		// Write the file info blocks.
-//		for (int i = 0; i < lumps.count(); i++) {
-//			Lump l = lumps.at(i);
-
-//			filelump_t fl;
-
-//			memset(fl.name, 0, 8);
-//			strncpy(fl.name, l.name.toLatin1().toUpper().constData(), 8);
-
-//			fl.size = l.length;
-
-//			if (l.length > 0)
-//				fl.filepos = fileOffset;
-//			else
-//				fl.filepos = 0;
-
-//			device.write(fl, sizeof(fl));
-
-//			fileOffset += l.length;
-//			fileOffset = ROUND_UP4(fileOffset);
-//		}
-
-		// Write the lump data out.
-//		for (int i = 0; i < lumps.size(); i++) {
-//			Lump l = lumps.get(i);
-
-//			if (l.length == 0)
-//				continue;
-
-//			int pos = device.pos();
-
-//			pos = ROUND_UP4(pos);
-
-//			device.seek(pos);
-
-//			device.write(l.data, l.length);
-//		}
+		Path path = Path.of("target", wadPath);
+		Files.write(path, byteBuffer.array());
+		System.out.println("WAD file written to " + path.toAbsolutePath());
 	}
 
 	public int GetLumpByName(String name, Lump lump) {
 		for (int i = lumps.size() - 1; i >= 0; i--) {
-			if (lumps.get(i).name().equalsIgnoreCase(name)) {
+			if (lumps.get(i).nameAsString().equalsIgnoreCase(name)) {
 				lump = lumps.get(i);
 				return i;
 			}

@@ -1,5 +1,7 @@
 package com.sfprod.jwadutil;
 
+import com.sfprod.jwadutil.WadFile.Lump;
+
 public class WadProcessor {
 
 	// Lump order in a map WAD: each map needs a couple of lumps
