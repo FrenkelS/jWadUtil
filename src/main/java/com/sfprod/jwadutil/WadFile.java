@@ -97,32 +97,16 @@ public class WadFile {
 		System.out.println("WAD file written to " + path.toAbsolutePath());
 	}
 
-	public int GetLumpByName(String name, Lump lump) {
-		for (int i = lumps.size() - 1; i >= 0; i--) {
-			if (lumps.get(i).nameAsString().equalsIgnoreCase(name)) {
-				lump = lumps.get(i);
-				return i;
-			}
-		}
-
-		return -1;
+	public Lump getLumpByName(String name) {
+		return lumps.reversed().stream().filter(l -> l.nameAsString().equalsIgnoreCase(name)).findFirst().orElseThrow();
 	}
 
-	public boolean GetLumpByNum(int lumpnum, Lump lump) {
-		if (lumpnum >= lumps.size()) {
-			return false;
-		}
-
-		lump = lumps.get(lumpnum);
-
-		return true;
+	public Lump getLumpByNum(int lumpnum) {
+		return lumps.get(lumpnum);
 	}
 
-	public void ReplaceLump(int lumpnum, Lump newLump) {
-		if (lumpnum >= lumps.size()) {
-		}
-
-//		lumps.replace(lumpnum, newLump);
+	public void replaceLump(int lumpnum, Lump newLump) {
+		lumps.set(lumpnum, newLump);
 	}
 
 	public void removeLumps(String prefix) {
