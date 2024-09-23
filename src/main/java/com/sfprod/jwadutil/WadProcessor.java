@@ -28,6 +28,7 @@ public class WadProcessor {
 //		Lump mapLump;
 
 		removeUnusedLumps();
+		ProcessPNames();
 
 //		int lumpNum = wadFile.GetLumpByName("E1M1", mapLump);
 
@@ -49,14 +50,11 @@ public class WadProcessor {
 		}
 	}
 
-	private boolean ProcessLevel(int lumpNum) {
+	private void ProcessLevel(int lumpNum) {
 		ProcessVertexes(lumpNum);
 		ProcessLines(lumpNum);
 		ProcessSegs(lumpNum);
 		ProcessSides(lumpNum);
-		ProcessPNames();
-
-		return true;
 	}
 
 	private void ProcessVertexes(int lumpNum) {

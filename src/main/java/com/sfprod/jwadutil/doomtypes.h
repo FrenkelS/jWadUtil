@@ -1,9 +1,6 @@
 #ifndef DOOMTYPES_H
 #define DOOMTYPES_H
 
-#include <QtCore>
-
-
 typedef qint32 fixed_t;
 typedef quint32 angle_t;
 
@@ -29,15 +26,6 @@ inline static fixed_t FixedDiv(fixed_t a, fixed_t b)
 //*************************************************************************************
 
 #pragma pack(push,1)
-
-
-typedef struct
-{
-    qint32  filepos;
-    qint32  size;
-    char name[8];
-} filelump_t;
-
 
 
 //
