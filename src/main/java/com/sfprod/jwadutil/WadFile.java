@@ -98,7 +98,29 @@ public class WadFile {
 	}
 
 	public Lump getLumpByName(String name) {
-		return lumps.reversed().stream().filter(l -> l.nameAsString().equalsIgnoreCase(name)).findFirst().orElseThrow();
+		List<Lump> lumpsWithName = lumps.stream().filter(l -> l.nameAsString().equalsIgnoreCase(name)).toList();
+
+		if (lumpsWithName.size() != 1) {
+			throw new IllegalArgumentException("Found " + lumpsWithName.size() + " lumps with the name " + name);
+		}
+
+		return lumpsWithName.get(0);
+	}
+
+	public int getLumpNumByName(String name) {
+		List<Integer> lumpNums = new ArrayList<>();
+		for (int index = 0; index < lumps.size(); index++) {
+			Lump lump = lumps.get(index);
+			if (lump.nameAsString().equalsIgnoreCase(name)) {
+				lumpNums.add(index);
+			}
+		}
+
+		if (lumpNums.size() != 1) {
+			throw new IllegalArgumentException("Found " + lumpNums.size() + " lumps with the name " + name);
+		}
+
+		return lumpNums.get(0);
 	}
 
 	public Lump getLumpByNum(int lumpnum) {

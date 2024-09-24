@@ -28,7 +28,7 @@ public class WadProcessor {
 //		Lump mapLump;
 
 		removeUnusedLumps();
-		ProcessPNames();
+		processPNames();
 
 //		int lumpNum = wadFile.GetLumpByName("E1M1", mapLump);
 
@@ -367,7 +367,10 @@ public class WadProcessor {
 		return 0;
 	}
 
-	private void ProcessPNames() {
+	/**
+	 * Capitalize every patch name
+	 */
+	private void processPNames() {
 		Lump pnamesLump;
 //		int lumpNum = wadFile.GetLumpByName("PNAMES", pnamesLump);
 
@@ -419,6 +422,33 @@ public class WadProcessor {
 //		wadFile.ReplaceLump(lumpNum, newLump);
 	}
 
+	/**
+	 * Remove unused lumps
+	 *
+	 * <table>
+	 * <tr>
+	 * <th>prefix</th>
+	 * <th>description</th>
+	 * </tr>
+	 * <tr>
+	 * <td><b>D_</b></b></td>
+	 * <td>MUS music</td>
+	 * </tr>
+	 * <tr>
+	 * <td><b>DP</b></td>
+	 * <td>PC speaker sound effects</td>
+	 * </tr>
+	 * <tr>
+	 * <td><b>DS</b></td>
+	 * <td>Sound Blaster sound effects</td>
+	 * </tr>
+	 * <tr>
+	 * <td><b>GENMIDI</b></td>
+	 * <td>Lump that contains instrument data for the DMX sound library to use for
+	 * OPL synthesis</td>
+	 * </tr>
+	 * </table>
+	 */
 	private void removeUnusedLumps() {
 		wadFile.removeLumps("D_");
 		wadFile.removeLumps("DP");
