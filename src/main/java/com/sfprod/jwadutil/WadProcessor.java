@@ -1,5 +1,10 @@
 package com.sfprod.jwadutil;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.sfprod.jwadutil.WadFile.Lump;
 
 public class WadProcessor {
@@ -17,6 +22,11 @@ public class WadProcessor {
 	private static final int ML_SECTORS = 8; // Sectors, from editing
 	private static final int ML_REJECT = 9; // LUT, sector-sector visibility
 	private static final int ML_BLOCKMAP = 10; // LUT, motion clipping, walls/grid element
+
+	private static final int ST_HORIZONTAL = 0;
+	private static final int ST_VERTICAL = 1;
+	private static final int ST_POSITIVE = 2;
+	private static final int ST_NEGATIVE = 3;
 
 	private final WadFile wadFile;
 
@@ -40,7 +50,7 @@ public class WadProcessor {
 
 	private void processLevel(int lumpNum) {
 		processVertexes(lumpNum);
-		ProcessLines(lumpNum);
+		processLines(lumpNum);
 		ProcessSegs(lumpNum);
 		ProcessSides(lumpNum);
 	}
@@ -67,89 +77,115 @@ public class WadProcessor {
 		wadFile.replaceLump(vtxLumpNum, newLump);
 	}
 
-	private void ProcessLines(int lumpNum) {
+	private static record Maplinedef(short v1, short v2, short flags, short special, short tag, short[] sidenum) {
+	}
+
+	private static record Vertex(int x, int y) {
+	}
+
+	private int fixedDiv(int a, int b) {
+		if (Math.abs(a) >> 14 >= Math.abs(b)) {
+			return ((a ^ b) >> 31) ^ Integer.MAX_VALUE;
+		} else {
+			return (int) ((((long) a) << 16) / b);
+		}
+	}
+
+	/**
+	 * Change vertexes, dx, dy, bbox[4] and slopetype
+	 *
+	 * @param lumpNum
+	 */
+	private void processLines(int lumpNum) {
 		int lineLumpNum = lumpNum + ML_LINEDEFS;
+		Lump lines = wadFile.getLumpByNum(lineLumpNum);
 
-		Lump lines;
+		int sizeofmaplinedef = 2 + 2 + 2 + 2 + 2 + 2 * 2;
+		int sizeofline = 4 + 4 + 4 + 4 + 4 + 4 + 4 + 2 * 2 + 4 * 4 + 2 + 2 + 2 + 2;
 
-//		if (!wadFile.GetLumpByNum(lineLumpNum, lines))
-//			return;
+		int lineCount = lines.data().length / sizeofmaplinedef;
 
-//		if (lines.length == 0)
-//			return;
-
-//    int lineCount = lines.length / sizeof(maplinedef_t);
-
-//    line_t* newLines = new line_t[lineCount];
-
-//     maplinedef_t* oldLines = lines.data.constData();
+		List<Maplinedef> oldLines = new ArrayList<>(lineCount);
+		ByteBuffer oldLinesByteBuffer = ByteBuffer.wrap(lines.data());
+		oldLinesByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		for (int i = 0; i < lineCount; i++) {
+			short v1 = oldLinesByteBuffer.getShort();
+			short v2 = oldLinesByteBuffer.getShort();
+			short flags = oldLinesByteBuffer.getShort();
+			short special = oldLinesByteBuffer.getShort();
+			short tag = oldLinesByteBuffer.getShort();
+			short[] sidenum = new short[2];
+			sidenum[0] = oldLinesByteBuffer.getShort();
+			sidenum[1] = oldLinesByteBuffer.getShort();
+			oldLines.add(new Maplinedef(v1, v2, flags, special, tag, sidenum));
+		}
 
 		// We need vertexes for this...
-
 		int vtxLumpNum = lumpNum + ML_VERTEXES;
+		Lump vxl = wadFile.getLumpByNum(vtxLumpNum);
+		List<Vertex> vtx = new ArrayList<>();
+		ByteBuffer vxlByteBuffer = ByteBuffer.wrap(vxl.data());
+		vxlByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		for (int i = 0; i < vxl.data().length / (4 + 4); i++) {
+			int x = vxlByteBuffer.getInt();
+			int y = vxlByteBuffer.getInt();
+			vtx.add(new Vertex(x, y));
+		}
 
-		Lump vxl;
+		ByteBuffer newLineByteBuffer = ByteBuffer.allocate(lineCount * sizeofline);
+		newLineByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		for (int i = 0; i < lineCount; i++) {
+			Maplinedef maplinedef = oldLines.get(i);
+			Vertex vertex1 = vtx.get(maplinedef.v1());
+			newLineByteBuffer.putInt(vertex1.x()); // v1.x
+			newLineByteBuffer.putInt(vertex1.y()); // v1.y
 
-//		if (!wadFile.GetLumpByNum(vtxLumpNum, vxl))
-//			return;
+			Vertex vertex2 = vtx.get(maplinedef.v2());
+			newLineByteBuffer.putInt(vertex2.x()); // v2.x
+			newLineByteBuffer.putInt(vertex2.y()); // v2.y
 
-//		if (vxl.length == 0)
-//			return;
+			newLineByteBuffer.putInt(i); // lineno
 
-//     vertex_t* vtx = vxl.data.constData();
+			int dx = vertex2.x() - vertex1.x();
+			int dy = vertex2.y() - vertex1.y();
+			newLineByteBuffer.putInt(dx); // dx
+			newLineByteBuffer.putInt(dy); // dy
 
-//    for( int i = 0; i < lineCount; i++)
-//    {
-//        newLines[i].v1.x = vtx[oldLines[i].v1].x;
-//        newLines[i].v1.y = vtx[oldLines[i].v1].y;
+			newLineByteBuffer.putShort(maplinedef.sidenum()[0]); // sidenum[0];
+			newLineByteBuffer.putShort(maplinedef.sidenum()[1]); // sidenum[1];
 
-//        newLines[i].v2.x = vtx[oldLines[i].v2].x;
-//        newLines[i].v2.y = vtx[oldLines[i].v2].y;
+			newLineByteBuffer.putInt(vertex1.y() < vertex2.y() ? vertex2.y() : vertex1.y()); // bbox[BOXTOP]
+			newLineByteBuffer.putInt(vertex1.y() < vertex2.y() ? vertex1.y() : vertex2.y()); // bbox[BOXBOTTOM]
+			newLineByteBuffer.putInt(vertex1.x() < vertex2.x() ? vertex1.x() : vertex2.x()); // bbox[BOXLEFT]
+			newLineByteBuffer.putInt(vertex1.x() < vertex2.x() ? vertex2.x() : vertex1.x()); // bbox[BOXRIGHT]
 
-//        newLines[i].special = oldLines[i].special;
-//        newLines[i].flags = oldLines[i].flags;
-//        newLines[i].tag = oldLines[i].tag;
+			newLineByteBuffer.putShort(maplinedef.flags()); // flags
+			newLineByteBuffer.putShort(maplinedef.special()); // special
+			newLineByteBuffer.putShort(maplinedef.tag()); // tag
 
-//        newLines[i].dx = newLines[i].v2.x - newLines[i].v1.x;
-//        newLines[i].dy = newLines[i].v2.y - newLines[i].v1.y;
+			short slopetype;
+			if (dx == 0) {
+				slopetype = ST_VERTICAL;
+			} else if (dy == 0) {
+				slopetype = ST_HORIZONTAL;
+			} else {
+				if (fixedDiv(dy, dx) > 0) {
+					slopetype = ST_POSITIVE;
+				} else {
+					slopetype = ST_NEGATIVE;
+				}
+			}
 
-//        newLines[i].slopetype =
-//                !newLines[i].dx ? ST_VERTICAL : !newLines[i].dy ? ST_HORIZONTAL :
-//                FixedDiv(newLines[i].dy, newLines[i].dx) > 0 ? ST_POSITIVE : ST_NEGATIVE;
+			newLineByteBuffer.putShort(slopetype); // slopetype
+		}
 
-//        newLines[i].sidenum[0] = oldLines[i].sidenum[0];
-//        newLines[i].sidenum[1] = oldLines[i].sidenum[1];
-
-//        newLines[i].bbox[BOXLEFT] = (newLines[i].v1.x < newLines[i].v2.x ? newLines[i].v1.x : newLines[i].v2.x);
-//        newLines[i].bbox[BOXRIGHT] = (newLines[i].v1.x < newLines[i].v2.x ? newLines[i].v2.x : newLines[i].v1.x);
-
-//        newLines[i].bbox[BOXTOP] = (newLines[i].v1.y < newLines[i].v2.y ? newLines[i].v2.y : newLines[i].v1.y);
-//        newLines[i].bbox[BOXBOTTOM] = (newLines[i].v1.y < newLines[i].v2.y ? newLines[i].v1.y : newLines[i].v2.y);
-
-//        newLines[i].lineno = i;
-
-//    }
-
-		Lump newLine;
-//		newLine.name = lines.name;
-//    newLine.length = lineCount * sizeof(line_t);
-//    newLine.data = QByteArray(newLines, newLine.length);
-
-//    delete[] newLines;
-
-//		wadFile.ReplaceLump(lineLumpNum, newLine);
+		Lump newLine = new Lump(lines.name(), newLineByteBuffer.array());
+		wadFile.replaceLump(lineLumpNum, newLine);
 	}
 
 	private void ProcessSegs(int lumpNum) {
 		int segsLumpNum = lumpNum + ML_SEGS;
-
-		Lump segs;
-
-//		if (!wadFile.GetLumpByNum(segsLumpNum, segs))
-//			return;
-
-//		if (segs.length == 0)
-//			return;
+		Lump segs = wadFile.getLumpByNum(segsLumpNum);
 
 //    int segCount = segs.length / sizeof(mapseg_t);
 
@@ -158,44 +194,20 @@ public class WadProcessor {
 //     mapseg_t* oldSegs = segs.data.constData();
 
 		// We need vertexes for this...
-
 		int vtxLumpNum = lumpNum + ML_VERTEXES;
-
-		Lump vxl;
-
-//		if (!wadFile.GetLumpByNum(vtxLumpNum, vxl))
-//			return;
-
-//		if (vxl.length == 0)
-//			return;
+		Lump vxl = wadFile.getLumpByNum(vtxLumpNum);
 
 //     vertex_t* vtx = vxl.data.constData();
 
 		// And LineDefs. Must process lines first.
-
 		int linesLumpNum = lumpNum + ML_LINEDEFS;
-
-		Lump lxl;
-
-//		if (!wadFile.GetLumpByNum(linesLumpNum, lxl))
-//			return;
-
-//		if (lxl.length == 0)
-//			return;
+		Lump lxl = wadFile.getLumpByNum(linesLumpNum);
 
 //     line_t* lines = lxl.data.constData();
 
 		// And sides too...
-
 		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
-
-		Lump sxl;
-
-//		if (!wadFile.GetLumpByNum(sidesLumpNum, sxl))
-//			return;
-
-//		if (sxl.length == 0)
-//			return;
+		Lump sxl = wadFile.getLumpByNum(sidesLumpNum);
 
 //     mapsidedef_t* sides = sxl.data.constData();
 
@@ -252,14 +264,7 @@ public class WadProcessor {
 
 	private void ProcessSides(int lumpNum) {
 		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
-
-		Lump sides;
-
-//		if (!wadFile.GetLumpByNum(sidesLumpNum, sides))
-//			return;
-
-//		if (sides.length == 0)
-//			return;
+		Lump sides = wadFile.getLumpByNum(sidesLumpNum);
 
 //    int sideCount = sides.length / sizeof(mapsidedef_t);
 
@@ -290,9 +295,9 @@ public class WadProcessor {
 	}
 
 	private int GetTextureNumForName(char tex_name) {
-//     int  *maptex1, *maptex2;
+//     int  *maptex1;
 //    int  numtextures1, numtextures2 = 0;
-//     int *directory1, *directory2;
+//     int *directory1;
 
 		// Convert name to uppercase for comparison.
 //    char tex_name_upper[9];
@@ -304,22 +309,11 @@ public class WadProcessor {
 //			tex_name_upper[i] = toupper(tex_name_upper[i]);
 //		}
 
-		Lump tex1lump;
-//		wadFile.GetLumpByName("TEXTURE1", tex1lump);
+		Lump tex1lump = wadFile.getLumpByName("TEXTURE1");
 
 //    maptex1 = (int*)tex1lump.data.constData();
 //    numtextures1 = *maptex1;
 //		directory1 = maptex1 + 1;
-
-		Lump tex2lump;
-//		if (wadFile.GetLumpByName("TEXTURE2", tex2lump) != -1) {
-//        maptex2 = (int*)tex2lump.data.constData();
-//			directory2 = maptex2 + 1;
-//        numtextures2 = *maptex2;
-//		} else {
-//			maptex2 = NULL;
-//			directory2 = NULL;
-//		}
 
 //     int *directory = directory1;
 //     int *maptex = maptex1;
@@ -328,9 +322,7 @@ public class WadProcessor {
 
 //		for (int i = 0; i < numtextures; i++, directory++) {
 //			if (i == numtextures1) {
-		// Start looking in second texture file.
-//				maptex = maptex2;
-//				directory = directory2;
+
 //			}
 
 //        int offset = *directory;
