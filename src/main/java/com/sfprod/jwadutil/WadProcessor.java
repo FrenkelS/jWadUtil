@@ -25,68 +25,46 @@ public class WadProcessor {
 	}
 
 	public void processWad() {
-//		Lump mapLump;
-
 		removeUnusedLumps();
 		processPNames();
-
-//		int lumpNum = wadFile.GetLumpByName("E1M1", mapLump);
-
-//		if (lumpNum == -1) {
-//			throw new IllegalArgumentException("Can't find any maps.");
-//		}
-
-//		ProcessDoom1Levels();
+		processDoom1Levels();
 	}
 
-	private void ProcessDoom1Levels() {
+	private void processDoom1Levels() {
 		for (int map = 1; map <= 9; map++) {
-			Lump l;
-
 			String mapName = "E1M" + map;
-
-//			int lumpNum = wadFile.GetLumpByName(mapName, l);
-//			ProcessLevel(lumpNum);
+			int lumpNum = wadFile.getLumpNumByName(mapName);
+			processLevel(lumpNum);
 		}
 	}
 
-	private void ProcessLevel(int lumpNum) {
-		ProcessVertexes(lumpNum);
+	private void processLevel(int lumpNum) {
+		processVertexes(lumpNum);
 		ProcessLines(lumpNum);
 		ProcessSegs(lumpNum);
 		ProcessSides(lumpNum);
 	}
 
-	private void ProcessVertexes(int lumpNum) {
+	/**
+	 * Convert vertex from int16_t to int32_t by shifting left 16 times.
+	 *
+	 * @param lumpNum
+	 */
+	private void processVertexes(int lumpNum) {
 		int vtxLumpNum = lumpNum + ML_VERTEXES;
+		Lump oldLump = wadFile.getLumpByNum(vtxLumpNum);
+		byte[] oldData = oldLump.data();
 
-		Lump vxl;
+		byte[] newData = new byte[oldData.length * 2];
+		for (int i = 0; i < oldData.length / 2; i++) {
+			newData[i * 4 + 0] = 0;
+			newData[i * 4 + 1] = 0;
+			newData[i * 4 + 2] = oldData[i * 2 + 0];
+			newData[i * 4 + 3] = oldData[i * 2 + 1];
+		}
 
-//		if (!wadFile.GetLumpByNum(vtxLumpNum, vxl))
-//			return;
-
-//		if (vxl.length == 0)
-//			return;
-
-//    int vtxCount = vxl.length / sizeof(mapvertex_t);
-
-//    vertex_t* newVtx = new vertex_t[vtxCount];
-//     mapvertex_t* oldVtx = vxl.data.constData();
-
-//    for(int i = 0; i < vtxCount; i++)
-//    {
-//        newVtx[i].x = (oldVtx[i].x << 16);
-//        newVtx[i].y = (oldVtx[i].y << 16);
-//    }
-
-		Lump newVxl;
-//		newVxl.name = vxl.name;
-//    newVxl.length = vtxCount * sizeof(vertex_t);
-//    newVxl.data = QByteArray(newVtx, newVxl.length);
-
-//    delete[] newVtx;
-
-//		wadFile.ReplaceLump(vtxLumpNum, newVxl);
+		Lump newLump = new Lump(oldLump.name(), newData);
+		wadFile.replaceLump(vtxLumpNum, newLump);
 	}
 
 	private void ProcessLines(int lumpNum) {
