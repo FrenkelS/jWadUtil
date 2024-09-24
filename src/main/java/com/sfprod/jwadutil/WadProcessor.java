@@ -368,58 +368,16 @@ public class WadProcessor {
 	}
 
 	/**
-	 * Capitalize every patch name
+	 * Capitalize patch names
 	 */
 	private void processPNames() {
-		Lump pnamesLump;
-//		int lumpNum = wadFile.GetLumpByName("PNAMES", pnamesLump);
-
-//		if (lumpNum == -1)
-//			return;
-
-//    char* pnamesData = (char*)pnamesLump.data.constData();
-
-//    int count = *((int*)pnamesData);
-
-//    pnamesData += 4; //Fist 4 bytes are count.
-
-//    List<String> pnamesUpper;
-
-//    for(int i = 0; i < count; i++)
-//    {
-//        char n[9] = {0};
-//        strncpy(n, &pnamesData[i*8], 8);
-
-//	QLatin1String nl(n);
-
-//	String newName(nl);
-
-//       pnamesUpper.push_back(newName.toUpper());
-//    }
-
-//	char*newPnames=new char[(count*8)+4];
-
-//	memset(newPnames, 0, (count * 8) + 4);
-
-//    *((int*)newPnames) = count; //Write count of pnames.
-
-//    char* newPnames2 = &newPnames[4]; //Start of name list.
-
-//    for(int i = 0; i < count; i++)
-//    {
-//        QByteArray pl = pnamesUpper[i].toLatin1();
-
-//        strncpy(&newPnames2[i*8], pl.constData(), 8);
-//    }
-
-		Lump newLump;
-//		newLump.name = "PNAMES";
-//    newLump.length = (count * 8) + 4;
-//    newLump.data = QByteArray(newPnames, newLump.length);
-
-//    delete[] newPnames;
-
-//		wadFile.ReplaceLump(lumpNum, newLump);
+		Lump lump = wadFile.getLumpByName("PNAMES");
+		byte[] data = lump.data();
+		for (int i = 4; i < data.length; i++) {
+			if ('a' <= data[i] && data[i] <= 'z') {
+				data[i] &= 0b11011111;
+			}
+		}
 	}
 
 	/**
