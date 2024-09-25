@@ -29,11 +29,6 @@ typedef struct
 } vertex_t;
 
 
-#define NO_INDEX ((unsigned short)-1)
-
-#define ML_TWOSIDED             4
-
-
 typedef struct line_s
 {
     vertex_t v1;

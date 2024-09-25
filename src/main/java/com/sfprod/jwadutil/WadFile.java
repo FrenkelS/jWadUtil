@@ -26,6 +26,12 @@ public class WadFile {
 		public String nameAsString() {
 			return new String(name, StandardCharsets.US_ASCII).trim();
 		}
+
+		public ByteBuffer dataAsByteBuffer() {
+			ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+			byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+			return byteBuffer;
+		}
 	}
 
 	public WadFile(String wadPath) throws IOException, URISyntaxException {
