@@ -144,6 +144,11 @@ public class WadFile {
 		lumps.set(lumpnum, newLump);
 	}
 
+	public void replaceLump(Lump newLump) {
+		int lumpnum = getLumpNumByName(newLump.nameAsString());
+		lumps.set(lumpnum, newLump);
+	}
+
 	public void removeLumps(String prefix) {
 		lumps.removeIf(l -> l.nameAsString().startsWith(prefix));
 	}

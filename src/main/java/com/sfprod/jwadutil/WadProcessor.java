@@ -98,7 +98,6 @@ public class WadProcessor {
 	}
 
 	private List<Vertex> getVertexes(int lumpNum) {
-		// We need vertexes for this...
 		int vtxLumpNum = lumpNum + ML_VERTEXES;
 		Lump vxl = wadFile.getLumpByNum(vtxLumpNum);
 		List<Vertex> vtx = new ArrayList<>();
@@ -297,8 +296,7 @@ public class WadProcessor {
 		int sizeofseg = 2 * 4 + 2 * 4 + 4 + 4 + 2 + 2 + 2 + 2;
 		ByteBuffer newSegsByteBuffer = ByteBuffer.allocate(segCount * sizeofseg);
 		newSegsByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		for (int i = 0; i < segCount; i++) {
-			Mapseg oldSeg = oldSegs.get(i);
+		for (Mapseg oldSeg : oldSegs) {
 			Vertex v1 = vtx.get(oldSeg.v1);
 			Vertex v2 = vtx.get(oldSeg.v2);
 			newSegsByteBuffer.putInt(v1.x); // v1.x
@@ -348,8 +346,7 @@ public class WadProcessor {
 
 		ByteBuffer newSidesByteBuffer = ByteBuffer.allocate(sideCount * (2 + 2 + 2 + 2 + 2 + 2));
 		newSidesByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		for (int i = 0; i < sideCount; i++) {
-			Mapsidedef oldSide = oldSides.get(i);
+		for (Mapsidedef oldSide : oldSides) {
 			newSidesByteBuffer.putShort(oldSide.textureoffset()); // textureoffset
 			newSidesByteBuffer.putShort(oldSide.rowoffset()); // rowoffset
 
