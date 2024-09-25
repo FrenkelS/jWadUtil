@@ -2,6 +2,7 @@ package com.sfprod.jwadutil;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class WadProcessor {
 		processVertexes(lumpNum);
 		processLines(lumpNum);
 		processSegs(lumpNum);
-		ProcessSides(lumpNum);
+		processSides(lumpNum);
 	}
 
 	/**
@@ -200,6 +201,42 @@ public class WadProcessor {
 
 	private static record Mapsidedef(short textureoffset, short rowoffset, byte[] toptexture, byte[] bottomtexture,
 			byte[] midtexture, short sector) {
+		private String byteArrayToString(byte[] byteArray) {
+			return new String(byteArray, StandardCharsets.US_ASCII).trim();
+		}
+
+		String toptextureAsString() {
+			return byteArrayToString(toptexture());
+		}
+
+		String bottomtextureAsString() {
+			return byteArrayToString(bottomtexture());
+		}
+
+		String midtextureAsString() {
+			return byteArrayToString(midtexture());
+		}
+	}
+
+	private List<Mapsidedef> getSides(int lumpNum) {
+		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
+		Lump sxl = wadFile.getLumpByNum(sidesLumpNum);
+		List<Mapsidedef> sides = new ArrayList<>();
+		ByteBuffer sidesByteBuffer = sxl.dataAsByteBuffer();
+		int sizeofmapsidedef = 2 + 2 + 8 + 8 + 8 + 2;
+		for (int i = 0; i < sxl.data().length / sizeofmapsidedef; i++) {
+			short textureoffset = sidesByteBuffer.getShort();
+			short rowoffset = sidesByteBuffer.getShort();
+			byte[] toptexture = new byte[8];
+			sidesByteBuffer.get(toptexture);
+			byte[] bottomtexture = new byte[8];
+			sidesByteBuffer.get(bottomtexture);
+			byte[] midtexture = new byte[8];
+			sidesByteBuffer.get(midtexture);
+			short sector = sidesByteBuffer.getShort();
+			sides.add(new Mapsidedef(textureoffset, rowoffset, toptexture, bottomtexture, midtexture, sector));
+		}
+		return sides;
 	}
 
 	/**
@@ -253,23 +290,7 @@ public class WadProcessor {
 		}
 
 		// And sides too...
-		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
-		Lump sxl = wadFile.getLumpByNum(sidesLumpNum);
-		List<Mapsidedef> sides = new ArrayList<>();
-		ByteBuffer sidesByteBuffer = sxl.dataAsByteBuffer();
-		int sizeofmapsidedef = 2 + 2 + 8 + 8 + 8 + 2;
-		for (int i = 0; i < sxl.data().length / sizeofmapsidedef; i++) {
-			short textureoffset = sidesByteBuffer.getShort();
-			short rowoffset = sidesByteBuffer.getShort();
-			byte[] toptexture = new byte[8];
-			sidesByteBuffer.get(toptexture);
-			byte[] bottomtexture = new byte[8];
-			sidesByteBuffer.get(bottomtexture);
-			byte[] midtexture = new byte[8];
-			sidesByteBuffer.get(midtexture);
-			short sector = sidesByteBuffer.getShort();
-			sides.add(new Mapsidedef(textureoffset, rowoffset, toptexture, bottomtexture, midtexture, sector));
-		}
+		List<Mapsidedef> sides = getSides(lumpNum);
 
 		// ****************************
 
@@ -313,79 +334,60 @@ public class WadProcessor {
 		wadFile.replaceLump(segsLumpNum, newSeg);
 	}
 
-	private void ProcessSides(int lumpNum) {
+	/**
+	 * Change textureoffset, rowoffset, toptexture, bottomtexture, midtexture and
+	 * sector
+	 *
+	 * @param lumpNum
+	 */
+	private void processSides(int lumpNum) {
+		List<Mapsidedef> oldSides = getSides(lumpNum);
+		int sideCount = oldSides.size();
+
+		List<String> textureNames = getTextureNames();
+
+		ByteBuffer newSidesByteBuffer = ByteBuffer.allocate(sideCount * (2 + 2 + 2 + 2 + 2 + 2));
+		newSidesByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		for (int i = 0; i < sideCount; i++) {
+			Mapsidedef oldSide = oldSides.get(i);
+			newSidesByteBuffer.putShort(oldSide.textureoffset()); // textureoffset
+			newSidesByteBuffer.putShort(oldSide.rowoffset()); // rowoffset
+
+			newSidesByteBuffer.putShort(getTextureNumForName(textureNames, oldSide.toptextureAsString())); // toptexture
+			newSidesByteBuffer.putShort(getTextureNumForName(textureNames, oldSide.bottomtextureAsString()));// bottomtexture
+			newSidesByteBuffer.putShort(getTextureNumForName(textureNames, oldSide.midtextureAsString())); // midtexture
+
+			newSidesByteBuffer.putShort(oldSide.sector());// sector
+		}
+
 		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
-		Lump sides = wadFile.getLumpByNum(sidesLumpNum);
-
-//    int sideCount = sides.length / sizeof(mapsidedef_t);
-
-//    sidedef_t* newSides = new sidedef_t[sideCount];
-
-//     mapsidedef_t* oldSides = sides.data.constData();
-
-//    for(unsigned int i = 0; i < sideCount; i++)
-//    {
-//        newSides[i].textureoffset = oldSides[i].textureoffset;
-//        newSides[i].rowoffset = oldSides[i].rowoffset;
-
-//        newSides[i].toptexture = getTextureNumForName(oldSides[i].toptexture);
-//        newSides[i].bottomtexture = getTextureNumForName(oldSides[i].bottomtexture);
-//        newSides[i].midtexture = getTextureNumForName(oldSides[i].midtexture);
-
-//        newSides[i].sector = oldSides[i].sector;
-//    }
-
-		Lump newSide;
-//		newSide.name = sides.name;
-//    newSide.length = sideCount * sizeof(sidedef_t);
-//    newSide.data = QByteArray(newSides, newSide.length);
-
-//    delete[] newSides;
-
-//		wadFile.ReplaceLump(sidesLumpNum, newSide);
+		byte[] sidesLumpName = wadFile.getLumpByNum(sidesLumpNum).name();
+		Lump newSide = new Lump(sidesLumpName, newSidesByteBuffer.array());
+		wadFile.replaceLump(sidesLumpNum, newSide);
 	}
 
-	private int getTextureNumForName(char tex_name) {
-//     int  *maptex1;
-//    int  numtextures1, numtextures2 = 0;
-//     int *directory1;
+	private short getTextureNumForName(List<String> names, String name) {
+		int index = names.indexOf(name);
+		return index == -1 ? 0 : (short) index;
+	}
 
-		// Convert name to uppercase for comparison.
-//    char tex_name_upper[9];
-
-//		strncpy(tex_name_upper, tex_name, 8);
-//		tex_name_upper[8] = 0; // Ensure null terminated.
-
-//		for (int i = 0; i < 8; i++) {
-//			tex_name_upper[i] = toupper(tex_name_upper[i]);
-//		}
-
+	private List<String> getTextureNames() {
 		Lump tex1lump = wadFile.getLumpByName("TEXTURE1");
+		ByteBuffer tex1ByteBuffer = tex1lump.dataAsByteBuffer();
+		int numtextures1 = tex1ByteBuffer.getInt();
+		List<Integer> offsets = new ArrayList<>(numtextures1);
+		for (int i = 0; i < numtextures1; i++) {
+			offsets.add(tex1ByteBuffer.getInt());
+		}
 
-//    maptex1 = (int*)tex1lump.data.constData();
-//    numtextures1 = *maptex1;
-//		directory1 = maptex1 + 1;
-
-//     int *directory = directory1;
-//     int *maptex = maptex1;
-
-//		int numtextures = (numtextures1 + numtextures2);
-
-//		for (int i = 0; i < numtextures; i++, directory++) {
-//			if (i == numtextures1) {
-
-//			}
-
-//        int offset = *directory;
-
-//         maptexture_t* mtexture = maptex + offset;
-
-//			if (!strncmp(tex_name_upper, mtexture.name, 8)) {
-//				return i;
-//			}
-//		}
-
-		return 0;
+		List<String> textureNames = new ArrayList<>(numtextures1);
+		for (int offset : offsets) {
+			tex1ByteBuffer.position(offset);
+			byte[] name = new byte[8];
+			tex1ByteBuffer.get(name);
+			textureNames.add(new String(name, StandardCharsets.US_ASCII).trim());
+		}
+		return textureNames;
 	}
 
 	/**
