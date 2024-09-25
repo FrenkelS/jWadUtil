@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteOrder;
 
-public class Main {
+public class JWadUtil {
 
 	private enum Game {
 		DOOM8088(ByteOrder.LITTLE_ENDIAN, "doom8088.wad"), //
