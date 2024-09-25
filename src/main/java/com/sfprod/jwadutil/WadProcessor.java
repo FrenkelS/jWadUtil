@@ -5,6 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.sfprod.jwadutil.WadFile.Lump;
 
@@ -403,35 +404,18 @@ public class WadProcessor {
 	/**
 	 * Remove unused lumps
 	 *
-	 * <table>
-	 * <tr>
-	 * <th>prefix</th>
-	 * <th>description</th>
-	 * </tr>
-	 * <tr>
-	 * <td><b>D_</b></b></td>
-	 * <td>MUS music</td>
-	 * </tr>
-	 * <tr>
-	 * <td><b>DP</b></td>
-	 * <td>PC speaker sound effects</td>
-	 * </tr>
-	 * <tr>
-	 * <td><b>DS</b></td>
-	 * <td>Sound Blaster sound effects</td>
-	 * </tr>
-	 * <tr>
-	 * <td><b>GENMIDI</b></td>
-	 * <td>Lump that contains instrument data for the DMX sound library to use for
-	 * OPL synthesis</td>
-	 * </tr>
-	 * </table>
 	 */
 	private void removeUnusedLumps() {
-		wadFile.removeLumps("D_");
-		wadFile.removeLumps("DP");
-		wadFile.removeLumps("DS");
-		wadFile.removeLumps("GENMIDI");
+		Stream.of( //
+				"CREDIT", // Credits screen
+				"D_", // MUS music
+				"DS", // Sound Blaster sound effects
+				"DMXGUS", // Gravis UltraSound instrument data
+				"GENMIDI", // OPL instrument data
+				"HELP1", // Help screen
+				"VERTEXES"// vertexes for a map
+		).forEach(prefix -> wadFile.removeLumps(prefix));
+
 	}
 
 }
