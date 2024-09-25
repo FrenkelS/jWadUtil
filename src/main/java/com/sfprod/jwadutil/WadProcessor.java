@@ -202,7 +202,7 @@ public class WadProcessor {
 	private static record Mapsidedef(short textureoffset, short rowoffset, byte[] toptexture, byte[] bottomtexture,
 			byte[] midtexture, short sector) {
 		private String byteArrayToString(byte[] byteArray) {
-			return new String(byteArray, StandardCharsets.US_ASCII).trim();
+			return new String(byteArray, StandardCharsets.US_ASCII).trim().toUpperCase();
 		}
 
 		String toptextureAsString() {
@@ -385,7 +385,7 @@ public class WadProcessor {
 			tex1ByteBuffer.position(offset);
 			byte[] name = new byte[8];
 			tex1ByteBuffer.get(name);
-			textureNames.add(new String(name, StandardCharsets.US_ASCII).trim());
+			textureNames.add(new String(name, StandardCharsets.US_ASCII).trim().toUpperCase());
 		}
 		return textureNames;
 	}
