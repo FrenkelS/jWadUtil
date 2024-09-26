@@ -25,15 +25,13 @@ public class WadProcessor {
 	private static final int ML_REJECT = 9; // LUT, sector-sector visibility
 	private static final int ML_BLOCKMAP = 10; // LUT, motion clipping, walls/grid element
 
-	private static final int ST_HORIZONTAL = 0;
-	private static final int ST_VERTICAL = 1;
-	private static final int ST_POSITIVE = 2;
-	private static final int ST_NEGATIVE = 3;
-
-	private static final int SIZE_OF_LINE = 4 + 4 + 4 + 4 + 4 + 4 + 4 + 2 * 2 + 4 * 4 + 2 + 2 + 2 + 2;
+	private static final byte ST_HORIZONTAL = 0;
+	private static final byte ST_VERTICAL = 1;
+	private static final byte ST_POSITIVE = 2;
+	private static final byte ST_NEGATIVE = 3;
 
 	private static final short NO_INDEX = (short) 0xffff;
-	private static final short ML_TWOSIDED = 4;
+	private static final byte ML_TWOSIDED = 4;
 
 	private final WadFile wadFile;
 
@@ -141,10 +139,11 @@ public class WadProcessor {
 		// We need vertexes for this...
 		List<Vertex> vtx = getVertexes(lumpNum);
 
-		ByteBuffer newLineByteBuffer = ByteBuffer.allocate(lineCount * SIZE_OF_LINE);
+		ByteBuffer newLineByteBuffer = ByteBuffer.allocate(lineCount * Line.SIZE_OF_LINE);
 		newLineByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		for (int i = 0; i < lineCount; i++) {
+		for (short i = 0; i < lineCount; i++) {
 			Maplinedef maplinedef = oldLines.get(i);
+			// TODO vertexes can be int16_t
 			Vertex vertex1 = vtx.get(maplinedef.v1());
 			newLineByteBuffer.putInt(vertex1.x()); // v1.x
 			newLineByteBuffer.putInt(vertex1.y()); // v1.y
@@ -153,12 +152,12 @@ public class WadProcessor {
 			newLineByteBuffer.putInt(vertex2.x()); // v2.x
 			newLineByteBuffer.putInt(vertex2.y()); // v2.y
 
-			newLineByteBuffer.putInt(i); // lineno
+			newLineByteBuffer.putShort(i); // lineno
 
-			int dx = vertex2.x() - vertex1.x();
-			int dy = vertex2.y() - vertex1.y();
-			newLineByteBuffer.putInt(dx); // dx
-			newLineByteBuffer.putInt(dy); // dy
+			short dx = (short) ((vertex2.x() - vertex1.x()) >> 16);
+			short dy = (short) ((vertex2.y() - vertex1.y()) >> 16);
+			newLineByteBuffer.putShort(dx); // dx
+			newLineByteBuffer.putShort(dy); // dy
 
 			newLineByteBuffer.putShort(maplinedef.sidenum()[0]); // sidenum[0];
 			newLineByteBuffer.putShort(maplinedef.sidenum()[1]); // sidenum[1];
@@ -168,11 +167,11 @@ public class WadProcessor {
 			newLineByteBuffer.putInt(vertex1.x() < vertex2.x() ? vertex1.x() : vertex2.x()); // bbox[BOXLEFT]
 			newLineByteBuffer.putInt(vertex1.x() < vertex2.x() ? vertex2.x() : vertex1.x()); // bbox[BOXRIGHT]
 
-			newLineByteBuffer.putShort(maplinedef.flags()); // flags
-			newLineByteBuffer.putShort(maplinedef.special()); // special
+			newLineByteBuffer.put((byte) maplinedef.flags()); // flags
+			newLineByteBuffer.put((byte) maplinedef.special()); // special
 			newLineByteBuffer.putShort(maplinedef.tag()); // tag
 
-			short slopetype;
+			byte slopetype;
 			if (dx == 0) {
 				slopetype = ST_VERTICAL;
 			} else if (dy == 0) {
@@ -185,7 +184,7 @@ public class WadProcessor {
 				}
 			}
 
-			newLineByteBuffer.putShort(slopetype); // slopetype
+			newLineByteBuffer.put(slopetype); // slopetype
 		}
 
 		Lump newLine = new Lump(lines.name(), newLineByteBuffer.array());
@@ -195,8 +194,9 @@ public class WadProcessor {
 	private static record Mapseg(short v1, short v2, short angle, short linedef, short side, short offset) {
 	}
 
-	private static record Line(Vertex v1, Vertex v2, int lineno, int dx, int dy, short[] sidenum, int[] bbox,
-			short flags, short special, short tag, short slopetype) {
+	private static record Line(Vertex v1, Vertex v2, short lineno, short dx, short dy, short[] sidenum, int[] bbox,
+			byte flags, byte special, short tag, byte slopetype) {
+		public static final int SIZE_OF_LINE = 2 * 4 + 2 * 4 + 2 + +2 + 2 + 2 * 2 + 4 * 4 + 1 + 1 + 2 + 1;
 	}
 
 	private static record Mapsidedef(short textureoffset, short rowoffset, byte[] toptexture, byte[] bottomtexture,
@@ -273,19 +273,19 @@ public class WadProcessor {
 		Lump lxl = wadFile.getLumpByNum(linesLumpNum);
 		List<Line> lines = new ArrayList<>();
 		ByteBuffer linesByteBuffer = lxl.dataAsByteBuffer();
-		for (int i = 0; i < lxl.data().length / SIZE_OF_LINE; i++) {
+		for (int i = 0; i < lxl.data().length / Line.SIZE_OF_LINE; i++) {
 			Vertex v1 = new Vertex(linesByteBuffer.getInt(), linesByteBuffer.getInt());
 			Vertex v2 = new Vertex(linesByteBuffer.getInt(), linesByteBuffer.getInt());
-			int lineno = linesByteBuffer.getInt();
-			int dx = linesByteBuffer.getInt();
-			int dy = linesByteBuffer.getInt();
+			short lineno = linesByteBuffer.getShort();
+			short dx = linesByteBuffer.getShort();
+			short dy = linesByteBuffer.getShort();
 			short[] sidenum = { linesByteBuffer.getShort(), linesByteBuffer.getShort() };
 			int[] bbox = { linesByteBuffer.getInt(), linesByteBuffer.getInt(), linesByteBuffer.getInt(),
 					linesByteBuffer.getInt() };
-			short flags = linesByteBuffer.getShort();
-			short special = linesByteBuffer.getShort();
+			byte flags = linesByteBuffer.get();
+			byte special = linesByteBuffer.get();
 			short tag = linesByteBuffer.getShort();
-			short slopetype = linesByteBuffer.getShort();
+			byte slopetype = linesByteBuffer.get();
 			lines.add(new Line(v1, v2, lineno, dx, dy, sidenum, bbox, flags, special, tag, slopetype));
 		}
 
@@ -320,7 +320,7 @@ public class WadProcessor {
 			newSegsByteBuffer.putShort(frontsectornum); // frontsectornum
 
 			short backsectornum = NO_INDEX;
-			if ((ldef.flags & ML_TWOSIDED) != 0) {
+			if ((ldef.flags() & ML_TWOSIDED) != 0) {
 				short backsectorside = ldef.sidenum()[side ^ 1];
 				if (backsectorside != NO_INDEX) {
 					backsectornum = sides.get(backsectorside).sector();
