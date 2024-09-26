@@ -1,4 +1,4 @@
-Utility to process Doom IWAD files for Doom8088.
+Utility to process Doom IWAD files for [Doom8088](https://github.com/FrenkelS/Doom8088).
 
 It writes a new WAD file.
 
