@@ -406,16 +406,55 @@ public class WadProcessor {
 	 *
 	 */
 	private void removeUnusedLumps() {
+		wadFile.removeLump("CREDIT"); // Credits screen)
+		wadFile.removeLump("SW18_7"); // Duplicate wall texture
+
 		Stream.of( //
-				"CREDIT", // Credits screen
+				"AMMNUM", // Status bar numbers
+				"APBX", // Arachnotron projectile in flight
+				"APLS", // Arachnotron projectile impact
+				"BAL2", // Cacodemon projectile
+				"BOSF", // Spawn cube
+				"BRDR", // Border
 				"D_", // MUS music
 				"DS", // Sound Blaster sound effects
 				"DMXGUS", // Gravis UltraSound instrument data
 				"GENMIDI", // OPL instrument data
 				"HELP1", // Help screen
-				"VERTEXES"// vertexes for a map
+				"MANF", // Mancubus projectile
+				"M_DETAIL", // Graphic Detail:
+				"M_DIS", // Display
+				"M_EPI", // Episode names
+				"M_GD", // Graphic detail high and low
+				"M_LGTTL", // Load game
+				"M_MSENS", // Mouse sensitivity
+				"M_PAUSE", // Pause
+				"M_RDTHIS", // Read This!
+				"M_SCRNSZ", // Screen Size
+				"M_SGTTL", // Save game
+				"STARMS", // Status bar arms
+				"STCDROM", // Loading icon CD-ROM
+				"STCFN121", // letter
+				"STDISK", // Loading icon Disk
+				"STFB", // Status bar face background
+				"STPB", // Status bar p? background
+				"STT", // Status bar numbers
+				"VERTEXES", // vertexes for a map
+				"WIA", // Intermission animations
+				"WIBP", // P1 - P4
+				"WIFRGS", // Frgs
+				"WIKILRS", // Killers
+				"WILV1", // Episode 2 level names
+				"WILV2", // Episode 3 level names
+				"WIMSTAR", // You
+				"WIOSTF", // F.
+				"WIOSTS", // Scrt
+				"WIP1", // P1
+				"WIP2", // P2
+				"WIP3", // P3
+				"WIP4", // P4
+				"WIVCTMS" // Victims
 		).forEach(prefix -> wadFile.removeLumps(prefix));
-
 	}
 
 }

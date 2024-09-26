@@ -148,6 +148,17 @@ public class WadFile {
 		lumps.set(lumpnum, newLump);
 	}
 
+	public void removeLump(String lumpname) {
+		int index = 0;
+		for (Lump lump : lumps) {
+			if (lump.nameAsString().equals(lumpname)) {
+				break;
+			}
+			index++;
+		}
+		lumps.remove(index);
+	}
+
 	public void removeLumps(String prefix) {
 		lumps.removeIf(l -> l.nameAsString().startsWith(prefix));
 	}
