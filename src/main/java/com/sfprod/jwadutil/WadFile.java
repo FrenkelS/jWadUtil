@@ -34,8 +34,8 @@ public class WadFile {
 		}
 	}
 
-	private int roundUp4(int x) {
-		return ((x + 3) & -4);
+	private int roundUp(int x) {
+		return ((x + 1) & -2);
 	}
 
 	public WadFile(String wadPath) throws IOException, URISyntaxException {
@@ -75,7 +75,7 @@ public class WadFile {
 
 	public void saveWadFile(String wadPath) throws IOException, URISyntaxException {
 		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
-		int filesize = filepos + lumps.stream().mapToInt(lump -> lump.data().length).map(this::roundUp4).sum();
+		int filesize = filepos + lumps.stream().mapToInt(lump -> lump.data().length).map(this::roundUp).sum();
 
 		ByteBuffer byteBuffer = ByteBuffer.allocate(filesize);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -91,7 +91,7 @@ public class WadFile {
 			} else {
 				byteBuffer.putInt(filepos);
 			}
-			filepos += roundUp4(lump.data.length);
+			filepos += roundUp(lump.data.length);
 
 			byteBuffer.putInt(lump.data.length);
 			byteBuffer.put(lump.name());
@@ -99,7 +99,7 @@ public class WadFile {
 
 		for (Lump lump : lumps) {
 			byteBuffer.put(lump.data);
-			for (int i = 0; i < roundUp4(lump.data.length) - lump.data.length; i++) {
+			for (int i = 0; i < roundUp(lump.data.length) - lump.data.length; i++) {
 				byteBuffer.put((byte) 0);
 			}
 		}
