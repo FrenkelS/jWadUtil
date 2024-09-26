@@ -35,6 +35,7 @@ public class JWadUtil {
 
 		iwadFile.mergeWadFile(pwadFile);
 
+		iwadFile.replaceLump(getLump("CREDITS"));
 		iwadFile.replaceLump(getLump("HELP2"));
 		iwadFile.replaceLump(getLump("STBAR"));
 		iwadFile.replaceLump(getLump("TITLEPIC"));
