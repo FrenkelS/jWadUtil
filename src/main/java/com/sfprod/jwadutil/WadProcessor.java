@@ -296,10 +296,10 @@ public class WadProcessor {
 		for (Mapseg oldSeg : oldSegs) {
 			Vertex v1 = vtx.get(oldSeg.v1);
 			Vertex v2 = vtx.get(oldSeg.v2);
-			newSegsByteBuffer.putInt(v1.x); // v1.x
-			newSegsByteBuffer.putInt(v1.y); // v1.y
-			newSegsByteBuffer.putInt(v2.x); // v2.x
-			newSegsByteBuffer.putInt(v2.y); // v2.y
+			newSegsByteBuffer.putShort((short) (v1.x >> 16)); // v1.x
+			newSegsByteBuffer.putShort((short) (v1.y >> 16)); // v1.y
+			newSegsByteBuffer.putShort((short) (v2.x >> 16)); // v2.x
+			newSegsByteBuffer.putShort((short) (v2.y >> 16)); // v2.y
 
 			newSegsByteBuffer.putInt((oldSeg.offset()) << 16); // offset
 			newSegsByteBuffer.putInt((oldSeg.angle()) << 16); // angle
