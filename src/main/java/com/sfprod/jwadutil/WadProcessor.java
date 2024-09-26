@@ -290,7 +290,7 @@ public class WadProcessor {
 
 		// ****************************
 
-		int sizeofseg = 2 * 2 + 2 * 2 + 4 + 4 + 2 + 2 + 2 + 2;
+		int sizeofseg = 2 * 2 + 2 * 2 + 2 + 2 + 2 + 2 + 2 + 2;
 		ByteBuffer newSegsByteBuffer = ByteBuffer.allocate(segCount * sizeofseg);
 		newSegsByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		for (Mapseg oldSeg : oldSegs) {
@@ -301,8 +301,8 @@ public class WadProcessor {
 			newSegsByteBuffer.putShort((short) (v2.x >> 16)); // v2.x
 			newSegsByteBuffer.putShort((short) (v2.y >> 16)); // v2.y
 
-			newSegsByteBuffer.putInt((oldSeg.offset()) << 16); // offset
-			newSegsByteBuffer.putInt((oldSeg.angle()) << 16); // angle
+			newSegsByteBuffer.putShort(oldSeg.offset()); // offset
+			newSegsByteBuffer.putShort(oldSeg.angle()); // angle
 
 			short linenum = oldSeg.linedef();
 			Line ldef = lines.get(linenum);
