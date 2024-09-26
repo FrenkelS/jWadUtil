@@ -290,7 +290,7 @@ public class WadProcessor {
 
 		// ****************************
 
-		int sizeofseg = 2 * 4 + 2 * 4 + 4 + 4 + 2 + 2 + 2 + 2;
+		int sizeofseg = 2 * 2 + 2 * 2 + 4 + 4 + 2 + 2 + 2 + 2;
 		ByteBuffer newSegsByteBuffer = ByteBuffer.allocate(segCount * sizeofseg);
 		newSegsByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		for (Mapseg oldSeg : oldSegs) {
