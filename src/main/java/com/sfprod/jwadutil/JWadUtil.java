@@ -3,6 +3,10 @@ package com.sfprod.jwadutil;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+import com.sfprod.jwadutil.WadFile.Lump;
 
 public class JWadUtil {
 
@@ -31,10 +35,21 @@ public class JWadUtil {
 
 		iwadFile.mergeWadFile(pwadFile);
 
+		iwadFile.replaceLump(getLump("CREDITS"));
+		iwadFile.replaceLump(getLump("HELP2"));
+		iwadFile.replaceLump(getLump("STBAR"));
+		iwadFile.replaceLump(getLump("TITLEPIC"));
+		iwadFile.replaceLump(getLump("WIMAP0"));
+
 		WadProcessor wadProcessor = new WadProcessor(iwadFile);
 		wadProcessor.processWad();
 
 		iwadFile.saveWadFile(game.wadFile);
 	}
 
+	private static Lump getLump(String lumpname) throws IOException, URISyntaxException {
+		byte[] name = Arrays.copyOf(lumpname.getBytes(StandardCharsets.US_ASCII), 8);
+		byte[] data = WadFile.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
+		return new Lump(name, data);
+	}
 }

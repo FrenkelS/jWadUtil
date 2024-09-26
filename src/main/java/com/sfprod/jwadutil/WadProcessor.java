@@ -4,7 +4,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.sfprod.jwadutil.WadFile.Lump;
 
@@ -12,27 +14,18 @@ public class WadProcessor {
 
 	// Lump order in a map WAD: each map needs a couple of lumps
 	// to provide a complete scene geometry description.
-	private static final int ML_LABEL = 0; // A separator, name, ExMx or MAPxx
-	private static final int ML_THINGS = 1; // Monsters, items..
 	private static final int ML_LINEDEFS = 2; // LineDefs, from editing
 	private static final int ML_SIDEDEFS = 3; // SideDefs, from editing
 	private static final int ML_VERTEXES = 4; // Vertices, edited and BSP splits generated
 	private static final int ML_SEGS = 5; // LineSegs, from LineDefs split by BSP
-	private static final int ML_SSECTORS = 6; // SubSectors, list of LineSegs
-	private static final int ML_NODES = 7; // BSP nodes
-	private static final int ML_SECTORS = 8; // Sectors, from editing
-	private static final int ML_REJECT = 9; // LUT, sector-sector visibility
-	private static final int ML_BLOCKMAP = 10; // LUT, motion clipping, walls/grid element
 
-	private static final int ST_HORIZONTAL = 0;
-	private static final int ST_VERTICAL = 1;
-	private static final int ST_POSITIVE = 2;
-	private static final int ST_NEGATIVE = 3;
-
-	private static final int SIZE_OF_LINE = 4 + 4 + 4 + 4 + 4 + 4 + 4 + 2 * 2 + 4 * 4 + 2 + 2 + 2 + 2;
+	private static final byte ST_HORIZONTAL = 0;
+	private static final byte ST_VERTICAL = 1;
+	private static final byte ST_POSITIVE = 2;
+	private static final byte ST_NEGATIVE = 3;
 
 	private static final short NO_INDEX = (short) 0xffff;
-	private static final short ML_TWOSIDED = 4;
+	private static final byte ML_TWOSIDED = 4;
 
 	private final WadFile wadFile;
 
@@ -44,6 +37,8 @@ public class WadProcessor {
 		processPNames();
 		processDoom1Levels();
 		removeUnusedLumps();
+		processSprites();
+		processWalls();
 	}
 
 	private void processDoom1Levels() {
@@ -98,7 +93,6 @@ public class WadProcessor {
 	}
 
 	private List<Vertex> getVertexes(int lumpNum) {
-		// We need vertexes for this...
 		int vtxLumpNum = lumpNum + ML_VERTEXES;
 		Lump vxl = wadFile.getLumpByNum(vtxLumpNum);
 		List<Vertex> vtx = new ArrayList<>();
@@ -141,10 +135,11 @@ public class WadProcessor {
 		// We need vertexes for this...
 		List<Vertex> vtx = getVertexes(lumpNum);
 
-		ByteBuffer newLineByteBuffer = ByteBuffer.allocate(lineCount * SIZE_OF_LINE);
+		ByteBuffer newLineByteBuffer = ByteBuffer.allocate(lineCount * Line.SIZE_OF_LINE);
 		newLineByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		for (int i = 0; i < lineCount; i++) {
+		for (short i = 0; i < lineCount; i++) {
 			Maplinedef maplinedef = oldLines.get(i);
+			// TODO vertexes can be int16_t
 			Vertex vertex1 = vtx.get(maplinedef.v1());
 			newLineByteBuffer.putInt(vertex1.x()); // v1.x
 			newLineByteBuffer.putInt(vertex1.y()); // v1.y
@@ -153,12 +148,12 @@ public class WadProcessor {
 			newLineByteBuffer.putInt(vertex2.x()); // v2.x
 			newLineByteBuffer.putInt(vertex2.y()); // v2.y
 
-			newLineByteBuffer.putInt(i); // lineno
+			newLineByteBuffer.putShort(i); // lineno
 
-			int dx = vertex2.x() - vertex1.x();
-			int dy = vertex2.y() - vertex1.y();
-			newLineByteBuffer.putInt(dx); // dx
-			newLineByteBuffer.putInt(dy); // dy
+			short dx = (short) ((vertex2.x() - vertex1.x()) >> 16);
+			short dy = (short) ((vertex2.y() - vertex1.y()) >> 16);
+			newLineByteBuffer.putShort(dx); // dx
+			newLineByteBuffer.putShort(dy); // dy
 
 			newLineByteBuffer.putShort(maplinedef.sidenum()[0]); // sidenum[0];
 			newLineByteBuffer.putShort(maplinedef.sidenum()[1]); // sidenum[1];
@@ -168,11 +163,11 @@ public class WadProcessor {
 			newLineByteBuffer.putInt(vertex1.x() < vertex2.x() ? vertex1.x() : vertex2.x()); // bbox[BOXLEFT]
 			newLineByteBuffer.putInt(vertex1.x() < vertex2.x() ? vertex2.x() : vertex1.x()); // bbox[BOXRIGHT]
 
-			newLineByteBuffer.putShort(maplinedef.flags()); // flags
-			newLineByteBuffer.putShort(maplinedef.special()); // special
+			newLineByteBuffer.put((byte) maplinedef.flags()); // flags
+			newLineByteBuffer.put((byte) maplinedef.special()); // special
 			newLineByteBuffer.putShort(maplinedef.tag()); // tag
 
-			short slopetype;
+			byte slopetype;
 			if (dx == 0) {
 				slopetype = ST_VERTICAL;
 			} else if (dy == 0) {
@@ -185,7 +180,7 @@ public class WadProcessor {
 				}
 			}
 
-			newLineByteBuffer.putShort(slopetype); // slopetype
+			newLineByteBuffer.put(slopetype); // slopetype
 		}
 
 		Lump newLine = new Lump(lines.name(), newLineByteBuffer.array());
@@ -195,8 +190,9 @@ public class WadProcessor {
 	private static record Mapseg(short v1, short v2, short angle, short linedef, short side, short offset) {
 	}
 
-	private static record Line(Vertex v1, Vertex v2, int lineno, int dx, int dy, short[] sidenum, int[] bbox,
-			short flags, short special, short tag, short slopetype) {
+	private static record Line(Vertex v1, Vertex v2, short lineno, short dx, short dy, short[] sidenum, int[] bbox,
+			byte flags, byte special, short tag, byte slopetype) {
+		public static final int SIZE_OF_LINE = 2 * 4 + 2 * 4 + 2 + +2 + 2 + 2 * 2 + 4 * 4 + 1 + 1 + 2 + 1;
 	}
 
 	private static record Mapsidedef(short textureoffset, short rowoffset, byte[] toptexture, byte[] bottomtexture,
@@ -273,19 +269,19 @@ public class WadProcessor {
 		Lump lxl = wadFile.getLumpByNum(linesLumpNum);
 		List<Line> lines = new ArrayList<>();
 		ByteBuffer linesByteBuffer = lxl.dataAsByteBuffer();
-		for (int i = 0; i < lxl.data().length / SIZE_OF_LINE; i++) {
+		for (int i = 0; i < lxl.data().length / Line.SIZE_OF_LINE; i++) {
 			Vertex v1 = new Vertex(linesByteBuffer.getInt(), linesByteBuffer.getInt());
 			Vertex v2 = new Vertex(linesByteBuffer.getInt(), linesByteBuffer.getInt());
-			int lineno = linesByteBuffer.getInt();
-			int dx = linesByteBuffer.getInt();
-			int dy = linesByteBuffer.getInt();
+			short lineno = linesByteBuffer.getShort();
+			short dx = linesByteBuffer.getShort();
+			short dy = linesByteBuffer.getShort();
 			short[] sidenum = { linesByteBuffer.getShort(), linesByteBuffer.getShort() };
 			int[] bbox = { linesByteBuffer.getInt(), linesByteBuffer.getInt(), linesByteBuffer.getInt(),
 					linesByteBuffer.getInt() };
-			short flags = linesByteBuffer.getShort();
-			short special = linesByteBuffer.getShort();
+			byte flags = linesByteBuffer.get();
+			byte special = linesByteBuffer.get();
 			short tag = linesByteBuffer.getShort();
-			short slopetype = linesByteBuffer.getShort();
+			byte slopetype = linesByteBuffer.get();
 			lines.add(new Line(v1, v2, lineno, dx, dy, sidenum, bbox, flags, special, tag, slopetype));
 		}
 
@@ -297,8 +293,7 @@ public class WadProcessor {
 		int sizeofseg = 2 * 4 + 2 * 4 + 4 + 4 + 2 + 2 + 2 + 2;
 		ByteBuffer newSegsByteBuffer = ByteBuffer.allocate(segCount * sizeofseg);
 		newSegsByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		for (int i = 0; i < segCount; i++) {
-			Mapseg oldSeg = oldSegs.get(i);
+		for (Mapseg oldSeg : oldSegs) {
 			Vertex v1 = vtx.get(oldSeg.v1);
 			Vertex v2 = vtx.get(oldSeg.v2);
 			newSegsByteBuffer.putInt(v1.x); // v1.x
@@ -321,7 +316,7 @@ public class WadProcessor {
 			newSegsByteBuffer.putShort(frontsectornum); // frontsectornum
 
 			short backsectornum = NO_INDEX;
-			if ((ldef.flags & ML_TWOSIDED) != 0) {
+			if ((ldef.flags() & ML_TWOSIDED) != 0) {
 				short backsectorside = ldef.sidenum()[side ^ 1];
 				if (backsectorside != NO_INDEX) {
 					backsectornum = sides.get(backsectorside).sector();
@@ -348,8 +343,7 @@ public class WadProcessor {
 
 		ByteBuffer newSidesByteBuffer = ByteBuffer.allocate(sideCount * (2 + 2 + 2 + 2 + 2 + 2));
 		newSidesByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		for (int i = 0; i < sideCount; i++) {
-			Mapsidedef oldSide = oldSides.get(i);
+		for (Mapsidedef oldSide : oldSides) {
 			newSidesByteBuffer.putShort(oldSide.textureoffset()); // textureoffset
 			newSidesByteBuffer.putShort(oldSide.rowoffset()); // rowoffset
 
@@ -392,6 +386,7 @@ public class WadProcessor {
 
 	/**
 	 * Capitalize patch names
+	 *
 	 */
 	private void processPNames() {
 		Lump lump = wadFile.getLumpByName("PNAMES");
@@ -406,35 +401,272 @@ public class WadProcessor {
 	/**
 	 * Remove unused lumps
 	 *
-	 * <table>
-	 * <tr>
-	 * <th>prefix</th>
-	 * <th>description</th>
-	 * </tr>
-	 * <tr>
-	 * <td><b>D_</b></b></td>
-	 * <td>MUS music</td>
-	 * </tr>
-	 * <tr>
-	 * <td><b>DP</b></td>
-	 * <td>PC speaker sound effects</td>
-	 * </tr>
-	 * <tr>
-	 * <td><b>DS</b></td>
-	 * <td>Sound Blaster sound effects</td>
-	 * </tr>
-	 * <tr>
-	 * <td><b>GENMIDI</b></td>
-	 * <td>Lump that contains instrument data for the DMX sound library to use for
-	 * OPL synthesis</td>
-	 * </tr>
-	 * </table>
 	 */
 	private void removeUnusedLumps() {
-		wadFile.removeLumps("D_");
-		wadFile.removeLumps("DP");
-		wadFile.removeLumps("DS");
-		wadFile.removeLumps("GENMIDI");
+		wadFile.removeLump("CREDIT"); // Credits screen
+		wadFile.removeLump("SW18_7"); // Duplicate wall texture
+
+		Stream.of( //
+				"AMMNUM", // Status bar numbers
+				"APBX", // Arachnotron projectile in flight
+				"APLS", // Arachnotron projectile impact
+				"BAL2", // Cacodemon projectile
+				"BOSF", // Spawn cube
+				"BRDR", // Border
+				"D_", // MUS music
+				"DS", // Sound Blaster sound effects
+				"DMXGUS", // Gravis UltraSound instrument data
+				"GENMIDI", // OPL instrument data
+				"HELP1", // Help screen
+				"MANF", // Mancubus projectile
+				"M_DETAIL", // Graphic Detail:
+				"M_DIS", // Display
+				"M_EPI", // Episode names
+				"M_GD", // Graphic detail high and low
+				"M_LGTTL", // Load game
+				"M_MSENS", // Mouse sensitivity
+				"M_PAUSE", // Pause
+				"M_RDTHIS", // Read This!
+				"M_SCRNSZ", // Screen Size
+				"M_SGTTL", // Save game
+				"STARMS", // Status bar arms
+				"STCDROM", // Loading icon CD-ROM
+				"STCFN121", // letter
+				"STDISK", // Loading icon Disk
+				"STFB", // Status bar face background
+				"STPB", // Status bar p? background
+				"STT", // Status bar numbers
+				"VERTEXES", // vertexes for a map
+				"WIA", // Intermission animations
+				"WIBP", // P1 - P4
+				"WIFRGS", // Frgs
+				"WIKILRS", // Killers
+				"WILV1", // Episode 2 level names
+				"WILV2", // Episode 3 level names
+				"WIMSTAR", // You
+				"WIOSTF", // F.
+				"WIOSTS", // Scrt
+				"WIP1", // P1
+				"WIP2", // P2
+				"WIP3", // P3
+				"WIP4", // P4
+				"WIVCTMS" // Victims
+		).forEach(prefix -> wadFile.removeLumps(prefix));
+	}
+
+	private void processSprites() {
+		int start = wadFile.getLumpNumByName("S_START");
+		int end = wadFile.getLumpNumByName("S_END");
+
+		for (int lumpnum = start + 1; lumpnum < end; lumpnum++) {
+			Lump vanillaLump = wadFile.getLumpByNum(lumpnum);
+			Lump doom8088Lump = processSprite(vanillaLump);
+			wadFile.replaceLump(doom8088Lump);
+		}
+	}
+
+	/**
+	 * Repeat every other column to cut the size in half
+	 *
+	 * @param vanillaLump
+	 * @return
+	 */
+	private Lump processSprite(Lump vanillaLump) {
+		ByteBuffer vanillaData = vanillaLump.dataAsByteBuffer();
+		short width = vanillaData.getShort();
+		short height = vanillaData.getShort();
+		short leftoffset = vanillaData.getShort();
+		short topoffset = vanillaData.getShort();
+		List<Integer> columnofs = new ArrayList<>();
+		for (int columnof = 0; columnof < width; columnof++) {
+			columnofs.add(vanillaData.getInt());
+		}
+
+		List<List<Byte>> columns = new ArrayList<>();
+		for (int columnof = 0; columnof < width; columnof++) {
+			// get column
+			List<Byte> column = new ArrayList<>();
+
+			vanillaData.position(columnofs.get(columnof));
+			byte topdelta = vanillaData.get();
+			column.add(topdelta);
+			while (topdelta != -1) {
+				byte lengthByte = vanillaData.get();
+				column.add(lengthByte);
+				int length = lengthByte & 0xff;
+				byte unused = vanillaData.get(); // unused
+				column.add(unused);
+				for (int y = 0; y < length; y++) {
+					column.add(vanillaData.get());
+				}
+				unused = vanillaData.get(); // unused
+				column.add(unused);
+
+				topdelta = vanillaData.get();
+				column.add(topdelta);
+			}
+
+			columns.add(column);
+		}
+
+		ByteBuffer doom8088Data = ByteBuffer.allocate(65536);
+		doom8088Data.order(ByteOrder.LITTLE_ENDIAN);
+
+		doom8088Data.putShort(width);
+		doom8088Data.putShort(height);
+		doom8088Data.putShort(leftoffset);
+		doom8088Data.putShort(topoffset);
+
+		// temp offset values
+		for (int columnof = 0; columnof < width; columnof++) {
+			doom8088Data.putInt(-1);
+		}
+
+		int l = width / 2;
+		int c = 0;
+		while (l-- != 0) {
+			columnofs.set(c + 0, doom8088Data.position());
+			columnofs.set(c + 1, doom8088Data.position());
+			List<Byte> column = columns.get(c);
+			for (byte b : column) {
+				doom8088Data.put(b);
+			}
+			c += 2;
+		}
+
+		switch (width & 1) {
+		case 1:
+			columnofs.set(c, doom8088Data.position());
+			for (byte b : columns.get(c)) {
+				doom8088Data.put(b);
+			}
+		}
+
+		int size = doom8088Data.position();
+
+		doom8088Data.position(8);
+		for (int columnof : columnofs) {
+			doom8088Data.putInt(columnof);
+		}
+
+		byte[] doom8088ByteArray = Arrays.copyOf(doom8088Data.array(), size);
+		return new Lump(vanillaLump.name(), doom8088ByteArray);
+	}
+
+	private void processWalls() {
+		int start = wadFile.getLumpNumByName("P1_START");
+		int end = wadFile.getLumpNumByName("P1_END");
+
+		for (int lumpnum = start + 1; lumpnum < end; lumpnum++) {
+			Lump vanillaLump = wadFile.getLumpByNum(lumpnum);
+			Lump doom8088Lump = processWall(vanillaLump);
+			wadFile.replaceLump(doom8088Lump);
+		}
+	}
+
+	/**
+	 * Repeat every fourth column four times to leave a quarter of the size
+	 *
+	 * @param vanillaLump
+	 * @return
+	 */
+	private Lump processWall(Lump vanillaLump) {
+		ByteBuffer vanillaData = vanillaLump.dataAsByteBuffer();
+		short width = vanillaData.getShort();
+		short height = vanillaData.getShort();
+		short leftoffset = vanillaData.getShort();
+		short topoffset = vanillaData.getShort();
+		List<Integer> columnofs = new ArrayList<>();
+		for (int columnof = 0; columnof < width; columnof++) {
+			columnofs.add(vanillaData.getInt());
+		}
+
+		List<List<Byte>> columns = new ArrayList<>();
+		for (int columnof = 0; columnof < width; columnof++) {
+			// get column
+			List<Byte> column = new ArrayList<>();
+
+			vanillaData.position(columnofs.get(columnof));
+			byte topdelta = vanillaData.get();
+			column.add(topdelta);
+			while (topdelta != -1) {
+				byte lengthByte = vanillaData.get();
+				column.add(lengthByte);
+				int length = lengthByte & 0xff;
+				byte unused = vanillaData.get(); // unused
+				column.add(unused);
+				for (int y = 0; y < length; y++) {
+					column.add(vanillaData.get());
+				}
+				unused = vanillaData.get(); // unused
+				column.add(unused);
+
+				topdelta = vanillaData.get();
+				column.add(topdelta);
+			}
+
+			columns.add(column);
+		}
+
+		ByteBuffer doom8088Data = ByteBuffer.allocate(65536);
+		doom8088Data.order(ByteOrder.LITTLE_ENDIAN);
+
+		doom8088Data.putShort(width);
+		doom8088Data.putShort(height);
+		doom8088Data.putShort(leftoffset);
+		doom8088Data.putShort(topoffset);
+
+		// temp offset values
+		for (int i = 0; i < width; i++) {
+			doom8088Data.putInt(-1);
+		}
+
+		int l = width / 4;
+		int c = 0;
+		while (l-- != 0) {
+			columnofs.set(c + 0, doom8088Data.position());
+			columnofs.set(c + 1, doom8088Data.position());
+			columnofs.set(c + 2, doom8088Data.position());
+			columnofs.set(c + 3, doom8088Data.position());
+			List<Byte> column = columns.get(c);
+			for (byte b : column) {
+				doom8088Data.put(b);
+			}
+			c += 4;
+		}
+
+		switch (width & 3) {
+		case 3:
+			columnofs.set(c + 0, doom8088Data.position());
+			columnofs.set(c + 1, doom8088Data.position());
+			columnofs.set(c + 2, doom8088Data.position());
+			for (byte b : columns.get(c)) {
+				doom8088Data.put(b);
+			}
+			break;
+		case 2:
+			columnofs.set(c + 0, doom8088Data.position());
+			columnofs.set(c + 1, doom8088Data.position());
+			for (byte b : columns.get(c)) {
+				doom8088Data.put(b);
+			}
+			break;
+		case 1:
+			columnofs.set(c + 0, doom8088Data.position());
+			for (byte b : columns.get(c)) {
+				doom8088Data.put(b);
+			}
+		}
+
+		int size = doom8088Data.position();
+
+		doom8088Data.position(8);
+		for (int columnof : columnofs) {
+			doom8088Data.putInt(columnof);
+		}
+
+		byte[] doom8088ByteArray = Arrays.copyOf(doom8088Data.array(), size);
+		return new Lump(vanillaLump.name(), doom8088ByteArray);
 	}
 
 }
