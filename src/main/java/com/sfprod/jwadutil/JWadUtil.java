@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 
 import com.sfprod.jwadutil.WadFile.Lump;
@@ -50,7 +48,7 @@ public class JWadUtil {
 
 	private static Lump getLump(String lumpname) throws IOException, URISyntaxException {
 		byte[] name = Arrays.copyOf(lumpname.getBytes(StandardCharsets.US_ASCII), 8);
-		byte[] data = Files.readAllBytes(Path.of(WadFile.class.getResource('/' + lumpname + ".LMP").toURI()));
+		byte[] data = WadFile.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
 		return new Lump(name, data);
 	}
 }

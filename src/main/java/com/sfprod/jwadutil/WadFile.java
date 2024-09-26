@@ -39,8 +39,7 @@ public class WadFile {
 	}
 
 	public WadFile(String wadPath) throws IOException, URISyntaxException {
-		ByteBuffer byteBuffer = ByteBuffer
-				.wrap(Files.readAllBytes(Path.of(WadFile.class.getResource(wadPath).toURI())));
+		ByteBuffer byteBuffer = ByteBuffer.wrap(WadFile.class.getResourceAsStream(wadPath).readAllBytes());
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
 		byte[] identification = new byte[4];
