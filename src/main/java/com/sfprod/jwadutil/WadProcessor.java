@@ -52,32 +52,9 @@ public class WadProcessor {
 	}
 
 	private void processLevel(int lumpNum) {
-		processVertexes(lumpNum);
 		processLines(lumpNum);
 		processSegs(lumpNum);
 		processSides(lumpNum);
-	}
-
-	/**
-	 * Convert vertex from int16_t to int32_t by shifting left 16 times.
-	 *
-	 * @param lumpNum
-	 */
-	private void processVertexes(int lumpNum) {
-		int vtxLumpNum = lumpNum + ML_VERTEXES;
-		Lump oldLump = wadFile.getLumpByNum(vtxLumpNum);
-		byte[] oldData = oldLump.data();
-
-		byte[] newData = new byte[oldData.length * 2];
-		for (int i = 0; i < oldData.length / 2; i++) {
-			newData[i * 4 + 0] = 0;
-			newData[i * 4 + 1] = 0;
-			newData[i * 4 + 2] = oldData[i * 2 + 0];
-			newData[i * 4 + 3] = oldData[i * 2 + 1];
-		}
-
-		Lump newLump = new Lump(oldLump.name(), newData);
-		wadFile.replaceLump(vtxLumpNum, newLump);
 	}
 
 	private static record Maplinedef(short v1, short v2, short flags, short special, short tag, short[] sidenum) {
@@ -86,25 +63,25 @@ public class WadProcessor {
 	private static record Vertex(int x, int y) {
 	}
 
+	private List<Vertex> getVertexes(int lumpNum) {
+		int vtxLumpNum = lumpNum + ML_VERTEXES;
+		Lump vxl = wadFile.getLumpByNum(vtxLumpNum);
+		List<Vertex> vtx = new ArrayList<>();
+		ByteBuffer vxlByteBuffer = vxl.dataAsByteBuffer();
+		for (int i = 0; i < vxl.data().length / (2 + 2); i++) {
+			int x = vxlByteBuffer.getShort();
+			int y = vxlByteBuffer.getShort();
+			vtx.add(new Vertex(x << 16, y << 16));
+		}
+		return vtx;
+	}
+
 	private int fixedDiv(int a, int b) {
 		if (Math.abs(a) >> 14 >= Math.abs(b)) {
 			return ((a ^ b) >> 31) ^ Integer.MAX_VALUE;
 		} else {
 			return (int) ((((long) a) << 16) / b);
 		}
-	}
-
-	private List<Vertex> getVertexes(int lumpNum) {
-		int vtxLumpNum = lumpNum + ML_VERTEXES;
-		Lump vxl = wadFile.getLumpByNum(vtxLumpNum);
-		List<Vertex> vtx = new ArrayList<>();
-		ByteBuffer vxlByteBuffer = vxl.dataAsByteBuffer();
-		for (int i = 0; i < vxl.data().length / (4 + 4); i++) {
-			int x = vxlByteBuffer.getInt();
-			int y = vxlByteBuffer.getInt();
-			vtx.add(new Vertex(x, y));
-		}
-		return vtx;
 	}
 
 	/**
