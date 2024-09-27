@@ -61,13 +61,6 @@ public class WadProcessor {
 	}
 
 	private static record Vertex(short x, short y) {
-		int ix() {
-			return x << 16;
-		}
-
-		int iy() {
-			return y << 16;
-		}
 	}
 
 	private List<Vertex> getVertexes(int lumpNum) {
@@ -123,14 +116,14 @@ public class WadProcessor {
 		newLineByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		for (short i = 0; i < lineCount; i++) {
 			Maplinedef maplinedef = oldLines.get(i);
-			// TODO vertexes can be int16_t
+
 			Vertex vertex1 = vtx.get(maplinedef.v1());
-			newLineByteBuffer.putInt(vertex1.ix()); // v1.x
-			newLineByteBuffer.putInt(vertex1.iy()); // v1.y
+			newLineByteBuffer.putShort(vertex1.x()); // v1.x
+			newLineByteBuffer.putShort(vertex1.y()); // v1.y
 
 			Vertex vertex2 = vtx.get(maplinedef.v2());
-			newLineByteBuffer.putInt(vertex2.ix()); // v2.x
-			newLineByteBuffer.putInt(vertex2.iy()); // v2.y
+			newLineByteBuffer.putShort(vertex2.x()); // v2.x
+			newLineByteBuffer.putShort(vertex2.y()); // v2.y
 
 			newLineByteBuffer.putShort(i); // lineno
 
@@ -142,10 +135,10 @@ public class WadProcessor {
 			newLineByteBuffer.putShort(maplinedef.sidenum()[0]); // sidenum[0];
 			newLineByteBuffer.putShort(maplinedef.sidenum()[1]); // sidenum[1];
 
-			newLineByteBuffer.putInt(vertex1.y() < vertex2.y() ? vertex2.iy() : vertex1.iy()); // bbox[BOXTOP]
-			newLineByteBuffer.putInt(vertex1.y() < vertex2.y() ? vertex1.iy() : vertex2.iy()); // bbox[BOXBOTTOM]
-			newLineByteBuffer.putInt(vertex1.x() < vertex2.x() ? vertex1.ix() : vertex2.ix()); // bbox[BOXLEFT]
-			newLineByteBuffer.putInt(vertex1.x() < vertex2.x() ? vertex2.ix() : vertex1.ix()); // bbox[BOXRIGHT]
+			newLineByteBuffer.putShort(vertex1.y() < vertex2.y() ? vertex2.y() : vertex1.y()); // bbox[BOXTOP]
+			newLineByteBuffer.putShort(vertex1.y() < vertex2.y() ? vertex1.y() : vertex2.y()); // bbox[BOXBOTTOM]
+			newLineByteBuffer.putShort(vertex1.x() < vertex2.x() ? vertex1.x() : vertex2.x()); // bbox[BOXLEFT]
+			newLineByteBuffer.putShort(vertex1.x() < vertex2.x() ? vertex2.x() : vertex1.x()); // bbox[BOXRIGHT]
 
 			newLineByteBuffer.put((byte) maplinedef.flags()); // flags
 			newLineByteBuffer.put((byte) maplinedef.special()); // special
@@ -174,9 +167,9 @@ public class WadProcessor {
 	private static record Mapseg(short v1, short v2, short angle, short linedef, short side, short offset) {
 	}
 
-	private static record Line(int v1x, int v1y, int v2x, int v2y, short lineno, short dx, short dy, short[] sidenum,
-			int[] bbox, byte flags, byte special, short tag, byte slopetype) {
-		public static final int SIZE_OF_LINE = 4 + 4 + 4 + 4 + 2 + +2 + 2 + 2 * 2 + 4 * 4 + 1 + 1 + 2 + 1;
+	private static record Line(Vertex v1, Vertex v2, short lineno, short dx, short dy, short[] sidenum, short[] bbox,
+			byte flags, byte special, short tag, byte slopetype) {
+		public static final int SIZE_OF_LINE = 2 * 2 + 2 * 2 + 2 + +2 + 2 + 2 * 2 + 4 * 2 + 1 + 1 + 2 + 1;
 	}
 
 	private static record Mapsidedef(short textureoffset, short rowoffset, byte[] toptexture, byte[] bottomtexture,
@@ -254,21 +247,19 @@ public class WadProcessor {
 		List<Line> lines = new ArrayList<>();
 		ByteBuffer linesByteBuffer = lxl.dataAsByteBuffer();
 		for (int i = 0; i < lxl.data().length / Line.SIZE_OF_LINE; i++) {
-			int v1x = linesByteBuffer.getInt();
-			int v1y = linesByteBuffer.getInt();
-			int v2x = linesByteBuffer.getInt();
-			int v2y = linesByteBuffer.getInt();
+			Vertex v1 = new Vertex(linesByteBuffer.getShort(), linesByteBuffer.getShort());
+			Vertex v2 = new Vertex(linesByteBuffer.getShort(), linesByteBuffer.getShort());
 			short lineno = linesByteBuffer.getShort();
 			short dx = linesByteBuffer.getShort();
 			short dy = linesByteBuffer.getShort();
 			short[] sidenum = { linesByteBuffer.getShort(), linesByteBuffer.getShort() };
-			int[] bbox = { linesByteBuffer.getInt(), linesByteBuffer.getInt(), linesByteBuffer.getInt(),
-					linesByteBuffer.getInt() };
+			short[] bbox = { linesByteBuffer.getShort(), linesByteBuffer.getShort(), linesByteBuffer.getShort(),
+					linesByteBuffer.getShort() };
 			byte flags = linesByteBuffer.get();
 			byte special = linesByteBuffer.get();
 			short tag = linesByteBuffer.getShort();
 			byte slopetype = linesByteBuffer.get();
-			lines.add(new Line(v1x, v1y, v2x, v2y, lineno, dx, dy, sidenum, bbox, flags, special, tag, slopetype));
+			lines.add(new Line(v1, v2, lineno, dx, dy, sidenum, bbox, flags, special, tag, slopetype));
 		}
 
 		// And sides too...
