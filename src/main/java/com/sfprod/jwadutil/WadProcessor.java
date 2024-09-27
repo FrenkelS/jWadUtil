@@ -27,6 +27,8 @@ public class WadProcessor {
 	private static final short NO_INDEX = (short) 0xffff;
 	private static final byte ML_TWOSIDED = 4;
 
+	private static final short ANG90_16 = 0x4000;
+
 	private final WadFile wadFile;
 
 	public WadProcessor(WadFile wad) {
@@ -302,7 +304,7 @@ public class WadProcessor {
 			newSegsByteBuffer.putShort((short) (v2.y >> 16)); // v2.y
 
 			newSegsByteBuffer.putShort(oldSeg.offset()); // offset
-			newSegsByteBuffer.putShort(oldSeg.angle()); // angle
+			newSegsByteBuffer.putShort((short) (oldSeg.angle() + ANG90_16)); // angle
 
 			short linenum = oldSeg.linedef();
 			Line ldef = lines.get(linenum);
