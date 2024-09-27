@@ -271,10 +271,11 @@ public class WadProcessor {
 		ByteBuffer newSegsByteBuffer = ByteBuffer.allocate(segCount * sizeofseg);
 		newSegsByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		for (Mapseg oldSeg : oldSegs) {
-			Vertex v1 = vtx.get(oldSeg.v1);
-			Vertex v2 = vtx.get(oldSeg.v2);
+			Vertex v1 = vtx.get(oldSeg.v1());
 			newSegsByteBuffer.putShort(v1.x()); // v1.x
 			newSegsByteBuffer.putShort(v1.y()); // v1.y
+
+			Vertex v2 = vtx.get(oldSeg.v2());
 			newSegsByteBuffer.putShort(v2.x()); // v2.x
 			newSegsByteBuffer.putShort(v2.y()); // v2.y
 
