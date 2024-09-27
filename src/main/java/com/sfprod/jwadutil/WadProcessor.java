@@ -114,9 +114,7 @@ public class WadProcessor {
 
 		ByteBuffer newLineByteBuffer = ByteBuffer.allocate(lineCount * Line.SIZE_OF_LINE);
 		newLineByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		for (short i = 0; i < lineCount; i++) {
-			Maplinedef maplinedef = oldLines.get(i);
-
+		for (Maplinedef maplinedef : oldLines) {
 			Vertex vertex1 = vtx.get(maplinedef.v1());
 			newLineByteBuffer.putShort(vertex1.x()); // v1.x
 			newLineByteBuffer.putShort(vertex1.y()); // v1.y
@@ -124,8 +122,6 @@ public class WadProcessor {
 			Vertex vertex2 = vtx.get(maplinedef.v2());
 			newLineByteBuffer.putShort(vertex2.x()); // v2.x
 			newLineByteBuffer.putShort(vertex2.y()); // v2.y
-
-			newLineByteBuffer.putShort(i); // lineno
 
 			short dx = (short) (vertex2.x() - vertex1.x());
 			short dy = (short) (vertex2.y() - vertex1.y());
@@ -167,9 +163,9 @@ public class WadProcessor {
 	private static record Mapseg(short v1, short v2, short angle, short linedef, short side, short offset) {
 	}
 
-	private static record Line(Vertex v1, Vertex v2, short lineno, short dx, short dy, short[] sidenum, short[] bbox,
-			byte flags, byte special, short tag, byte slopetype) {
-		public static final int SIZE_OF_LINE = 2 * 2 + 2 * 2 + 2 + +2 + 2 + 2 * 2 + 4 * 2 + 1 + 1 + 2 + 1;
+	private static record Line(Vertex v1, Vertex v2, short dx, short dy, short[] sidenum, short[] bbox, byte flags,
+			byte special, short tag, byte slopetype) {
+		public static final int SIZE_OF_LINE = 2 * 2 + 2 * 2 + 2 + 2 + 2 * 2 + 4 * 2 + 1 + 1 + 2 + 1;
 	}
 
 	private static record Mapsidedef(short textureoffset, short rowoffset, byte[] toptexture, byte[] bottomtexture,
@@ -249,7 +245,6 @@ public class WadProcessor {
 		for (int i = 0; i < lxl.data().length / Line.SIZE_OF_LINE; i++) {
 			Vertex v1 = new Vertex(linesByteBuffer.getShort(), linesByteBuffer.getShort());
 			Vertex v2 = new Vertex(linesByteBuffer.getShort(), linesByteBuffer.getShort());
-			short lineno = linesByteBuffer.getShort();
 			short dx = linesByteBuffer.getShort();
 			short dy = linesByteBuffer.getShort();
 			short[] sidenum = { linesByteBuffer.getShort(), linesByteBuffer.getShort() };
@@ -259,7 +254,7 @@ public class WadProcessor {
 			byte special = linesByteBuffer.get();
 			short tag = linesByteBuffer.getShort();
 			byte slopetype = linesByteBuffer.get();
-			lines.add(new Line(v1, v2, lineno, dx, dy, sidenum, bbox, flags, special, tag, slopetype));
+			lines.add(new Line(v1, v2, dx, dy, sidenum, bbox, flags, special, tag, slopetype));
 		}
 
 		// And sides too...
