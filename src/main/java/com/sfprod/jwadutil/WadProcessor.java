@@ -431,6 +431,9 @@ public class WadProcessor {
 				"STCFN121", // letter
 				"STDISK", // Loading icon Disk
 				"STFB", // Status bar face background
+				"STKEYS3", // Status bar blue skull key
+				"STKEYS4", // Status bar yellow skull key
+				"STKEYS5", // Status bar red skull key
 				"STPB", // Status bar p? background
 				"STT", // Status bar numbers
 				"VERTEXES", // vertexes for a map
