@@ -387,10 +387,12 @@ public class WadProcessor {
 				"BOSF", // Spawn cube
 				"BRDR", // Border
 				"D_", // MUS music
+				"DPITMBK", // Item respawn sound effect in multiplayer mode
 				"DS", // Sound Blaster sound effects
 				"DMXGUS", // Gravis UltraSound instrument data
 				"GENMIDI", // OPL instrument data
 				"HELP1", // Help screen
+				"IFOG", // Item respawn blue fog in multiplayer mode
 				"MANF", // Mancubus projectile
 				"M_DETAIL", // Graphic Detail:
 				"M_DIS", // Display
