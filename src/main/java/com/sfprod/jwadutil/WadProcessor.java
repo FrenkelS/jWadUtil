@@ -38,6 +38,7 @@ public class WadProcessor {
 	public void processWad() {
 		processPNames();
 		processDoom1Levels();
+		processPlayerSprites();
 		removeUnusedLumps();
 		processSprites();
 		processWalls();
@@ -372,6 +373,35 @@ public class WadProcessor {
 	}
 
 	/**
+	 * Replace player sprites by zombieman sprites
+	 *
+	 */
+	private void processPlayerSprites() {
+		List<Lump> playerSprites = wadFile.getLumpsByName("PLAY");
+		List<Lump> zombiemanSprites = wadFile.getLumpsByName("POSS");
+
+		List<String> skip = List.of( //
+				"PLAYPAL", "PLAYPAL1", "PLAYPAL2", "PLAYPAL3", "PLAYPAL4", "PLAYPAL5", //
+				"PLAYN0", "PLAYW0", "PLAYV0");
+		for (Lump playerSprite : playerSprites) {
+			if (!skip.contains(playerSprite.nameAsString())) {
+				String suffix = playerSprite.nameAsString().substring(4);
+				Lump zombiemanSprite = zombiemanSprites.stream().filter(z -> z.nameAsString().endsWith(suffix))
+						.findAny().orElseThrow();
+				Lump newLump = new Lump(playerSprite.name(), zombiemanSprite.data());
+				wadFile.replaceLump(newLump);
+			}
+		}
+
+		Lump playerBloodyMess = playerSprites.stream().filter(p -> "PLAYV0".equals(p.nameAsString())).findAny()
+				.orElseThrow();
+		Lump zombieBloodyMess = zombiemanSprites.stream().filter(z -> "POSSU0".equals(z.nameAsString())).findAny()
+				.orElseThrow();
+		Lump newBloodyMessLump = new Lump(playerBloodyMess.name(), zombieBloodyMess.data());
+		wadFile.replaceLump(newBloodyMessLump);
+	}
+
+	/**
 	 * Remove unused lumps
 	 *
 	 */
@@ -405,27 +435,6 @@ public class WadProcessor {
 				"M_RDTHIS", // Read This!
 				"M_SCRNSZ", // Screen Size
 				"M_SGTTL", // Save game
-				"PLAYA", // Player sprites
-				"PLAYB", // Player sprites
-				"PLAYC", // Player sprites
-				"PLAYD", // Player sprites
-				"PLAYE", // Player sprites
-				"PLAYF", // Player sprites
-				"PLAYG", // Player sprites
-				"PLAYH", // Player sprite
-				"PLAYI", // Player sprite
-				"PLAYJ", // Player sprite
-				"PLAYK", // Player sprite
-				"PLAYL", // Player sprite
-				"PLAYM", // Player sprite
-				"PLAYO", // Player sprite
-				"PLAYP0", // Player sprite
-				"PLAYQ", // Player sprite
-				"PLAYR", // Player sprite
-				"PLAYS", // Player sprite
-				"PLAYT", // Player sprite
-				"PLAYU", // Player sprite
-				"PLAYV", // Player sprite
 				"STARMS", // Status bar arms
 				"STCDROM", // Loading icon CD-ROM
 				"STCFN121", // letter

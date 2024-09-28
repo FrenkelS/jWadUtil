@@ -135,6 +135,10 @@ public class WadFile {
 		return lumpsWithName.get(0);
 	}
 
+	public List<Lump> getLumpsByName(String prefix) {
+		return lumps.stream().filter(l -> l.nameAsString().startsWith(prefix)).toList();
+	}
+
 	public int getLumpNumByName(String name) {
 		List<Integer> lumpNums = new ArrayList<>();
 		for (int index = 0; index < lumps.size(); index++) {
