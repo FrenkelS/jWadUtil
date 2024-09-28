@@ -387,6 +387,7 @@ public class WadProcessor {
 				"BOSF", // Spawn cube
 				"BRDR", // Border
 				"D_", // MUS music
+				"DPBD", // Blazing door sound effects
 				"DPITMBK", // Item respawn sound effect in multiplayer mode
 				"DS", // Sound Blaster sound effects
 				"DMXGUS", // Gravis UltraSound instrument data
