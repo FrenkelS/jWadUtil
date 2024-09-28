@@ -8,7 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WadFile {
 
@@ -85,13 +88,24 @@ public class WadFile {
 		byteBuffer.putInt(lumps.size());
 		byteBuffer.putInt(4 + 4 + 4);
 
-		for (Lump lump : lumps) {
+		Map<String, Integer> duplicateDataMap = new HashMap<>();
+		for (int lumpnum = 0; lumpnum < lumps.size(); lumpnum++) {
+			Lump lump = lumps.get(lumpnum);
 			if (lump.data.length == 0) {
 				byteBuffer.putInt(0);
 			} else {
-				byteBuffer.putInt(filepos);
+				String key = Arrays.toString(lump.data);
+				if (duplicateDataMap.containsKey(key)) {
+					int previousfilepos = duplicateDataMap.get(key);
+					byteBuffer.putInt(previousfilepos);
+					Lump newLump = new Lump(lump.name, new byte[] {});
+					lumps.set(lumpnum, newLump);
+				} else {
+					duplicateDataMap.put(key, filepos);
+					byteBuffer.putInt(filepos);
+					filepos += roundUp(lump.data.length);
+				}
 			}
-			filepos += roundUp(lump.data.length);
 
 			byteBuffer.putInt(lump.data.length);
 			byteBuffer.put(lump.name());
@@ -105,7 +119,9 @@ public class WadFile {
 		}
 
 		Path path = Path.of("target", wadPath);
-		Files.write(path, byteBuffer.array());
+		int filesizeWithoutDuplicates = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8)
+				+ lumps.stream().mapToInt(lump -> lump.data().length).map(this::roundUp).sum();
+		Files.write(path, Arrays.copyOf(byteBuffer.array(), filesizeWithoutDuplicates));
 		System.out.println("WAD file written to " + path.toAbsolutePath());
 	}
 
