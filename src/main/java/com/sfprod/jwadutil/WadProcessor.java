@@ -405,6 +405,27 @@ public class WadProcessor {
 				"M_RDTHIS", // Read This!
 				"M_SCRNSZ", // Screen Size
 				"M_SGTTL", // Save game
+				"PLAYA", // Player sprites
+				"PLAYB", // Player sprites
+				"PLAYC", // Player sprites
+				"PLAYD", // Player sprites
+				"PLAYE", // Player sprites
+				"PLAYF", // Player sprites
+				"PLAYG", // Player sprites
+				"PLAYH", // Player sprite
+				"PLAYI", // Player sprite
+				"PLAYJ", // Player sprite
+				"PLAYK", // Player sprite
+				"PLAYL", // Player sprite
+				"PLAYM", // Player sprite
+				"PLAYO", // Player sprite
+				"PLAYP0", // Player sprite
+				"PLAYQ", // Player sprite
+				"PLAYR", // Player sprite
+				"PLAYS", // Player sprite
+				"PLAYT", // Player sprite
+				"PLAYU", // Player sprite
+				"PLAYV", // Player sprite
 				"STARMS", // Status bar arms
 				"STCDROM", // Loading icon CD-ROM
 				"STCFN121", // letter
