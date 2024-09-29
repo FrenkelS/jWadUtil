@@ -136,15 +136,13 @@ class WadProcessor16 extends WadProcessor {
 		Lump colormapLump = wadFile.getLumpByName("COLORMAP");
 
 		int index = 0;
-		int colormap = 0;
 
-		// colormap 0-31
-		while (colormap < 32) {
+		// colormap 0-31 from bright to dark
+		for (int colormap = 0; colormap < 32; colormap++) {
 			for (int i = 0; i < 256; i++) {
 				colormapLump.data()[index] = (byte) i;
 				index++;
 			}
-			colormap++;
 		}
 
 		// colormap 32 invulnerability powerup
@@ -177,11 +175,11 @@ class WadProcessor16 extends WadProcessor {
 		}
 		List<Double> grays = colors.stream().map(Color::gray).collect(Collectors.toSet()).stream().sorted().toList();
 
-		List<Integer> grayscaleFromDarkToLight = List.of(0x00, 0x08, 0x80, 0x88, 0x88, 0x07, 0x70, 0x78, 0x87, 0x77,
+		List<Integer> grayscaleFromDarkToBright = List.of(0x00, 0x08, 0x80, 0x88, 0x88, 0x07, 0x70, 0x78, 0x87, 0x77,
 				0x77, 0x0f, 0xf0, 0x8f, 0xf8, 0x7f, 0xf7, 0xff, 0xff);
 
 		return colors.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 3)
-				.map(grayscaleFromDarkToLight::get).mapToObj(i -> (byte) i).toList();
+				.map(grayscaleFromDarkToBright::get).mapToObj(i -> (byte) i).toList();
 	}
 
 }
