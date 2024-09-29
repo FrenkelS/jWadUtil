@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.sfprod.jwadutil.WadFile.Lump;
 
@@ -14,6 +13,14 @@ class WadProcessor16 extends WadProcessor {
 	private static record Color(int r, int g, int b) {
 		double gray() {
 			return r * 0.299 + g * 0.587 + b * 0.114;
+		}
+
+		int calculateDistance(Color that) {
+			int distr = Math.abs(this.r - that.r);
+			int distg = Math.abs(this.g - that.g);
+			int distb = Math.abs(this.b - that.b);
+
+			return distr + distg + distb;
 		}
 	}
 
@@ -35,6 +42,8 @@ class WadProcessor16 extends WadProcessor {
 			new Color(0xFF, 0xFF, 0x55), // yellow
 			new Color(0xFF, 0xFF, 0xFF) // white
 	);
+
+	private static final List<Color> CGA136_COLORS = createCga136Colors();
 
 	private static final int[] VGA256_TO_16_LUT = { //
 			0x00, 0x06, 0x00, 0x07, 0xff, 0x08, 0x80, 0x00, 0x00, 0x88, 0x08, 0x80, 0x00, 0x68, 0x86, 0x68, //
@@ -62,6 +71,23 @@ class WadProcessor16 extends WadProcessor {
 	void processColorSpecific() {
 		changePalette();
 		processColormap();
+	}
+
+	private static List<Color> createCga136Colors() {
+		List<Color> colors = new ArrayList<>();
+		for (int h = 0; h < 16; h++) {
+			for (int l = 0; l < 16; l++) {
+				Color ch = CGA_COLORS.get(h);
+				Color cl = CGA_COLORS.get(l);
+
+				int r = (int) Math.sqrt((ch.r() * ch.r() + cl.r() * cl.r()) / 2);
+				int g = (int) Math.sqrt((ch.g() * ch.g() + cl.g() * cl.g()) / 2);
+				int b = (int) Math.sqrt((ch.b() * ch.b() + cl.b() * cl.b()) / 2);
+				Color color = new Color(r, g, b);
+				colors.add(color);
+			}
+		}
+		return colors;
 	}
 
 	private byte convert256to16(byte b) {
@@ -163,29 +189,73 @@ class WadProcessor16 extends WadProcessor {
 	}
 
 	private List<Byte> createColormap(int colormap) {
-		return IntStream.rangeClosed(0, 255).mapToObj(i -> (byte) i).toList();
+		List<Color> cga136colorsForColormap = new ArrayList<>();
+
+		int c = 32 - colormap;
+
+		for (Color color : CGA136_COLORS) {
+			int r = (int) Math.sqrt(color.r() * color.r() * c / 32);
+			int g = (int) Math.sqrt(color.g() * color.g() * c / 32);
+			int b = (int) Math.sqrt(color.b() * color.b() * c / 32);
+			cga136colorsForColormap.add(new Color(r, g, b));
+		}
+
+		List<Byte> result = new ArrayList<>();
+		boolean ascending = true;
+		for (Color color : cga136colorsForColormap) {
+			byte closestColor = calculateClosestColor(color, ascending);
+			result.add(closestColor);
+			ascending = !ascending;
+		}
+
+		return result;
+	}
+
+	private byte calculateClosestColor(Color c, boolean ascending) {
+		int closestColor = -1;
+		int closestDist = Integer.MAX_VALUE;
+
+		if (ascending) {
+			for (int i = 0; i < 256; i++) {
+				int dist = c.calculateDistance(CGA136_COLORS.get(i));
+				if (dist == 0) {
+					// perfect match
+					closestColor = i;
+					break;
+				}
+
+				if (dist < closestDist) {
+					closestDist = dist;
+					closestColor = i;
+				}
+			}
+		} else {
+			for (int i = 255; i >= 0; i--) {
+				int dist = c.calculateDistance(CGA136_COLORS.get(i));
+				if (dist == 0) {
+					// perfect match
+					closestColor = i;
+					break;
+				}
+
+				if (dist < closestDist) {
+					closestDist = dist;
+					closestColor = i;
+				}
+			}
+		}
+
+		return (byte) closestColor;
 	}
 
 	private List<Byte> createColormapInvulnerability() {
-		List<Color> colors = new ArrayList<>();
-		for (int h = 0; h < 16; h++) {
-			for (int l = 0; l < 16; l++) {
-				Color ch = CGA_COLORS.get(h);
-				Color cl = CGA_COLORS.get(l);
-
-				int r = (int) Math.sqrt((ch.r() * ch.r() + cl.r() * cl.r()) / 2);
-				int g = (int) Math.sqrt((ch.g() * ch.g() + cl.g() * cl.g()) / 2);
-				int b = (int) Math.sqrt((ch.b() * ch.b() + cl.b() * cl.b()) / 2);
-				Color color = new Color(r, g, b);
-				colors.add(color);
-			}
-		}
-		List<Double> grays = colors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
+		List<Double> grays = CGA136_COLORS.stream().map(Color::gray).collect(Collectors.toSet()).stream()
 				.sorted(Comparator.reverseOrder()).toList();
+
 		List<Integer> grayscaleFromDarkToBright = List.of(0x00, 0x00, 0x08, 0x80, 0x88, 0x88, 0x07, 0x70, 0x78, 0x87,
 				0x77, 0x77, 0x0f, 0xf0, 0x8f, 0xf8, 0x7f, 0xf7, 0xff, 0xff, 0xff);
 
-		return colors.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 6)
+		return CGA136_COLORS.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 6)
 				.map(grayscaleFromDarkToBright::get).mapToObj(i -> (byte) i).toList();
 	}
 
