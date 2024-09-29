@@ -3,12 +3,38 @@ package com.sfprod.jwadutil;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.sfprod.jwadutil.WadFile.Lump;
 
 class WadProcessor16 extends WadProcessor {
 
-	private static final int VGA256_TO_16_LUT[] = { //
+	private static record Color(int r, int g, int b) {
+		double gray() {
+			return r * 0.299 + g * 0.587 + b * 0.114;
+		}
+	}
+
+	private static final List<Color> CGA_COLORS = List.of( //
+			new Color(0x00, 0x00, 0x00), // black
+			new Color(0x00, 0x00, 0xAA), // blue
+			new Color(0x00, 0xAA, 0x00), // green
+			new Color(0x00, 0xAA, 0xAA), // cyan
+			new Color(0xAA, 0x00, 0x00), // red
+			new Color(0xAA, 0x00, 0xAA), // magenta
+			new Color(0xAA, 0x55, 0x00), // brown
+			new Color(0xAA, 0xAA, 0xAA), // light gray
+			new Color(0x55, 0x55, 0x55), // dark gray
+			new Color(0x55, 0x55, 0xFF), // light blue
+			new Color(0x55, 0xFF, 0x55), // light green
+			new Color(0x55, 0xFF, 0xFF), // light cyan
+			new Color(0xFF, 0x55, 0x55), // light red
+			new Color(0xFF, 0x55, 0xFF), // light magenta
+			new Color(0xFF, 0xFF, 0x55), // yellow
+			new Color(0xFF, 0xFF, 0xFF) // white
+	);
+
+	private static final int[] VGA256_TO_16_LUT = { //
 			0x00, 0x06, 0x00, 0x07, 0xff, 0x08, 0x80, 0x00, 0x00, 0x88, 0x08, 0x80, 0x00, 0x68, 0x86, 0x68, //
 			0xff, 0xff, 0x7f, 0xcf, 0xfc, 0xcf, 0xfc, 0xcf, 0xfc, 0x7c, 0xc7, 0x7c, 0xc7, 0x7c, 0xcc, 0xcc, //
 			0xcc, 0xcc, 0x6c, 0x4c, 0xc4, 0x4c, 0x0c, 0xc0, 0x44, 0x44, 0x44, 0x44, 0x44, 0x44, 0x04, 0x40, //
@@ -122,9 +148,9 @@ class WadProcessor16 extends WadProcessor {
 		}
 
 		// colormap 32 invulnerability powerup
-		int[] grayscaleFromDarkToLight = { 0x00, 0x08, 0x88, 0x07, 0x78, 0x77, 0x0f, 0x8f, 0x7f, 0xff };
+		List<Byte> colormapInvulnerability = createColormapInvulnerability();
 		for (int i = 0; i < 256; i++) {
-			colormapLump.data()[index] = (byte) grayscaleFromDarkToLight[i % 10];
+			colormapLump.data()[index] = colormapInvulnerability.get(i);
 			index++;
 		}
 
@@ -133,6 +159,29 @@ class WadProcessor16 extends WadProcessor {
 			colormapLump.data()[index] = 0;
 			index++;
 		}
+	}
+
+	private List<Byte> createColormapInvulnerability() {
+		List<Color> colors = new ArrayList<>();
+		for (int c : VGA256_TO_16_LUT) {
+			int h = c / 16;
+			int l = c % 16;
+			Color ch = CGA_COLORS.get(h);
+			Color cl = CGA_COLORS.get(l);
+
+			int r = (int) Math.sqrt((ch.r() * ch.r() + cl.r() * cl.r()) / 2);
+			int g = (int) Math.sqrt((ch.g() * ch.g() + cl.g() * cl.g()) / 2);
+			int b = (int) Math.sqrt((ch.b() * ch.b() + cl.b() * cl.b()) / 2);
+			Color color = new Color(r, g, b);
+			colors.add(color);
+		}
+		List<Double> grays = colors.stream().map(Color::gray).collect(Collectors.toSet()).stream().sorted().toList();
+
+		List<Integer> grayscaleFromDarkToLight = List.of(0x00, 0x08, 0x80, 0x88, 0x88, 0x07, 0x70, 0x78, 0x87, 0x77,
+				0x77, 0x0f, 0xf0, 0x8f, 0xf8, 0x7f, 0xf7, 0xff, 0xff);
+
+		return colors.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 3)
+				.map(grayscaleFromDarkToLight::get).mapToObj(i -> (byte) i).toList();
 	}
 
 }
