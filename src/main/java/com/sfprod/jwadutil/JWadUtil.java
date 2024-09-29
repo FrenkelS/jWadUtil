@@ -42,7 +42,7 @@ public class JWadUtil {
 		iwadFile.replaceLump(getLump("TITLEPIC"));
 		iwadFile.replaceLump(getLump("WIMAP0"));
 
-		WadProcessor wadProcessor = new WadProcessor(game, iwadFile);
+		WadProcessor wadProcessor = WadProcessor.getWadProcessor(game, iwadFile);
 		wadProcessor.processWad();
 
 		iwadFile.saveWadFile(game.wadFile);
