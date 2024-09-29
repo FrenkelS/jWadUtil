@@ -39,15 +39,15 @@ public class WadProcessor {
 	}
 
 	public void processWad() {
+		if (game == Game.DOOM8088_16_COLOR) {
+			changePalette();
+			processColormap();
+		}
+
 		processPNames();
 		processDoom1Levels();
 		processPlayerSprites();
 		removeUnusedLumps();
-
-		if (game == Game.DOOM8088_16_COLOR) {
-			changePalette();
-		}
-
 		processSprites();
 		processWalls();
 	}
@@ -694,6 +694,10 @@ public class WadProcessor {
 			0xff, 0xff, 0xff, 0xef, 0xef, 0xee, 0xee, 0xee, 0x6c, 0x6c, 0x66, 0x46, 0x68, 0x68, 0x06, 0x06, //
 			0x11, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0xee, 0xee, 0xdf, 0x5d, 0x5d, 0x5d, 0x55, 0x4f };
 
+	private byte convert256to16(byte b) {
+		return (byte) VGA256_TO_16_LUT[b & 0xff];
+	}
+
 	private void changePalette() {
 		// Raw graphics
 		changePaletteRaw(wadFile.getLumpByName("HELP2"));
@@ -701,12 +705,70 @@ public class WadProcessor {
 		changePaletteRaw(wadFile.getLumpByName("TITLEPIC"));
 		changePaletteRaw(wadFile.getLumpByName("WIMAP0"));
 
+		List<Lump> flats = wadFile.getLumpsBetween("F1_START", "F1_END");
+		flats.forEach(this::changePaletteRaw);
+
+		// Graphics
+		List<Lump> graphics = new ArrayList<>(256);
+		// Status bar
+		graphics.addAll(wadFile.getLumpsByName("STC"));
+		graphics.addAll(wadFile.getLumpsByName("STF"));
+		graphics.addAll(wadFile.getLumpsByName("STG"));
+		graphics.addAll(wadFile.getLumpsByName("STK"));
+		graphics.addAll(wadFile.getLumpsByName("STY"));
+		// Menu
+		graphics.addAll(
+				wadFile.getLumpsByName("M_").stream().filter(l -> !l.nameAsString().startsWith("M_LS")).toList());
+		// Intermission
+		graphics.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+		// Sprites
+		graphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
+		// Walls
+		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
+		graphics.forEach(this::changePalettePicture);
 	}
 
 	private void changePaletteRaw(Lump lump) {
 		for (int i = 0; i < lump.data().length; i++) {
-			lump.data()[i] = (byte) VGA256_TO_16_LUT[lump.data()[i] & 0xff];
+			lump.data()[i] = convert256to16(lump.data()[i]);
 		}
 	}
 
+	private void changePalettePicture(Lump lump) {
+		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
+		short width = dataByteBuffer.getShort();
+		short height = dataByteBuffer.getShort();
+		short leftoffset = dataByteBuffer.getShort();
+		short topoffset = dataByteBuffer.getShort();
+		List<Integer> columnofs = new ArrayList<>();
+		for (int columnof = 0; columnof < width; columnof++) {
+			columnofs.add(dataByteBuffer.getInt());
+		}
+
+		for (int columnof = 0; columnof < width; columnof++) {
+			int index = columnofs.get(columnof);
+			byte topdelta = lump.data()[index];
+			index++;
+			while (topdelta != -1) {
+				byte lengthByte = lump.data()[index];
+				index++;
+				int length = lengthByte & 0xff;
+				for (int i = 0; i < length + 2; i++) {
+					lump.data()[index] = convert256to16(lump.data()[index]);
+					index++;
+				}
+				topdelta = lump.data()[index];
+				index++;
+			}
+		}
+	}
+
+	private void processColormap() {
+		Lump colormap = wadFile.getLumpByName("COLORMAP");
+		int b = 0;
+		for (int i = 0; i < colormap.data().length; i++) {
+			colormap.data()[i] = (byte) b;
+			b = (b + 1) & 255;
+		}
+	}
 }
