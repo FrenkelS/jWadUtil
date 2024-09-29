@@ -764,11 +764,31 @@ public class WadProcessor {
 	}
 
 	private void processColormap() {
-		Lump colormap = wadFile.getLumpByName("COLORMAP");
-		int b = 0;
-		for (int i = 0; i < colormap.data().length; i++) {
-			colormap.data()[i] = (byte) b;
-			b = (b + 1) & 255;
+		Lump colormapLump = wadFile.getLumpByName("COLORMAP");
+
+		int index = 0;
+		int colormap = 0;
+
+		// colormap 0-31
+		while (colormap < 32) {
+			for (int i = 0; i < 256; i++) {
+				colormapLump.data()[index] = (byte) i;
+				index++;
+			}
+			colormap++;
+		}
+
+		// colormap 32 invulnerability powerup
+		int[] grayscaleFromDarkToLight = { 0x00, 0x08, 0x88, 0x07, 0x78, 0x77, 0x0f, 0x8f, 0x7f, 0xff };
+		for (int i = 0; i < 256; i++) {
+			colormapLump.data()[index] = (byte) grayscaleFromDarkToLight[i % 10];
+			index++;
+		}
+
+		// colormap 33 all black
+		for (int i = 0; i < 256; i++) {
+			colormapLump.data()[index] = 0;
+			index++;
 		}
 	}
 }
