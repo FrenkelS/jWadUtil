@@ -10,4 +10,6 @@ For example:
 
 By storing vertexes in LINEDEFS and SEGS the VERTEXES lump can be removed.
 
-Usage: java -jar jwadutil.jar.
+Build: `mvn verify`
+
+Usage: `java -jar target/jwadutil-1.0.0-SNAPSHOT.jar`
