@@ -2,8 +2,10 @@ package com.sfprod.jwadutil;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.sfprod.jwadutil.WadFile.Lump;
 
@@ -139,8 +141,9 @@ class WadProcessor16 extends WadProcessor {
 
 		// colormap 0-31 from bright to dark
 		for (int colormap = 0; colormap < 32; colormap++) {
-			for (int i = 0; i < 256; i++) {
-				colormapLump.data()[index] = (byte) i;
+			List<Byte> colormapBytes = createColormap(colormap);
+			for (byte b : colormapBytes) {
+				colormapLump.data()[index] = b;
 				index++;
 			}
 		}
@@ -159,26 +162,30 @@ class WadProcessor16 extends WadProcessor {
 		}
 	}
 
+	private List<Byte> createColormap(int colormap) {
+		return IntStream.rangeClosed(0, 255).mapToObj(i -> (byte) i).toList();
+	}
+
 	private List<Byte> createColormapInvulnerability() {
 		List<Color> colors = new ArrayList<>();
-		for (int c : VGA256_TO_16_LUT) {
-			int h = c / 16;
-			int l = c % 16;
-			Color ch = CGA_COLORS.get(h);
-			Color cl = CGA_COLORS.get(l);
+		for (int h = 0; h < 16; h++) {
+			for (int l = 0; l < 16; l++) {
+				Color ch = CGA_COLORS.get(h);
+				Color cl = CGA_COLORS.get(l);
 
-			int r = (int) Math.sqrt((ch.r() * ch.r() + cl.r() * cl.r()) / 2);
-			int g = (int) Math.sqrt((ch.g() * ch.g() + cl.g() * cl.g()) / 2);
-			int b = (int) Math.sqrt((ch.b() * ch.b() + cl.b() * cl.b()) / 2);
-			Color color = new Color(r, g, b);
-			colors.add(color);
+				int r = (int) Math.sqrt((ch.r() * ch.r() + cl.r() * cl.r()) / 2);
+				int g = (int) Math.sqrt((ch.g() * ch.g() + cl.g() * cl.g()) / 2);
+				int b = (int) Math.sqrt((ch.b() * ch.b() + cl.b() * cl.b()) / 2);
+				Color color = new Color(r, g, b);
+				colors.add(color);
+			}
 		}
-		List<Double> grays = colors.stream().map(Color::gray).collect(Collectors.toSet()).stream().sorted().toList();
+		List<Double> grays = colors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
+				.sorted(Comparator.reverseOrder()).toList();
+		List<Integer> grayscaleFromDarkToBright = List.of(0x00, 0x00, 0x08, 0x80, 0x88, 0x88, 0x07, 0x70, 0x78, 0x87,
+				0x77, 0x77, 0x0f, 0xf0, 0x8f, 0xf8, 0x7f, 0xf7, 0xff, 0xff, 0xff);
 
-		List<Integer> grayscaleFromDarkToBright = List.of(0x00, 0x08, 0x80, 0x88, 0x88, 0x07, 0x70, 0x78, 0x87, 0x77,
-				0x77, 0x0f, 0xf0, 0x8f, 0xf8, 0x7f, 0xf7, 0xff, 0xff);
-
-		return colors.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 3)
+		return colors.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 6)
 				.map(grayscaleFromDarkToBright::get).mapToObj(i -> (byte) i).toList();
 	}
 
