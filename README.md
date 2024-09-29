@@ -8,6 +8,6 @@ We will pre-calculate more fields so that the lumps stored in the WAD can be use
 
 For example:
 
-In the WAD file a vertex is stored as two short values. (X and Y). When it is loaded into memory, it is shifted left by 16 to convert to 16.16 fixed point. By re-writing this lump and storing it in fixed point, we do not need to copy this into memory at runtime.
+By storing vertexes in LINEDEFS and SEGS the VERTEXES lump can be removed.
 
 Usage: java -jar jwadutil.jar.
