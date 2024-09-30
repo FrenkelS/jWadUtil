@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 public class WadFile {
 
@@ -143,7 +142,7 @@ public class WadFile {
 	public List<Lump> getLumpsBetween(String start, String end) {
 		int startIndex = getLumpNumByName(start);
 		int endIndex = getLumpNumByName(end);
-		return IntStream.rangeClosed(startIndex + 1, endIndex - 1).mapToObj(this::getLumpByNum).toList();
+		return lumps.subList(startIndex + 1, endIndex);
 	}
 
 	public int getLumpNumByName(String name) {
