@@ -27,7 +27,12 @@ public class JWadUtil {
 	}
 
 	public static void main(String[] args) throws IOException, URISyntaxException {
-		Game game = Game.DOOM8088_16_COLOR;
+		Game game;
+		if (Arrays.asList(args).contains("-NR_OF_COLORS=16")) {
+			game = Game.DOOM8088_16_COLOR;
+		} else {
+			game = Game.DOOM8088;
+		}
 
 		WadFile iwadFile = new WadFile("/doom1.wad");
 
