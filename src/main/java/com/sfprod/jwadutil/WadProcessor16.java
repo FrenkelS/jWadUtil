@@ -48,7 +48,7 @@ class WadProcessor16 extends WadProcessor {
 
 	private static final List<Color> CGA136_COLORS = createCga136Colors();
 
-	private static final int[] VGA256_TO_16_LUT = { //
+	private static final List<Integer> VGA256_TO_16_LUT = List.of( //
 			0x00, 0x06, 0x00, // black
 			0x07, // grey
 			0xff, // white
@@ -84,7 +84,7 @@ class WadProcessor16 extends WadProcessor {
 			0xee, // yellow
 			0xdf, 0x5d, 0xd5, 0x5d, 0x55, // purple
 			0x4f // cream-colored
-	};
+	);
 
 	WadProcessor16(WadFile wadFile) {
 		super(wadFile);
@@ -114,7 +114,7 @@ class WadProcessor16 extends WadProcessor {
 	}
 
 	private byte convert256to16Random(byte b) {
-		int r = VGA256_TO_16_LUT[b & 0xff];
+		int r = VGA256_TO_16_LUT.get(b & 0xff);
 		if (random.nextBoolean()) {
 			int h = r / 16;
 			int l = r % 16;
@@ -125,7 +125,7 @@ class WadProcessor16 extends WadProcessor {
 	}
 
 	private byte convert256to16(byte b) {
-		return (byte) VGA256_TO_16_LUT[b & 0xff];
+		return VGA256_TO_16_LUT.get(b & 0xff).byteValue();
 	}
 
 	private void changePalette() {
