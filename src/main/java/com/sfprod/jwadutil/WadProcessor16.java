@@ -11,17 +11,19 @@ import com.sfprod.jwadutil.WadFile.Lump;
 
 class WadProcessor16 extends WadProcessor {
 
+	private final Random random = new Random(0x1d4a11);
+
 	private static record Color(int r, int g, int b) {
 		double gray() {
 			return r * 0.299 + g * 0.587 + b * 0.114;
 		}
 
 		int calculateDistance(Color that) {
-			int distr = Math.abs(this.r - that.r);
-			int distg = Math.abs(this.g - that.g);
-			int distb = Math.abs(this.b - that.b);
+			int distr = this.r - that.r;
+			int distg = this.g - that.g;
+			int distb = this.b - that.b;
 
-			return distr + distg + distb;
+			return distr * distr + distg * distg + distb * distb;
 		}
 	}
 
@@ -110,8 +112,6 @@ class WadProcessor16 extends WadProcessor {
 		}
 		return colors;
 	}
-
-	private final Random random = new Random(0x1d4a11);
 
 	private byte convert256to16Random(byte b) {
 		int r = VGA256_TO_16_LUT[b & 0xff];
