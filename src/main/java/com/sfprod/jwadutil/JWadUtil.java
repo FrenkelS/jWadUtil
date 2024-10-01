@@ -10,8 +10,9 @@ import com.sfprod.jwadutil.WadFile.Lump;
 
 public class JWadUtil {
 
-	private enum Game {
-		DOOM8088(ByteOrder.LITTLE_ENDIAN, "doom8088.wad"), //
+	enum Game {
+		DOOM8088(ByteOrder.LITTLE_ENDIAN, "DOOM1.WAD"), //
+		DOOM8088_16_COLOR(ByteOrder.LITTLE_ENDIAN, "DOOM16.WAD"), //
 		DOOMTD3_BIG_ENDIAN(ByteOrder.BIG_ENDIAN, "doomtd3b.wad"), //
 		DOOMTD3_LITTLE_ENDIAN(ByteOrder.LITTLE_ENDIAN, "doomtd3l.wad"), //
 		ELKSDOOM(ByteOrder.LITTLE_ENDIAN, "elksdoom.wad");
@@ -26,7 +27,12 @@ public class JWadUtil {
 	}
 
 	public static void main(String[] args) throws IOException, URISyntaxException {
-		Game game = Game.DOOM8088;
+		Game game;
+		if (Arrays.asList(args).contains("-NR_OF_COLORS=16")) {
+			game = Game.DOOM8088_16_COLOR;
+		} else {
+			game = Game.DOOM8088;
+		}
 
 		WadFile iwadFile = new WadFile("/doom1.wad");
 
@@ -41,7 +47,7 @@ public class JWadUtil {
 		iwadFile.replaceLump(getLump("TITLEPIC"));
 		iwadFile.replaceLump(getLump("WIMAP0"));
 
-		WadProcessor wadProcessor = new WadProcessor(iwadFile);
+		WadProcessor wadProcessor = WadProcessor.getWadProcessor(game, iwadFile);
 		wadProcessor.processWad();
 
 		iwadFile.saveWadFile(game.wadFile);

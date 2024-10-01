@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.sfprod.jwadutil.JWadUtil.Game;
 import com.sfprod.jwadutil.WadFile.Lump;
 
 public class WadProcessor {
@@ -29,19 +30,32 @@ public class WadProcessor {
 
 	private static final short ANG90_16 = 0x4000;
 
-	private final WadFile wadFile;
+	final WadFile wadFile;
 
-	public WadProcessor(WadFile wad) {
-		this.wadFile = wad;
+	WadProcessor(WadFile wadFile) {
+		this.wadFile = wadFile;
+	}
+
+	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
+		if (game == Game.DOOM8088_16_COLOR) {
+			return new WadProcessor16(wadFile);
+		} else {
+			return new WadProcessor(wadFile);
+		}
 	}
 
 	public void processWad() {
+		processColorSpecific();
+
 		processPNames();
 		processDoom1Levels();
 		processPlayerSprites();
 		removeUnusedLumps();
 		processSprites();
 		processWalls();
+	}
+
+	void processColorSpecific() {
 	}
 
 	private void processDoom1Levels() {
@@ -466,14 +480,8 @@ public class WadProcessor {
 	}
 
 	private void processSprites() {
-		int start = wadFile.getLumpNumByName("S_START");
-		int end = wadFile.getLumpNumByName("S_END");
-
-		for (int lumpnum = start + 1; lumpnum < end; lumpnum++) {
-			Lump vanillaLump = wadFile.getLumpByNum(lumpnum);
-			Lump doom8088Lump = processSprite(vanillaLump);
-			wadFile.replaceLump(doom8088Lump);
-		}
+		List<Lump> lumps = wadFile.getLumpsBetween("S_START", "S_END");
+		lumps.stream().map(this::processSprite).forEach(wadFile::replaceLump);
 	}
 
 	/**
@@ -565,14 +573,8 @@ public class WadProcessor {
 	}
 
 	private void processWalls() {
-		int start = wadFile.getLumpNumByName("P1_START");
-		int end = wadFile.getLumpNumByName("P1_END");
-
-		for (int lumpnum = start + 1; lumpnum < end; lumpnum++) {
-			Lump vanillaLump = wadFile.getLumpByNum(lumpnum);
-			Lump doom8088Lump = processWall(vanillaLump);
-			wadFile.replaceLump(doom8088Lump);
-		}
+		List<Lump> lumps = wadFile.getLumpsBetween("P1_START", "P1_END");
+		lumps.stream().map(this::processWall).forEach(wadFile::replaceLump);
 	}
 
 	/**

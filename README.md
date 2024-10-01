@@ -2,7 +2,7 @@ Utility to process Doom IWAD files for [Doom8088](https://github.com/FrenkelS/Do
 
 It writes a new WAD file.
 
-This is required to reduce the memory footprint of some of the data structures in Doom to get it to fit in 640 kB.
+This is required to reduce the memory footprint of some of the data structures in Doom to get it to fit in 64 kB.
 
 We will pre-calculate more fields so that the lumps stored in the WAD can be used directly from the WAD rather than having to load and convert them in memory.
 
@@ -12,4 +12,6 @@ By storing vertexes in LINEDEFS and SEGS the VERTEXES lump can be removed.
 
 Build: `mvn verify`
 
-Usage: `java -jar target/jwadutil-1.0.0-SNAPSHOT.jar`
+Usage for 256 colors: `java -jar target/jwadutil-1.0.0-SNAPSHOT.jar`
+
+Usage for  16 colors: `java -jar target/jwadutil-1.0.0-SNAPSHOT.jar -NR_OF_COLORS=16`

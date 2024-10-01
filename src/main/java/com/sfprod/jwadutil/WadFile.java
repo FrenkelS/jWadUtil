@@ -139,6 +139,12 @@ public class WadFile {
 		return lumps.stream().filter(l -> l.nameAsString().startsWith(prefix)).toList();
 	}
 
+	public List<Lump> getLumpsBetween(String start, String end) {
+		int startIndex = getLumpNumByName(start);
+		int endIndex = getLumpNumByName(end);
+		return lumps.subList(startIndex + 1, endIndex);
+	}
+
 	public int getLumpNumByName(String name) {
 		List<Integer> lumpNums = new ArrayList<>();
 		for (int index = 0; index < lumps.size(); index++) {
