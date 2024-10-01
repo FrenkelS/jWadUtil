@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import com.sfprod.jwadutil.WadFile.Lump;
@@ -90,6 +91,19 @@ class WadProcessor16 extends WadProcessor {
 		return colors;
 	}
 
+	private final Random random = new Random(0x1d4a11);
+
+	private byte convert256to16Random(byte b) {
+		int r = VGA256_TO_16_LUT[b & 0xff];
+		if (random.nextBoolean()) {
+			int h = r / 16;
+			int l = r % 16;
+			r = (l << 4) | h;
+		}
+
+		return (byte) r;
+	}
+
 	private byte convert256to16(byte b) {
 		return (byte) VGA256_TO_16_LUT[b & 0xff];
 	}
@@ -104,33 +118,41 @@ class WadProcessor16 extends WadProcessor {
 		List<Lump> flats = wadFile.getLumpsBetween("F1_START", "F1_END");
 		flats.forEach(this::changePaletteRaw);
 
-		// Graphics
-		List<Lump> graphics = new ArrayList<>(256);
+		// Graphics random new color
+		List<Lump> graphicsRandom = new ArrayList<>(256);
 		// Status bar
-		graphics.addAll(wadFile.getLumpsByName("STC"));
-		graphics.addAll(wadFile.getLumpsByName("STF"));
-		graphics.addAll(wadFile.getLumpsByName("STG"));
-		graphics.addAll(wadFile.getLumpsByName("STK"));
-		graphics.addAll(wadFile.getLumpsByName("STY"));
+		graphicsRandom.addAll(wadFile.getLumpsByName("STC"));
+		graphicsRandom.addAll(wadFile.getLumpsByName("STF"));
+		graphicsRandom.addAll(wadFile.getLumpsByName("STG"));
+		graphicsRandom.addAll(wadFile.getLumpsByName("STK"));
+		graphicsRandom.addAll(wadFile.getLumpsByName("STY"));
 		// Menu
-		graphics.addAll(
-				wadFile.getLumpsByName("M_").stream().filter(l -> !l.nameAsString().startsWith("M_LS")).toList());
+		graphicsRandom.addAll(
+				wadFile.getLumpsByName("M_").stream().filter(l -> !l.nameAsString().startsWith("M_SKULL")).toList());
 		// Intermission
-		graphics.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+		graphicsRandom
+				.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+		// Walls
+		graphicsRandom.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
+		graphicsRandom.forEach(g -> changePalettePicture(g, true));
+
+		// Randomly flipped colors look weird on graphics that don't move but have
+		// multiple frames like the menu skull graphics and barrels
+		List<Lump> graphics = new ArrayList<>(256);
+		// Menu skull
+		graphics.addAll(wadFile.getLumpsByName("M_SKULL"));
 		// Sprites
 		graphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
-		// Walls
-		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-		graphics.forEach(this::changePalettePicture);
+		graphics.forEach(g -> changePalettePicture(g, false));
 	}
 
 	private void changePaletteRaw(Lump lump) {
 		for (int i = 0; i < lump.data().length; i++) {
-			lump.data()[i] = convert256to16(lump.data()[i]);
+			lump.data()[i] = convert256to16Random(lump.data()[i]);
 		}
 	}
 
-	private void changePalettePicture(Lump lump) {
+	private void changePalettePicture(Lump lump, final boolean random) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
 		dataByteBuffer.getShort(); // height
@@ -151,7 +173,8 @@ class WadProcessor16 extends WadProcessor {
 				index++;
 				int length = lengthByte & 0xff;
 				for (int i = 0; i < length + 2; i++) {
-					lump.data()[index] = convert256to16(lump.data()[index]);
+					lump.data()[index] = random ? convert256to16Random(lump.data()[index])
+							: convert256to16(lump.data()[index]);
 					index++;
 				}
 				topdelta = lump.data()[index];

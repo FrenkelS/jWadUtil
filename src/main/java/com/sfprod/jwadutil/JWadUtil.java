@@ -11,7 +11,7 @@ import com.sfprod.jwadutil.WadFile.Lump;
 public class JWadUtil {
 
 	enum Game {
-		DOOM8088(ByteOrder.LITTLE_ENDIAN, "DOOM8088.WAD"), //
+		DOOM8088(ByteOrder.LITTLE_ENDIAN, "DOOM1.WAD"), //
 		DOOM8088_16_COLOR(ByteOrder.LITTLE_ENDIAN, "DOOM16.WAD"), //
 		DOOMTD3_BIG_ENDIAN(ByteOrder.BIG_ENDIAN, "doomtd3b.wad"), //
 		DOOMTD3_LITTLE_ENDIAN(ByteOrder.LITTLE_ENDIAN, "doomtd3l.wad"), //
