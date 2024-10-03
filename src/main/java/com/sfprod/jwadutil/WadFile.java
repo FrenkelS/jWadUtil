@@ -89,6 +89,7 @@ public class WadFile {
 		byteBuffer.putInt(4 + 4 + 4);
 
 		Map<String, Integer> duplicateDataMap = new HashMap<>();
+		int duplicateDataCount = 0;
 		for (int lumpnum = 0; lumpnum < lumps.size(); lumpnum++) {
 			Lump lump = lumps.get(lumpnum);
 			if (lump.data.length == 0) {
@@ -100,6 +101,7 @@ public class WadFile {
 					byteBuffer.putInt(previousfilepos);
 					Lump newLump = new Lump(lump.name, new byte[] {});
 					lumps.set(lumpnum, newLump);
+					duplicateDataCount++;
 				} else {
 					duplicateDataMap.put(key, filepos);
 					byteBuffer.putInt(filepos);
@@ -110,6 +112,7 @@ public class WadFile {
 			byteBuffer.putInt(lump.data.length);
 			byteBuffer.put(lump.name());
 		}
+		System.out.println("Removed " + duplicateDataCount + " duplicate lumps");
 
 		for (Lump lump : lumps) {
 			byteBuffer.put(lump.data);
