@@ -45,17 +45,25 @@ public class WadProcessor {
 	}
 
 	public void processWad() {
-		processColorSpecific();
-
+		changeColors();
+		processColormap();
 		processPNames();
 		processDoom1Levels();
 		processPlayerSprites();
 		removeUnusedLumps();
 		processSprites();
 		processWalls();
+
+		shuffleColors();
 	}
 
-	void processColorSpecific() {
+	void changeColors() {
+	}
+
+	void processColormap() {
+	}
+
+	void shuffleColors() {
 	}
 
 	private void processDoom1Levels() {

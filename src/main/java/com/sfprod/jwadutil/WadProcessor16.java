@@ -3,7 +3,9 @@ package com.sfprod.jwadutil;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -47,38 +49,39 @@ class WadProcessor16 extends WadProcessor {
 	);
 
 	private static final List<Color> CGA136_COLORS = createCga136Colors();
+	private static final Map<Integer, List<Integer>> CGA136_COLORS_SHUFFLE_MAP = createCga136ColorsShuffleMap();
 
 	private static final List<Integer> VGA256_TO_16_LUT = List.of( //
 			0x00, 0x06, 0x00, // black
 			0x88, // grey
 			0xff, // white
-			0x08, 0x80, 0x00, 0x00, // black
-			0x28, 0x82, 0x02, 0x20, // dark green
-			0x68, 0x86, 0x68, // brown
+			0x08, 0x08, 0x00, 0x00, // black
+			0x00, 0x00, 0x00, 0x00, // dark green
+			0x68, 0x68, 0x68, // brown
 
-			0xcf, 0xfc, 0x4f, 0x7c, 0xc7, 0x7c, 0xc7, 0x7c, 0x8c, 0xc8, 0x8c, 0xc8, 0x8c, 0xc8, 0x0c, 0xc0, //
-			0x0c, 0xc0, 0x0c, 0xc0, 0x48, 0x84, 0x48, 0x84, 0x48, 0x84, 0x04, 0x40, 0x04, 0x40, 0x04, 0x40, // reddish
+			0xcf, 0xcf, 0x4f, 0x7c, 0x7c, 0x7c, 0x7c, 0x7c, 0x8c, 0x8c, 0x8c, 0x8c, 0x8c, 0x8c, 0x0c, 0x0c, //
+			0x0c, 0x0c, 0x0c, 0x0c, 0x48, 0x48, 0x48, 0x48, 0x48, 0x48, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, // reddish
 
-			0xff, 0xef, 0xcf, 0xfc, 0xcf, 0xfc, 0xcf, 0x5e, 0xe5, 0x5e, 0xe5, 0x7c, 0xc7, 0x7c, 0x2c, 0xc2, //
-			0x2c, 0xc2, 0x2c, 0xc2, 0x68, 0x86, 0x68, 0x86, 0x68, 0x48, 0x06, 0x60, 0x06, 0x60, 0x06, 0x60, // orangeish
+			0xff, 0xef, 0xcf, 0xcc, 0xcf, 0xcf, 0xcf, 0x5e, 0x5e, 0x5e, 0x5e, 0x7c, 0x7c, 0x7c, 0x2c, 0x2c, //
+			0x2c, 0x2c, 0x2c, 0x2c, 0x68, 0x68, 0x68, 0x68, 0x68, 0x48, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, // orangeish
 
-			0xff, 0x7f, 0xf7, 0x7f, 0xf7, 0x8f, 0xf8, 0x8f, 0xf8, 0x0f, 0xf0, 0x0f, 0xf0, 0x77, 0x77, 0x77, //
-			0x77, 0x78, 0x87, 0x78, 0x87, 0x07, 0x70, 0x07, 0x70, 0x88, 0x88, 0x88, 0x88, 0x08, 0x80, 0x08, // gray
+			0xff, 0x7f, 0x7f, 0x7f, 0x7f, 0x8f, 0x8f, 0x8f, 0x8f, 0x0f, 0x0f, 0x0f, 0x0f, 0x77, 0x77, 0x77, //
+			0x77, 0x78, 0x78, 0x78, 0x78, 0x07, 0x07, 0x07, 0x07, 0x88, 0x88, 0x88, 0x88, 0x08, 0x08, 0x08, // gray
 
-			0xaf, 0xaa, 0xaa, 0x2a, 0xa2, 0x8a, 0xa8, 0x0a, 0xa0, 0x22, 0x22, 0x28, 0x82, 0x02, 0x20, 0x00, // green
-			0x1e, 0xe1, 0x3c, 0x67, 0x76, 0x47, 0x74, 0x07, 0x70, 0x07, 0x68, 0x86, 0x68, 0x86, 0x68, 0x86, // brown
-			0x67, 0x76, 0x67, 0x76, 0x68, 0x86, 0x68, 0x86, // brown
-			0x68, 0x86, 0x68, 0x86, 0x06, 0x60, 0x06, 0x60, // brown/green
-			0xee, 0xce, 0x6e, 0x2c, 0xc2, 0x66, 0x06, 0x60, // gold
+			0xaf, 0xaa, 0xaa, 0x2a, 0x2a, 0x8a, 0x8a, 0x0a, 0x0a, 0x22, 0x22, 0x28, 0x28, 0x02, 0x02, 0x00, // green
+			0x1e, 0x1e, 0x3c, 0x67, 0x67, 0x47, 0x47, 0x07, 0x07, 0x07, 0x68, 0x68, 0x68, 0x68, 0x68, 0x68, // brown
+			0x67, 0x67, 0x67, 0x67, 0x68, 0x68, 0x68, 0x68, // brown
+			0x68, 0x68, 0x68, 0x68, 0x06, 0x06, 0x06, 0x06, // brown/green
+			0xee, 0xce, 0x6e, 0x2c, 0x2c, 0x66, 0x06, 0x06, // gold
 
-			0xff, 0x7f, 0xcf, 0x7c, 0xc7, 0xcc, 0xcc, 0x4c, 0xc4, 0x4c, 0xc4, 0x4c, 0x44, 0x44, 0x44, 0x44, //
-			0x44, 0x44, 0x04, 0x40, 0x04, 0x40, 0x04, 0x40, // red
+			0xff, 0x7f, 0xcf, 0x7c, 0x7c, 0xcc, 0xcc, 0x4c, 0x4c, 0x4c, 0x4c, 0x4c, 0x44, 0x44, 0x44, 0x44, //
+			0x44, 0x44, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, // red
 
-			0xff, 0x9f, 0xf9, 0x79, 0x99, 0x99, 0x19, 0x91, 0x11, 0x11, 0x11, 0x11, 0x11, 0x01, 0x10, 0x01, // blue
-			0xff, 0xef, 0xcf, 0xfc, 0xce, 0xec, 0xce, 0x6c, 0xc6, 0x6c, 0xc6, 0x66, 0x66, 0x66, 0x46, 0x64, // orange
-			0xff, 0xef, 0xfe, 0xef, 0xee, 0xee, 0xee, 0xee, // yellow
-			0x46, 0x64, 0x06, 0x60, // dark orange
-			0x48, 0x84, 0x06, 0x60, // brown
+			0xff, 0x9f, 0x9f, 0x79, 0x99, 0x99, 0x19, 0x19, 0x11, 0x11, 0x11, 0x11, 0x11, 0x01, 0x01, 0x01, // blue
+			0xff, 0xef, 0xcf, 0xcf, 0xce, 0xce, 0xce, 0x6c, 0x6c, 0x6c, 0x6c, 0x66, 0x66, 0x66, 0x46, 0x46, // orange
+			0xff, 0xef, 0xef, 0xef, 0xee, 0xee, 0xee, 0xee, // yellow
+			0x46, 0x46, 0x06, 0x06, // dark orange
+			0x48, 0x48, 0x06, 0x06, // brown
 			0x11, 0x11, 0x11, 0x11, 0x01, 0x01, 0x01, 0x00, // dark blue
 			0xce, // orange
 			0xee, // yellow
@@ -88,12 +91,6 @@ class WadProcessor16 extends WadProcessor {
 
 	WadProcessor16(WadFile wadFile) {
 		super(wadFile);
-	}
-
-	@Override
-	void processColorSpecific() {
-		changePalette();
-		processColormap();
 	}
 
 	private static List<Color> createCga136Colors() {
@@ -113,66 +110,66 @@ class WadProcessor16 extends WadProcessor {
 		return colors;
 	}
 
-	private byte convert256to16Random(byte b) {
-		int r = VGA256_TO_16_LUT.get(b & 0xff);
-		if (random.nextBoolean()) {
-			int h = r / 16;
-			int l = r % 16;
-			r = (l << 4) | h;
+	private static Map<Integer, List<Integer>> createCga136ColorsShuffleMap() {
+		Map<Integer, List<Integer>> shuffleMap = new HashMap<>();
+		for (int i = 0; i < 256; i++) {
+			List<Integer> sameColorList = new ArrayList<>();
+			Color cgaColor = CGA136_COLORS.get(i);
+			for (int j = 0; j < 256; j++) {
+				Color otherColor = CGA136_COLORS.get(j);
+				if (cgaColor.equals(otherColor)) {
+					sameColorList.add(j);
+				}
+			}
+
+			shuffleMap.put(i, sameColorList);
 		}
 
-		return (byte) r;
+		return shuffleMap;
 	}
 
 	private byte convert256to16(byte b) {
 		return VGA256_TO_16_LUT.get(b & 0xff).byteValue();
 	}
 
-	private void changePalette() {
+	@Override
+	void changeColors() {
 		// Raw graphics
-		changePaletteRaw(wadFile.getLumpByName("HELP2"));
-		changePaletteRaw(wadFile.getLumpByName("STBAR"));
-		changePaletteRaw(wadFile.getLumpByName("TITLEPIC"));
-		changePaletteRaw(wadFile.getLumpByName("WIMAP0"));
+		List<Lump> rawGraphics = new ArrayList<>(16);
+		rawGraphics.add(wadFile.getLumpByName("HELP2"));
+		rawGraphics.add(wadFile.getLumpByName("STBAR"));
+		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
+		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
+		// Flats
+		rawGraphics.addAll(wadFile.getLumpsBetween("F1_START", "F1_END"));
+		rawGraphics.forEach(this::changePaletteRaw);
 
-		List<Lump> flats = wadFile.getLumpsBetween("F1_START", "F1_END");
-		flats.forEach(this::changePaletteRaw);
-
-		// Graphics random new color
-		List<Lump> graphicsRandom = new ArrayList<>(256);
-		// Status bar
-		graphicsRandom.addAll(wadFile.getLumpsByName("STC"));
-		graphicsRandom.addAll(wadFile.getLumpsByName("STF"));
-		graphicsRandom.addAll(wadFile.getLumpsByName("STG"));
-		graphicsRandom.addAll(wadFile.getLumpsByName("STK"));
-		graphicsRandom.addAll(wadFile.getLumpsByName("STY"));
-		// Menu
-		graphicsRandom.addAll(
-				wadFile.getLumpsByName("M_").stream().filter(l -> !l.nameAsString().startsWith("M_SKULL")).toList());
-		// Intermission
-		graphicsRandom
-				.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
-		// Walls
-		graphicsRandom.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-		graphicsRandom.forEach(g -> changePalettePicture(g, true));
-
-		// Randomly flipped colors look weird on graphics that don't move but have
-		// multiple frames like the menu skull graphics and barrels
+		// Graphics in picture format
 		List<Lump> graphics = new ArrayList<>(256);
-		// Menu skull
-		graphics.addAll(wadFile.getLumpsByName("M_SKULL"));
 		// Sprites
 		graphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
-		graphics.forEach(g -> changePalettePicture(g, false));
+		// Status bar
+		graphics.addAll(wadFile.getLumpsByName("STC"));
+		graphics.addAll(wadFile.getLumpsByName("STF"));
+		graphics.addAll(wadFile.getLumpsByName("STG"));
+		graphics.addAll(wadFile.getLumpsByName("STK"));
+		graphics.addAll(wadFile.getLumpsByName("STY"));
+		// Menu
+		graphics.addAll(wadFile.getLumpsByName("M_"));
+		// Intermission
+		graphics.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+		// Walls
+		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
+		graphics.forEach(this::changePalettePicture);
 	}
 
 	private void changePaletteRaw(Lump lump) {
 		for (int i = 0; i < lump.data().length; i++) {
-			lump.data()[i] = convert256to16Random(lump.data()[i]);
+			lump.data()[i] = convert256to16(lump.data()[i]);
 		}
 	}
 
-	private void changePalettePicture(Lump lump, final boolean random) {
+	private void changePalettePicture(Lump lump) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
 		dataByteBuffer.getShort(); // height
@@ -193,8 +190,7 @@ class WadProcessor16 extends WadProcessor {
 				index++;
 				int length = lengthByte & 0xff;
 				for (int i = 0; i < length + 2; i++) {
-					lump.data()[index] = random ? convert256to16Random(lump.data()[index])
-							: convert256to16(lump.data()[index]);
+					lump.data()[index] = convert256to16(lump.data()[index]);
 					index++;
 				}
 				topdelta = lump.data()[index];
@@ -203,7 +199,8 @@ class WadProcessor16 extends WadProcessor {
 		}
 	}
 
-	private void processColormap() {
+	@Override
+	void processColormap() {
 		Lump colormapLump = wadFile.getLumpByName("COLORMAP");
 
 		int index = 0;
@@ -244,47 +241,29 @@ class WadProcessor16 extends WadProcessor {
 		}
 
 		List<Byte> result = new ArrayList<>();
-		boolean ascending = true;
 		for (Color color : cga136colorsForColormap) {
-			byte closestColor = calculateClosestColor(color, ascending);
+			byte closestColor = calculateClosestColor(color);
 			result.add(closestColor);
-			ascending = !ascending;
 		}
 
 		return result;
 	}
 
-	private byte calculateClosestColor(Color c, boolean ascending) {
+	private byte calculateClosestColor(Color c) {
 		int closestColor = -1;
 		int closestDist = Integer.MAX_VALUE;
 
-		if (ascending) {
-			for (int i = 0; i < 256; i++) {
-				int dist = c.calculateDistance(CGA136_COLORS.get(i));
-				if (dist == 0) {
-					// perfect match
-					closestColor = i;
-					break;
-				}
-
-				if (dist < closestDist) {
-					closestDist = dist;
-					closestColor = i;
-				}
+		for (int i = 0; i < 256; i++) {
+			int dist = c.calculateDistance(CGA136_COLORS.get(i));
+			if (dist == 0) {
+				// perfect match
+				closestColor = i;
+				break;
 			}
-		} else {
-			for (int i = 255; i >= 0; i--) {
-				int dist = c.calculateDistance(CGA136_COLORS.get(i));
-				if (dist == 0) {
-					// perfect match
-					closestColor = i;
-					break;
-				}
 
-				if (dist < closestDist) {
-					closestDist = dist;
-					closestColor = i;
-				}
+			if (dist < closestDist) {
+				closestDist = dist;
+				closestColor = i;
 			}
 		}
 
@@ -302,4 +281,74 @@ class WadProcessor16 extends WadProcessor {
 				.map(grayscaleFromDarkToBright::get).mapToObj(i -> (byte) i).toList();
 	}
 
+	@Override
+	void shuffleColors() {
+		// Raw graphics
+		List<Lump> rawGraphics = new ArrayList<>(16);
+		rawGraphics.add(wadFile.getLumpByName("HELP2"));
+		rawGraphics.add(wadFile.getLumpByName("STBAR"));
+		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
+		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
+		// Flats
+		rawGraphics.addAll(wadFile.getLumpsBetween("F1_START", "F1_END"));
+		rawGraphics.forEach(this::shuffleColorsRaw);
+
+		// Graphics in picture format
+		List<Lump> graphics = new ArrayList<>(256);
+		// Status bar
+		graphics.addAll(wadFile.getLumpsByName("STC"));
+		graphics.addAll(wadFile.getLumpsByName("STF"));
+		graphics.addAll(wadFile.getLumpsByName("STG"));
+		graphics.addAll(wadFile.getLumpsByName("STK"));
+		graphics.addAll(wadFile.getLumpsByName("STY"));
+		// Menu
+		graphics.addAll(
+				wadFile.getLumpsByName("M_").stream().filter(l -> !l.nameAsString().startsWith("M_SKULL")).toList());
+		// Intermission
+		graphics.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+		// Walls
+		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
+		graphics.forEach(this::shuffleColorPicture);
+	}
+
+	private void shuffleColorsRaw(Lump lump) {
+		for (int i = 0; i < lump.data().length; i++) {
+			lump.data()[i] = shuffleColor(lump.data()[i]);
+		}
+	}
+
+	private void shuffleColorPicture(Lump lump) {
+		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
+		short width = dataByteBuffer.getShort();
+		dataByteBuffer.getShort(); // height
+		dataByteBuffer.getShort(); // leftoffset
+		dataByteBuffer.getShort(); // topoffset
+
+		List<Integer> columnofs = new ArrayList<>();
+		for (int columnof = 0; columnof < width; columnof++) {
+			columnofs.add(dataByteBuffer.getInt());
+		}
+
+		for (int columnof = 0; columnof < width; columnof++) {
+			int index = columnofs.get(columnof);
+			byte topdelta = lump.data()[index];
+			index++;
+			while (topdelta != -1) {
+				byte lengthByte = lump.data()[index];
+				index++;
+				int length = lengthByte & 0xff;
+				for (int i = 0; i < length + 2; i++) {
+					lump.data()[index] = shuffleColor(lump.data()[index]);
+					index++;
+				}
+				topdelta = lump.data()[index];
+				index++;
+			}
+		}
+	}
+
+	private byte shuffleColor(byte b) {
+		List<Integer> list = CGA136_COLORS_SHUFFLE_MAP.get(b & 0xff);
+		return list.get(random.nextInt(list.size())).byteValue();
+	}
 }
