@@ -205,8 +205,14 @@ class WadProcessor16 extends WadProcessor {
 
 		int index = 0;
 
-		// colormap 0-31 from bright to dark
-		for (int colormap = 0; colormap < 32; colormap++) {
+		// colormap 0
+		for (int i = 0; i < 256; i++) {
+			colormapLump.data()[index] = (byte) i;
+			index++;
+		}
+
+		// colormap 1-31 from bright to dark
+		for (int colormap = 1; colormap < 32; colormap++) {
 			List<Byte> colormapBytes = createColormap(colormap);
 			for (byte b : colormapBytes) {
 				colormapLump.data()[index] = b;
@@ -229,21 +235,17 @@ class WadProcessor16 extends WadProcessor {
 	}
 
 	private List<Byte> createColormap(int colormap) {
-		List<Color> cga136colorsForColormap = new ArrayList<>();
-
 		int c = 32 - colormap;
 
+		List<Byte> result = new ArrayList<>();
 		for (Color color : CGA136_COLORS) {
 			int r = (int) Math.sqrt(color.r() * color.r() * c / 32);
 			int g = (int) Math.sqrt(color.g() * color.g() * c / 32);
 			int b = (int) Math.sqrt(color.b() * color.b() * c / 32);
-			cga136colorsForColormap.add(new Color(r, g, b));
-		}
 
-		List<Byte> result = new ArrayList<>();
-		for (Color color : cga136colorsForColormap) {
-			byte closestColor = calculateClosestColor(color);
-			result.add(closestColor);
+			byte closestColor = calculateClosestColor(new Color(r, g, b));
+			byte shuffledColor = shuffleColor(closestColor);
+			result.add(shuffledColor);
 		}
 
 		return result;
