@@ -5,7 +5,9 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import com.sfprod.jwadutil.JWadUtil.Game;
@@ -53,6 +55,7 @@ public class WadProcessor {
 		removeUnusedLumps();
 		processSprites();
 		processWalls();
+		compressPictures();
 
 		shuffleColors();
 	}
@@ -521,13 +524,9 @@ public class WadProcessor {
 				byte lengthByte = vanillaData.get();
 				column.add(lengthByte);
 				int length = lengthByte & 0xff;
-				byte unused = vanillaData.get(); // unused
-				column.add(unused);
-				for (int y = 0; y < length; y++) {
+				for (int y = 0; y < length + 2; y++) {
 					column.add(vanillaData.get());
 				}
-				unused = vanillaData.get(); // unused
-				column.add(unused);
 
 				topdelta = vanillaData.get();
 				column.add(topdelta);
@@ -614,13 +613,9 @@ public class WadProcessor {
 				byte lengthByte = vanillaData.get();
 				column.add(lengthByte);
 				int length = lengthByte & 0xff;
-				byte unused = vanillaData.get(); // unused
-				column.add(unused);
-				for (int y = 0; y < length; y++) {
+				for (int y = 0; y < length + 2; y++) {
 					column.add(vanillaData.get());
 				}
-				unused = vanillaData.get(); // unused
-				column.add(unused);
 
 				topdelta = vanillaData.get();
 				column.add(topdelta);
@@ -688,6 +683,102 @@ public class WadProcessor {
 
 		byte[] doom8088ByteArray = Arrays.copyOf(doom8088Data.array(), size);
 		return new Lump(vanillaLump.name(), doom8088ByteArray);
+	}
+
+	/**
+	 * Remove duplicate columns in graphics in picture format
+	 *
+	 */
+	private void compressPictures() {
+		List<Lump> pictures = new ArrayList<>(256);
+		// Status bar
+		pictures.addAll(wadFile.getLumpsByName("STC"));
+		pictures.addAll(wadFile.getLumpsByName("STF"));
+		pictures.addAll(wadFile.getLumpsByName("STG"));
+		pictures.addAll(wadFile.getLumpsByName("STK"));
+		pictures.addAll(wadFile.getLumpsByName("STY"));
+		// Menu
+		pictures.addAll(wadFile.getLumpsByName("M_"));
+		// Intermission
+		pictures.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+		// Sprites
+		pictures.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
+		// Walls
+		pictures.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
+		pictures.stream().map(this::compressPicture).forEach(wadFile::replaceLump);
+	}
+
+	private Lump compressPicture(Lump picture) {
+		ByteBuffer pictureData = picture.dataAsByteBuffer();
+		short width = pictureData.getShort();
+		short height = pictureData.getShort();
+		short leftoffset = pictureData.getShort();
+		short topoffset = pictureData.getShort();
+		List<Integer> columnofs = new ArrayList<>();
+		for (int columnof = 0; columnof < width; columnof++) {
+			columnofs.add(pictureData.getInt());
+		}
+
+		List<List<Byte>> columns = new ArrayList<>();
+		for (int columnof = 0; columnof < width; columnof++) {
+			// get column
+			List<Byte> column = new ArrayList<>();
+
+			pictureData.position(columnofs.get(columnof));
+			byte topdelta = pictureData.get();
+			column.add(topdelta);
+			while (topdelta != -1) {
+				byte lengthByte = pictureData.get();
+				column.add(lengthByte);
+				int length = lengthByte & 0xff;
+				for (int y = 0; y < length + 2; y++) {
+					column.add(pictureData.get());
+				}
+
+				topdelta = pictureData.get();
+				column.add(topdelta);
+			}
+
+			columns.add(column);
+		}
+
+		ByteBuffer compressedData = ByteBuffer.allocate(65536);
+		compressedData.order(ByteOrder.LITTLE_ENDIAN);
+
+		compressedData.putShort(width);
+		compressedData.putShort(height);
+		compressedData.putShort(leftoffset);
+		compressedData.putShort(topoffset);
+
+		// temp offset values
+		for (int columnof = 0; columnof < width; columnof++) {
+			compressedData.putInt(-1);
+		}
+
+		Map<List<Byte>, Integer> persistedColumns = new HashMap<>();
+		for (int i = 0; i < width; i++) {
+			List<Byte> column = columns.get(i);
+			if (persistedColumns.containsKey(column)) {
+				columnofs.set(i, persistedColumns.get(column));
+			} else {
+				columnofs.set(i, compressedData.position());
+				persistedColumns.put(column, compressedData.position());
+
+				for (byte b : column) {
+					compressedData.put(b);
+				}
+			}
+		}
+
+		int size = compressedData.position();
+
+		compressedData.position(8);
+		for (int columnof : columnofs) {
+			compressedData.putInt(columnof);
+		}
+
+		byte[] compressedByteArray = Arrays.copyOf(compressedData.array(), size);
+		return new Lump(picture.name(), compressedByteArray);
 	}
 
 }
