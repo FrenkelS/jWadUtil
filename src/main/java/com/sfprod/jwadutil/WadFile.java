@@ -1,5 +1,7 @@
 package com.sfprod.jwadutil;
 
+import static com.sfprod.jwadutil.WadProcessor.toByteArray;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -124,7 +126,7 @@ public class WadFile {
 		Path path = Path.of("target", wadPath);
 		int filesizeWithoutDuplicates = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8)
 				+ lumps.stream().mapToInt(lump -> lump.data().length).map(this::roundUp).sum();
-		Files.write(path, Arrays.copyOf(byteBuffer.array(), filesizeWithoutDuplicates));
+		Files.write(path, toByteArray(byteBuffer, filesizeWithoutDuplicates));
 		System.out.println("WAD file written to " + path.toAbsolutePath());
 	}
 

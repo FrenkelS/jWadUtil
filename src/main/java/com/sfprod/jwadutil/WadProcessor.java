@@ -17,10 +17,13 @@ public class WadProcessor {
 
 	// Lump order in a map WAD: each map needs a couple of lumps
 	// to provide a complete scene geometry description.
+	private static final int ML_THINGS = 1; // Monsters, items..
 	private static final int ML_LINEDEFS = 2; // LineDefs, from editing
 	private static final int ML_SIDEDEFS = 3; // SideDefs, from editing
 	private static final int ML_VERTEXES = 4; // Vertices, edited and BSP splits generated
 	private static final int ML_SEGS = 5; // LineSegs, from LineDefs split by BSP
+
+	private static final short MTF_NOTSINGLE = 16;
 
 	private static final byte ST_HORIZONTAL = 0;
 	private static final byte ST_VERTICAL = 1;
@@ -44,6 +47,10 @@ public class WadProcessor {
 		} else {
 			return new WadProcessor(wadFile);
 		}
+	}
+
+	public static byte[] toByteArray(ByteBuffer byteBuffer, int newLength) {
+		return Arrays.copyOf(byteBuffer.array(), newLength);
 	}
 
 	public void processWad() {
@@ -78,6 +85,7 @@ public class WadProcessor {
 	}
 
 	private void processLevel(int lumpNum) {
+		processThings(lumpNum);
 		processLines(lumpNum);
 		processSegs(lumpNum);
 		processSides(lumpNum);
@@ -106,6 +114,43 @@ public class WadProcessor {
 		} else {
 			return (int) ((((long) a) << 16) / b);
 		}
+	}
+
+	/**
+	 * Remove multiplayer things
+	 *
+	 * @param lumpNum
+	 */
+	private void processThings(int lumpNum) {
+		int thingsLumpNum = lumpNum + ML_THINGS;
+		Lump things = wadFile.getLumpByNum(thingsLumpNum);
+		ByteBuffer oldByteBuffer = things.dataAsByteBuffer();
+		ByteBuffer newByteBuffer = ByteBuffer.allocate(65536);
+		newByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+
+		for (int i = 0; i < things.data().length / (2 + 2 + 2 + 2 + 2); i++) {
+			short x = oldByteBuffer.getShort();
+			short y = oldByteBuffer.getShort();
+			short angle = oldByteBuffer.getShort();
+			short type = oldByteBuffer.getShort();
+			short options = oldByteBuffer.getShort();
+
+			if (type == 2 || type == 3 || type == 4 || type == 11) {
+				// ignore start spot for player 2, 3, 4 and Deathmatch
+			} else if ((options & MTF_NOTSINGLE) == MTF_NOTSINGLE) {
+				// ignore multiplayer items
+			} else {
+				newByteBuffer.putShort(x);
+				newByteBuffer.putShort(y);
+				newByteBuffer.putShort(angle);
+				newByteBuffer.putShort(type);
+				newByteBuffer.putShort(options);
+			}
+		}
+
+		int size = newByteBuffer.position();
+		Lump newLump = new Lump(things.name(), toByteArray(newByteBuffer, size));
+		wadFile.replaceLump(thingsLumpNum, newLump);
 	}
 
 	/**
@@ -575,7 +620,7 @@ public class WadProcessor {
 			doom8088Data.putInt(columnof);
 		}
 
-		byte[] doom8088ByteArray = Arrays.copyOf(doom8088Data.array(), size);
+		byte[] doom8088ByteArray = toByteArray(doom8088Data, size);
 		return new Lump(vanillaLump.name(), doom8088ByteArray);
 	}
 
@@ -681,7 +726,7 @@ public class WadProcessor {
 			doom8088Data.putInt(columnof);
 		}
 
-		byte[] doom8088ByteArray = Arrays.copyOf(doom8088Data.array(), size);
+		byte[] doom8088ByteArray = toByteArray(doom8088Data, size);
 		return new Lump(vanillaLump.name(), doom8088ByteArray);
 	}
 
@@ -777,7 +822,7 @@ public class WadProcessor {
 			compressedData.putInt(columnof);
 		}
 
-		byte[] compressedByteArray = Arrays.copyOf(compressedData.array(), size);
+		byte[] compressedByteArray = toByteArray(compressedData, size);
 		return new Lump(picture.name(), compressedByteArray);
 	}
 
