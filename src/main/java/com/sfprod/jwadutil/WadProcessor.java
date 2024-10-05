@@ -385,11 +385,11 @@ public class WadProcessor {
 
 		List<String> textureNames = getTextureNames();
 
-		ByteBuffer newSidesByteBuffer = ByteBuffer.allocate(sideCount * (2 + 2 + 2 + 2 + 2 + 2));
+		ByteBuffer newSidesByteBuffer = ByteBuffer.allocate(sideCount * (2 + 1 + 2 + 2 + 2 + 2));
 		newSidesByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		for (Mapsidedef oldSide : oldSides) {
 			newSidesByteBuffer.putShort(oldSide.textureoffset()); // textureoffset
-			newSidesByteBuffer.putShort(oldSide.rowoffset()); // rowoffset
+			newSidesByteBuffer.put((byte) oldSide.rowoffset()); // rowoffset
 
 			newSidesByteBuffer.putShort(getTextureNumForName(textureNames, oldSide.toptextureAsString())); // toptexture
 			newSidesByteBuffer.putShort(getTextureNumForName(textureNames, oldSide.bottomtextureAsString()));// bottomtexture
