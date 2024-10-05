@@ -477,13 +477,13 @@ public class WadProcessor {
 
 		List<Map.Entry<Integer, List<Short>>> sorted = mapOfLinenos.entrySet().stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.comparing(List::size))).toList().reversed();
-		Map<List<Short>, Short> duplicateDataMap = new HashMap<>();
+		List<Map.Entry<List<Short>, Short>> duplicateDataList = new ArrayList<>();
 		for (Map.Entry<Integer, List<Short>> entry : sorted) {
 			int index = entry.getKey();
 			List<Short> linenos = entry.getValue();
 
 			short offset = -1;
-			for (Map.Entry<List<Short>, Short> duplicateEntry : duplicateDataMap.entrySet()) {
+			for (Map.Entry<List<Short>, Short> duplicateEntry : duplicateDataList) {
 				List<Short> duplicateLinos = duplicateEntry.getKey();
 				if (ListUtils.endsWith(duplicateLinos, linenos)) {
 					offset = (short) (duplicateEntry.getValue() + (duplicateLinos.size() - linenos.size()));
@@ -500,7 +500,7 @@ public class WadProcessor {
 				}
 				newBlockmap.putShort((short) -1);
 
-				duplicateDataMap.put(linenos, offset);
+				duplicateDataList.add(Map.entry(linenos, offset));
 			}
 			offsets.set(index, offset);
 		}
