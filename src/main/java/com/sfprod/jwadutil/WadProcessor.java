@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ public class WadProcessor {
 	private static final int ML_SIDEDEFS = 3; // SideDefs, from editing
 	private static final int ML_VERTEXES = 4; // Vertices, edited and BSP splits generated
 	private static final int ML_SEGS = 5; // LineSegs, from LineDefs split by BSP
+	private static final int ML_BLOCKMAP = 10; // LUT, motion clipping, walls/grid element
 
 	private static final short MTF_NOTSINGLE = 16;
 
@@ -86,6 +88,7 @@ public class WadProcessor {
 		processLines(lumpNum);
 		processSegs(lumpNum);
 		processSides(lumpNum);
+		processBlockmap(lumpNum);
 	}
 
 	private static record Maplinedef(short v1, short v2, short flags, short special, short tag, short[] sidenum) {
@@ -423,6 +426,95 @@ public class WadProcessor {
 			textureNames.add(new String(name, StandardCharsets.US_ASCII).trim().toUpperCase());
 		}
 		return textureNames;
+	}
+
+	/**
+	 * Compress blockmap
+	 *
+	 * @param lumpNum
+	 */
+	private void processBlockmap(int lumpNum) {
+		int blockmapLumpNum = lumpNum + ML_BLOCKMAP;
+		Lump blockmap = wadFile.getLumpByNum(blockmapLumpNum);
+
+		ByteBuffer blockmapByteBuffer = blockmap.dataAsByteBuffer();
+		short bmaporgx = blockmapByteBuffer.getShort();
+		short bmaporgy = blockmapByteBuffer.getShort();
+		short bmapwidth = blockmapByteBuffer.getShort();
+		short bmapheight = blockmapByteBuffer.getShort();
+
+		List<Short> offsets = new ArrayList<>();
+		for (int i = 0; i < bmapwidth * bmapheight; i++) {
+			offsets.add(blockmapByteBuffer.getShort());
+		}
+
+		Map<Integer, List<Short>> mapOfLinenos = new HashMap<>();
+		for (int i = 0; i < bmapwidth * bmapheight; i++) {
+			short offset = offsets.get(i);
+			List<Short> linenos = new ArrayList<>();
+			blockmapByteBuffer.position(offset * 2);
+			blockmapByteBuffer.getShort(); // always 0
+			short lineno = blockmapByteBuffer.getShort();
+			while (lineno != -1) {
+				linenos.add(lineno);
+				lineno = blockmapByteBuffer.getShort();
+			}
+			mapOfLinenos.put(i, linenos);
+		}
+
+		ByteBuffer newBlockmap = ByteBuffer.allocate(65536);
+		newBlockmap.order(ByteOrder.LITTLE_ENDIAN);
+
+		newBlockmap.putShort(bmaporgx);
+		newBlockmap.putShort(bmaporgy);
+		newBlockmap.putShort(bmapwidth);
+		newBlockmap.putShort(bmapheight);
+
+		// temp offset values
+		for (int i = 0; i < bmapwidth * bmapheight; i++) {
+			newBlockmap.putShort((short) -1);
+		}
+
+		List<Map.Entry<Integer, List<Short>>> sorted = mapOfLinenos.entrySet().stream()
+				.sorted(Map.Entry.comparingByValue(Comparator.comparing(List::size))).toList().reversed();
+		Map<List<Short>, Short> duplicateDataMap = new HashMap<>();
+		for (Map.Entry<Integer, List<Short>> entry : sorted) {
+			int index = entry.getKey();
+			List<Short> linenos = entry.getValue();
+
+			short offset = -1;
+			for (Map.Entry<List<Short>, Short> duplicateEntry : duplicateDataMap.entrySet()) {
+				List<Short> duplicateLinos = duplicateEntry.getKey();
+				if (ListUtils.endsWith(duplicateLinos, linenos)) {
+					offset = (short) (duplicateEntry.getValue() + (duplicateLinos.size() - linenos.size()));
+					break;
+				}
+			}
+
+			if (offset == -1) {
+				offset = (short) (newBlockmap.position() / 2);
+
+				newBlockmap.putShort((short) 0);
+				for (short lineno : linenos) {
+					newBlockmap.putShort(lineno);
+				}
+				newBlockmap.putShort((short) -1);
+
+				duplicateDataMap.put(linenos, offset);
+			}
+			offsets.set(index, offset);
+		}
+
+		int newLength = newBlockmap.position();
+
+		newBlockmap.position(8);
+
+		for (short offset : offsets) {
+			newBlockmap.putShort(offset);
+		}
+
+		Lump newLump = new Lump(blockmap.name(), toByteArray(newBlockmap, newLength));
+		wadFile.replaceLump(blockmapLumpNum, newLump);
 	}
 
 	/**
