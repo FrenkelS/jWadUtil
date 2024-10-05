@@ -209,7 +209,7 @@ public class WadProcessor {
 
 			newLineByteBuffer.put((byte) maplinedef.flags()); // flags
 			newLineByteBuffer.put((byte) maplinedef.special()); // special
-			newLineByteBuffer.putShort(maplinedef.tag()); // tag
+			newLineByteBuffer.put((byte) maplinedef.tag()); // tag
 
 			byte slopetype;
 			if (dx == 0) {
@@ -235,8 +235,8 @@ public class WadProcessor {
 	}
 
 	private static record Line(Vertex v1, Vertex v2, short dx, short dy, short[] sidenum, short[] bbox, byte flags,
-			byte special, short tag, byte slopetype) {
-		public static final int SIZE_OF_LINE = 2 * 2 + 2 * 2 + 2 + 2 + 2 * 2 + 4 * 2 + 1 + 1 + 2 + 1;
+			byte special, byte tag, byte slopetype) {
+		public static final int SIZE_OF_LINE = 2 * 2 + 2 * 2 + 2 + 2 + 2 * 2 + 4 * 2 + 1 + 1 + 1 + 1;
 	}
 
 	private static record Mapsidedef(short textureoffset, short rowoffset, byte[] toptexture, byte[] bottomtexture,
@@ -323,7 +323,7 @@ public class WadProcessor {
 					linesByteBuffer.getShort() };
 			byte flags = linesByteBuffer.get();
 			byte special = linesByteBuffer.get();
-			short tag = linesByteBuffer.getShort();
+			byte tag = linesByteBuffer.get();
 			byte slopetype = linesByteBuffer.get();
 			lines.add(new Line(v1, v2, dx, dy, sidenum, bbox, flags, special, tag, slopetype));
 		}
