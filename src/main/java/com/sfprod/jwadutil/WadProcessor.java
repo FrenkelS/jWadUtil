@@ -25,6 +25,7 @@ public class WadProcessor {
 	private static final int ML_VERTEXES = 4; // Vertices, edited and BSP splits generated
 	private static final int ML_SEGS = 5; // LineSegs, from LineDefs split by BSP
 	private static final int ML_SSECTORS = 6; // SubSectors, list of LineSegs
+	private static final int ML_SECTORS = 8; // Sectors, from editing
 	private static final int ML_BLOCKMAP = 10; // LUT, motion clipping, walls/grid element
 
 	private static final short MTF_NOTSINGLE = 16;
@@ -90,6 +91,7 @@ public class WadProcessor {
 		processSegs(lumpNum);
 		processSidedefs(lumpNum);
 		processSsectors(lumpNum);
+		processSectors(lumpNum);
 		processBlockmap(lumpNum);
 	}
 
@@ -452,6 +454,42 @@ public class WadProcessor {
 			derivedFirstseg += numsegs;
 		}
 		wadFile.replaceLump(ssectorsLumpNum, new Lump(ssectors.name(), newnumsegs));
+	}
+
+	/**
+	 * lightlevel and special fit in a byte
+	 *
+	 * @param lumpNum
+	 */
+	private void processSectors(int lumpNum) {
+		int sectorsLumpNum = lumpNum + ML_SECTORS;
+		Lump sectors = wadFile.getLumpByNum(sectorsLumpNum);
+		ByteBuffer oldbb = sectors.dataAsByteBuffer();
+		ByteBuffer newbb = ByteBuffer.allocate(65536);
+		newbb.order(ByteOrder.LITTLE_ENDIAN);
+		for (int i = 0; i < sectors.data().length / 26; i++) {
+			short floorheight = oldbb.getShort();
+			short ceilingheight = oldbb.getShort();
+			byte[] floorpic = new byte[8];
+			oldbb.get(floorpic);
+			byte[] ceilingpic = new byte[8];
+			oldbb.get(ceilingpic);
+			short lightlevel = oldbb.getShort();
+			short special = oldbb.getShort();
+			short tag = oldbb.getShort();
+
+			newbb.putShort(floorheight);
+			newbb.putShort(ceilingheight);
+			newbb.put(floorpic);
+			newbb.put(ceilingpic);
+			newbb.put((byte) lightlevel);
+			newbb.put((byte) special);
+			newbb.putShort(tag);
+		}
+
+		int size = newbb.position();
+		Lump newLump = new Lump(sectors.name(), toByteArray(newbb, size));
+		wadFile.replaceLump(sectorsLumpNum, newLump);
 	}
 
 	/**
