@@ -15,20 +15,6 @@ class WadProcessor16 extends WadProcessor {
 
 	private final Random random = new Random(0x1d4a11);
 
-	private static record Color(int r, int g, int b) {
-		double gray() {
-			return r * 0.299 + g * 0.587 + b * 0.114;
-		}
-
-		int calculateDistance(Color that) {
-			int distr = this.r - that.r;
-			int distg = this.g - that.g;
-			int distb = this.b - that.b;
-
-			return distr * distr + distg * distg + distb * distb;
-		}
-	}
-
 	private static final List<Color> CGA_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black
 			new Color(0x00, 0x00, 0xAA), // blue

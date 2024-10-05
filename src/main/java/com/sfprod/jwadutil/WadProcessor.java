@@ -17,6 +17,8 @@ import com.sfprod.jwadutil.WadFile.Lump;
 
 public class WadProcessor {
 
+	private static final boolean FLAT_SPAN = true;
+
 	// Lump order in a map WAD: each map needs a couple of lumps
 	// to provide a complete scene geometry description.
 	private static final int ML_THINGS = 1; // Monsters, items..
@@ -41,9 +43,21 @@ public class WadProcessor {
 	private static final short ANG90_16 = 0x4000;
 
 	final WadFile wadFile;
+	private final List<Color> vgaColors;
 
 	WadProcessor(WadFile wadFile) {
 		this.wadFile = wadFile;
+
+		Lump playpal = wadFile.getLumpByName("PLAYPAL");
+		ByteBuffer bb = playpal.dataAsByteBuffer();
+		List<Color> colors = new ArrayList<>();
+		for (int i = 0; i < 256; i++) {
+			int r = bb.get() & 0xff;
+			int g = bb.get() & 0xff;
+			int b = bb.get() & 0xff;
+			colors.add(new Color(r, g, b));
+		}
+		this.vgaColors = colors;
 	}
 
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
@@ -457,7 +471,8 @@ public class WadProcessor {
 	}
 
 	/**
-	 * lightlevel and special fit in a byte
+	 * lightlevel and special fit in a byte, replace flat names by average color of
+	 * flat
 	 *
 	 * @param lumpNum
 	 */
@@ -480,8 +495,31 @@ public class WadProcessor {
 
 			newbb.putShort(floorheight);
 			newbb.putShort(ceilingheight);
-			newbb.put(floorpic);
-			newbb.put(ceilingpic);
+
+			if (FLAT_SPAN) {
+				// floorpic
+				String floorflatname = new String(floorpic, StandardCharsets.US_ASCII).trim();
+				if (floorflatname.startsWith("NUKAGE")) {
+					newbb.putShort((short) -3);
+				} else {
+					Lump floor = wadFile.getLumpByName(floorflatname);
+					newbb.putShort(calculateAverageColor(floor));
+				}
+
+				// ceilingpic
+				String ceilingflatname = new String(ceilingpic, StandardCharsets.US_ASCII).trim();
+				if (ceilingflatname.startsWith("NUKAGE")) {
+					newbb.putShort((short) -3);
+				} else if ("F_SKY1".equals(ceilingflatname)) {
+					newbb.putShort((short) -2);
+				} else {
+					Lump ceiling = wadFile.getLumpByName(ceilingflatname);
+					newbb.putShort(calculateAverageColor(ceiling));
+				}
+			} else {
+				newbb.put(floorpic);
+				newbb.put(ceilingpic);
+			}
 			newbb.put((byte) lightlevel);
 			newbb.put((byte) special);
 			newbb.putShort(tag);
@@ -490,6 +528,42 @@ public class WadProcessor {
 		int size = newbb.position();
 		Lump newLump = new Lump(sectors.name(), toByteArray(newbb, size));
 		wadFile.replaceLump(sectorsLumpNum, newLump);
+	}
+
+	private short calculateAverageColor(Lump flat) {
+		byte[] source = flat.data();
+		int sumr = 0;
+		int sumg = 0;
+		int sumb = 0;
+		for (byte b : source) {
+			Color color = vgaColors.get(b & 0xff);
+			sumr += color.r() * color.r();
+			sumg += color.g() * color.g();
+			sumb += color.b() * color.b();
+		}
+		int averager = (int) Math.sqrt(sumr / (64 * 64));
+		int averageg = (int) Math.sqrt(sumg / (64 * 64));
+		int averageb = (int) Math.sqrt(sumb / (64 * 64));
+		Color averageColor = new Color(averager, averageg, averageb);
+
+		short closestAverageColorIndex = -1;
+		int minDistance = Integer.MAX_VALUE;
+		for (short i = 0; i < 256; i++) {
+			Color vgaColor = vgaColors.get(i);
+
+			int distance = averageColor.calculateDistance(vgaColor);
+			if (distance == 0) {
+				closestAverageColorIndex = i;
+				break;
+			}
+
+			if (distance < minDistance) {
+				minDistance = distance;
+				closestAverageColorIndex = i;
+			}
+		}
+
+		return closestAverageColorIndex;
 	}
 
 	/**
@@ -686,6 +760,14 @@ public class WadProcessor {
 				"WIP4", // P4
 				"WIVCTMS" // Victims
 		).forEach(prefix -> wadFile.removeLumps(prefix));
+
+		if (FLAT_SPAN) {
+			List<Lump> flats = new ArrayList<>();
+			flats.add(wadFile.getLumpByName("F_START"));
+			flats.add(wadFile.getLumpByName("F_END"));
+			flats.addAll(wadFile.getLumpsBetween("F_START", "F_END"));
+			flats.stream().filter(f -> !"FLOOR4_8".equals(f.nameAsString())).forEach(wadFile::removeLump);
+		}
 	}
 
 	private void processSprites() {

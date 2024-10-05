@@ -127,7 +127,7 @@ public class WadFile {
 		int filesizeWithoutDuplicates = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8)
 				+ lumps.stream().mapToInt(lump -> lump.data().length).map(this::roundUp).sum();
 		Files.write(path, toByteArray(byteBuffer, filesizeWithoutDuplicates));
-		System.out.println("WAD file written to " + path.toAbsolutePath());
+		System.out.println("WAD file of size " + filesizeWithoutDuplicates + " written to " + path.toAbsolutePath());
 	}
 
 	public Lump getLumpByName(String name) {
@@ -177,6 +177,10 @@ public class WadFile {
 	public void replaceLump(Lump newLump) {
 		int lumpnum = getLumpNumByName(newLump.nameAsString());
 		lumps.set(lumpnum, newLump);
+	}
+
+	public void removeLump(Lump lump) {
+		removeLump(lump.nameAsString());
 	}
 
 	public void removeLump(String lumpname) {
