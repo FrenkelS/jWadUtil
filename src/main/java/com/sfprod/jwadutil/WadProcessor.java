@@ -1,10 +1,11 @@
 package com.sfprod.jwadutil;
 
+import static com.sfprod.jwadutil.ByteBufferUtils.toByteArray;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,10 +48,6 @@ public class WadProcessor {
 		} else {
 			return new WadProcessor(wadFile);
 		}
-	}
-
-	public static byte[] toByteArray(ByteBuffer byteBuffer, int newLength) {
-		return Arrays.copyOf(byteBuffer.array(), newLength);
 	}
 
 	public void processWad() {

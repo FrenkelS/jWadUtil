@@ -1,6 +1,6 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.jwadutil.WadProcessor.toByteArray;
+import static com.sfprod.jwadutil.ByteBufferUtils.toByteArray;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
