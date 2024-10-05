@@ -100,12 +100,12 @@ public class WadProcessor {
 	private List<Vertex> getVertexes(int lumpNum) {
 		int vtxLumpNum = lumpNum + ML_VERTEXES;
 		Lump vxl = wadFile.getLumpByNum(vtxLumpNum);
-		List<Vertex> vtx = new ArrayList<>();
+		List<Vertex> vertexes = new ArrayList<>();
 		ByteBuffer vxlByteBuffer = vxl.dataAsByteBuffer();
 		for (int i = 0; i < vxl.data().length / (2 + 2); i++) {
-			vtx.add(new Vertex(vxlByteBuffer.getShort(), vxlByteBuffer.getShort()));
+			vertexes.add(new Vertex(vxlByteBuffer.getShort(), vxlByteBuffer.getShort()));
 		}
-		return vtx;
+		return vertexes;
 	}
 
 	private int fixedDiv(int a, int b) {
@@ -181,16 +181,16 @@ public class WadProcessor {
 		}
 
 		// We need vertexes for this...
-		List<Vertex> vtx = getVertexes(lumpNum);
+		List<Vertex> vertexes = getVertexes(lumpNum);
 
 		ByteBuffer newLineByteBuffer = ByteBuffer.allocate(lineCount * Line.SIZE_OF_LINE);
 		newLineByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		for (Maplinedef maplinedef : oldLines) {
-			Vertex vertex1 = vtx.get(maplinedef.v1());
+			Vertex vertex1 = vertexes.get(maplinedef.v1());
 			newLineByteBuffer.putShort(vertex1.x()); // v1.x
 			newLineByteBuffer.putShort(vertex1.y()); // v1.y
 
-			Vertex vertex2 = vtx.get(maplinedef.v2());
+			Vertex vertex2 = vertexes.get(maplinedef.v2());
 			newLineByteBuffer.putShort(vertex2.x()); // v2.x
 			newLineByteBuffer.putShort(vertex2.y()); // v2.y
 
@@ -306,7 +306,7 @@ public class WadProcessor {
 		}
 
 		// We need vertexes for this...
-		List<Vertex> vtx = getVertexes(lumpNum);
+		List<Vertex> vertexes = getVertexes(lumpNum);
 
 		// And LineDefs. Must process lines first.
 		int linesLumpNum = lumpNum + ML_LINEDEFS;
@@ -329,19 +329,19 @@ public class WadProcessor {
 		}
 
 		// And sides too...
-		List<Mapsidedef> sides = getSidedefs(lumpNum);
+		List<Mapsidedef> sidedefs = getSidedefs(lumpNum);
 
 		// ****************************
 
-		int sizeofseg = 2 * 2 + 2 * 2 + 2 + 2 + 2 + 2 + 2 + 2;
+		int sizeofseg = 2 * 2 + 2 * 2 + 2 + 2 + 2 + 2 + 1 + 1;
 		ByteBuffer newSegsByteBuffer = ByteBuffer.allocate(segCount * sizeofseg);
 		newSegsByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		for (Mapseg oldSeg : oldSegs) {
-			Vertex v1 = vtx.get(oldSeg.v1());
+			Vertex v1 = vertexes.get(oldSeg.v1());
 			newSegsByteBuffer.putShort(v1.x()); // v1.x
 			newSegsByteBuffer.putShort(v1.y()); // v1.y
 
-			Vertex v2 = vtx.get(oldSeg.v2());
+			Vertex v2 = vertexes.get(oldSeg.v2());
 			newSegsByteBuffer.putShort(v2.x()); // v2.x
 			newSegsByteBuffer.putShort(v2.y()); // v2.y
 
@@ -356,17 +356,17 @@ public class WadProcessor {
 
 			newSegsByteBuffer.putShort(linenum); // linenum
 
-			short frontsectornum = sidenum == NO_INDEX ? NO_INDEX : sides.get(sidenum).sector();
-			newSegsByteBuffer.putShort(frontsectornum); // frontsectornum
+			byte frontsectornum = (byte) sidedefs.get(sidenum).sector();
+			newSegsByteBuffer.put(frontsectornum); // frontsectornum
 
-			short backsectornum = NO_INDEX;
+			byte backsectornum = (byte) 0xff;
 			if ((ldef.flags() & ML_TWOSIDED) != 0) {
 				short backsectorside = ldef.sidenum()[side ^ 1];
 				if (backsectorside != NO_INDEX) {
-					backsectornum = sides.get(backsectorside).sector();
+					backsectornum = (byte) sidedefs.get(backsectorside).sector();
 				}
 			}
-			newSegsByteBuffer.putShort(backsectornum); // backsectornum
+			newSegsByteBuffer.put(backsectornum); // backsectornum
 		}
 
 		Lump newSeg = new Lump(segs.name(), newSegsByteBuffer.array());
@@ -380,28 +380,28 @@ public class WadProcessor {
 	 * @param lumpNum
 	 */
 	private void processSidedefs(int lumpNum) {
-		List<Mapsidedef> oldSides = getSidedefs(lumpNum);
-		int sideCount = oldSides.size();
+		List<Mapsidedef> oldSidedefs = getSidedefs(lumpNum);
+		int sideCount = oldSidedefs.size();
 
 		List<String> textureNames = getTextureNames();
 
-		ByteBuffer newSidesByteBuffer = ByteBuffer.allocate(sideCount * (2 + 1 + 1 + 1 + 1 + 1));
-		newSidesByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		for (Mapsidedef oldSide : oldSides) {
-			newSidesByteBuffer.putShort(oldSide.textureoffset()); // textureoffset
-			newSidesByteBuffer.put((byte) oldSide.rowoffset()); // rowoffset
+		ByteBuffer newSidedefByteBuffer = ByteBuffer.allocate(sideCount * (2 + 1 + 1 + 1 + 1 + 1));
+		newSidedefByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		for (Mapsidedef oldSidedef : oldSidedefs) {
+			newSidedefByteBuffer.putShort(oldSidedef.textureoffset()); // textureoffset
+			newSidedefByteBuffer.put((byte) oldSidedef.rowoffset()); // rowoffset
 
-			newSidesByteBuffer.put(getTextureNumForName(textureNames, oldSide.toptextureAsString())); // toptexture
-			newSidesByteBuffer.put(getTextureNumForName(textureNames, oldSide.bottomtextureAsString()));// bottomtexture
-			newSidesByteBuffer.put(getTextureNumForName(textureNames, oldSide.midtextureAsString())); // midtexture
+			newSidedefByteBuffer.put(getTextureNumForName(textureNames, oldSidedef.toptextureAsString())); // toptexture
+			newSidedefByteBuffer.put(getTextureNumForName(textureNames, oldSidedef.bottomtextureAsString()));// bottomtexture
+			newSidedefByteBuffer.put(getTextureNumForName(textureNames, oldSidedef.midtextureAsString())); // midtexture
 
-			newSidesByteBuffer.put((byte) oldSide.sector()); // sector
+			newSidedefByteBuffer.put((byte) oldSidedef.sector()); // sector
 		}
 
 		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
-		byte[] sidesLumpName = wadFile.getLumpByNum(sidesLumpNum).name();
-		Lump newSide = new Lump(sidesLumpName, newSidesByteBuffer.array());
-		wadFile.replaceLump(sidesLumpNum, newSide);
+		byte[] sidedefsLumpName = wadFile.getLumpByNum(sidesLumpNum).name();
+		Lump newSidedefs = new Lump(sidedefsLumpName, newSidedefByteBuffer.array());
+		wadFile.replaceLump(sidesLumpNum, newSidedefs);
 	}
 
 	private byte getTextureNumForName(List<String> names, String name) {
