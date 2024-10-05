@@ -385,7 +385,7 @@ public class WadProcessor {
 
 		List<String> textureNames = getTextureNames();
 
-		ByteBuffer newSidesByteBuffer = ByteBuffer.allocate(sideCount * (2 + 1 + 2 + 2 + 2 + 2));
+		ByteBuffer newSidesByteBuffer = ByteBuffer.allocate(sideCount * (2 + 1 + 2 + 2 + 2 + 1));
 		newSidesByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		for (Mapsidedef oldSide : oldSides) {
 			newSidesByteBuffer.putShort(oldSide.textureoffset()); // textureoffset
@@ -395,7 +395,7 @@ public class WadProcessor {
 			newSidesByteBuffer.putShort(getTextureNumForName(textureNames, oldSide.bottomtextureAsString()));// bottomtexture
 			newSidesByteBuffer.putShort(getTextureNumForName(textureNames, oldSide.midtextureAsString())); // midtexture
 
-			newSidesByteBuffer.putShort(oldSide.sector());// sector
+			newSidesByteBuffer.put((byte) oldSide.sector()); // sector
 		}
 
 		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
