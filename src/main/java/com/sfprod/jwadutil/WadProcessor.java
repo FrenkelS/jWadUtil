@@ -385,15 +385,15 @@ public class WadProcessor {
 
 		List<String> textureNames = getTextureNames();
 
-		ByteBuffer newSidesByteBuffer = ByteBuffer.allocate(sideCount * (2 + 1 + 2 + 2 + 2 + 1));
+		ByteBuffer newSidesByteBuffer = ByteBuffer.allocate(sideCount * (2 + 1 + 1 + 1 + 1 + 1));
 		newSidesByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		for (Mapsidedef oldSide : oldSides) {
 			newSidesByteBuffer.putShort(oldSide.textureoffset()); // textureoffset
 			newSidesByteBuffer.put((byte) oldSide.rowoffset()); // rowoffset
 
-			newSidesByteBuffer.putShort(getTextureNumForName(textureNames, oldSide.toptextureAsString())); // toptexture
-			newSidesByteBuffer.putShort(getTextureNumForName(textureNames, oldSide.bottomtextureAsString()));// bottomtexture
-			newSidesByteBuffer.putShort(getTextureNumForName(textureNames, oldSide.midtextureAsString())); // midtexture
+			newSidesByteBuffer.put(getTextureNumForName(textureNames, oldSide.toptextureAsString())); // toptexture
+			newSidesByteBuffer.put(getTextureNumForName(textureNames, oldSide.bottomtextureAsString()));// bottomtexture
+			newSidesByteBuffer.put(getTextureNumForName(textureNames, oldSide.midtextureAsString())); // midtexture
 
 			newSidesByteBuffer.put((byte) oldSide.sector()); // sector
 		}
@@ -404,9 +404,9 @@ public class WadProcessor {
 		wadFile.replaceLump(sidesLumpNum, newSide);
 	}
 
-	private short getTextureNumForName(List<String> names, String name) {
+	private byte getTextureNumForName(List<String> names, String name) {
 		int index = names.indexOf(name);
-		return index == -1 ? 0 : (short) index;
+		return index == -1 ? 0 : (byte) index;
 	}
 
 	private List<String> getTextureNames() {
