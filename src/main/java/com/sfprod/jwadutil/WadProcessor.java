@@ -85,9 +85,9 @@ public class WadProcessor {
 
 	private void processLevel(int lumpNum) {
 		processThings(lumpNum);
-		processLines(lumpNum);
+		processLinedefs(lumpNum);
 		processSegs(lumpNum);
-		processSides(lumpNum);
+		processSidedefs(lumpNum);
 		processBlockmap(lumpNum);
 	}
 
@@ -158,7 +158,7 @@ public class WadProcessor {
 	 *
 	 * @param lumpNum
 	 */
-	private void processLines(int lumpNum) {
+	private void processLinedefs(int lumpNum) {
 		int lineLumpNum = lumpNum + ML_LINEDEFS;
 		Lump lines = wadFile.getLumpByNum(lineLumpNum);
 
@@ -258,7 +258,7 @@ public class WadProcessor {
 		}
 	}
 
-	private List<Mapsidedef> getSides(int lumpNum) {
+	private List<Mapsidedef> getSidedefs(int lumpNum) {
 		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
 		Lump sxl = wadFile.getLumpByNum(sidesLumpNum);
 		List<Mapsidedef> sides = new ArrayList<>();
@@ -329,7 +329,7 @@ public class WadProcessor {
 		}
 
 		// And sides too...
-		List<Mapsidedef> sides = getSides(lumpNum);
+		List<Mapsidedef> sides = getSidedefs(lumpNum);
 
 		// ****************************
 
@@ -379,8 +379,8 @@ public class WadProcessor {
 	 *
 	 * @param lumpNum
 	 */
-	private void processSides(int lumpNum) {
-		List<Mapsidedef> oldSides = getSides(lumpNum);
+	private void processSidedefs(int lumpNum) {
+		List<Mapsidedef> oldSides = getSidedefs(lumpNum);
 		int sideCount = oldSides.size();
 
 		List<String> textureNames = getTextureNames();
