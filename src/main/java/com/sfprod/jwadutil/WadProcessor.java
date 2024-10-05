@@ -24,6 +24,7 @@ public class WadProcessor {
 	private static final int ML_SIDEDEFS = 3; // SideDefs, from editing
 	private static final int ML_VERTEXES = 4; // Vertices, edited and BSP splits generated
 	private static final int ML_SEGS = 5; // LineSegs, from LineDefs split by BSP
+	private static final int ML_SSECTORS = 6; // SubSectors, list of LineSegs
 	private static final int ML_BLOCKMAP = 10; // LUT, motion clipping, walls/grid element
 
 	private static final short MTF_NOTSINGLE = 16;
@@ -88,6 +89,7 @@ public class WadProcessor {
 		processLinedefs(lumpNum);
 		processSegs(lumpNum);
 		processSidedefs(lumpNum);
+		processSsectors(lumpNum);
 		processBlockmap(lumpNum);
 	}
 
@@ -426,6 +428,30 @@ public class WadProcessor {
 			textureNames.add(new String(name, StandardCharsets.US_ASCII).trim().toUpperCase());
 		}
 		return textureNames;
+	}
+
+	/**
+	 * Only store numsegs as a byte
+	 *
+	 * @param lumpNum
+	 */
+	private void processSsectors(int lumpNum) {
+		int ssectorsLumpNum = lumpNum + ML_SSECTORS;
+		Lump ssectors = wadFile.getLumpByNum(ssectorsLumpNum);
+		ByteBuffer byteBuffer = ssectors.dataAsByteBuffer();
+		byte[] newnumsegs = new byte[ssectors.data().length / (2 + 2)];
+		short derivedFirstseg = 0;
+		for (int i = 0; i < ssectors.data().length / (2 + 2); i++) {
+			short numsegs = byteBuffer.getShort();
+			newnumsegs[i] = (byte) numsegs;
+
+			short firstseg = byteBuffer.getShort();
+			if (firstseg != derivedFirstseg) {
+				throw new IllegalStateException();
+			}
+			derivedFirstseg += numsegs;
+		}
+		wadFile.replaceLump(ssectorsLumpNum, new Lump(ssectors.name(), newnumsegs));
 	}
 
 	/**
