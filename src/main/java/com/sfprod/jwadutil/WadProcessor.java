@@ -136,15 +136,15 @@ public class WadProcessor {
 			short options = oldByteBuffer.getShort();
 
 			if (type == 2 || type == 3 || type == 4 || type == 11) {
-				// ignore start spot for player 2, 3, 4 and Deathmatch
+				// ignore starting spot for player 2, 3, 4 and Deathmatch
 			} else if ((options & MTF_NOTSINGLE) == MTF_NOTSINGLE) {
-				// ignore multiplayer items
+				// ignore multiplayer things
 			} else {
 				newByteBuffer.putShort(x);
 				newByteBuffer.putShort(y);
-				newByteBuffer.putShort(angle);
 				newByteBuffer.putShort(type);
-				newByteBuffer.putShort(options);
+				newByteBuffer.put((byte) (angle / 45));
+				newByteBuffer.put((byte) options);
 			}
 		}
 
