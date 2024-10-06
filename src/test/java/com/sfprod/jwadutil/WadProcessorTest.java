@@ -13,7 +13,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sfprod.jwadutil.JWadUtil.Game;
-import com.sfprod.jwadutil.WadFile.Lump;
 
 /**
  * This class tests {@link WadProcessor}

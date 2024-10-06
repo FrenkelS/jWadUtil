@@ -1,19 +1,18 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.jwadutil.ByteBufferUtils.toByteArray;
-import static com.sfprod.jwadutil.ByteUtils.toInt;
+import static com.sfprod.jwadutil.ByteBufferUtils.newByteBuffer;
+import static com.sfprod.jwadutil.NumberUtils.toByte;
+import static com.sfprod.jwadutil.NumberUtils.toInt;
+import static com.sfprod.jwadutil.NumberUtils.toShort;
 import static com.sfprod.jwadutil.WadProcessor.FLAT_SPAN;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.sfprod.jwadutil.WadFile.Lump;
 
 public class MapProcessor {
 
@@ -89,8 +88,7 @@ public class MapProcessor {
 		int thingsLumpNum = lumpNum + ML_THINGS;
 		Lump things = wadFile.getLumpByNum(thingsLumpNum);
 		ByteBuffer oldByteBuffer = things.dataAsByteBuffer();
-		ByteBuffer newByteBuffer = ByteBuffer.allocate(65536);
-		newByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		ByteBuffer newByteBuffer = newByteBuffer();
 
 		for (int i = 0; i < things.length() / (2 + 2 + 2 + 2 + 2); i++) {
 			short x = oldByteBuffer.getShort();
@@ -101,19 +99,19 @@ public class MapProcessor {
 
 			if (type == 2 || type == 3 || type == 4 || type == 11) {
 				// ignore starting spot for player 2, 3, 4 and Deathmatch
-			} else if ((options & MTF_NOTSINGLE) == MTF_NOTSINGLE) {
+			} else if ((options & MTF_NOTSINGLE) != 0) {
 				// ignore multiplayer things
 			} else {
 				newByteBuffer.putShort(x);
 				newByteBuffer.putShort(y);
 				newByteBuffer.putShort(type);
-				newByteBuffer.put((byte) (angle / 45));
-				newByteBuffer.put((byte) options);
+				newByteBuffer.put(toByte(angle / 45));
+				newByteBuffer.put(toByte(options));
 			}
 		}
 
 		int size = newByteBuffer.position();
-		Lump newLump = new Lump(things.name(), toByteArray(newByteBuffer, size));
+		Lump newLump = new Lump(things.name(), size, newByteBuffer);
 		wadFile.replaceLump(thingsLumpNum, newLump);
 	}
 
@@ -147,8 +145,7 @@ public class MapProcessor {
 		// We need vertexes for this...
 		List<Vertex> vertexes = getVertexes(lumpNum);
 
-		ByteBuffer newLineByteBuffer = ByteBuffer.allocate(lineCount * Line.SIZE_OF_LINE);
-		newLineByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		ByteBuffer newLineByteBuffer = newByteBuffer(lineCount * Line.SIZE_OF_LINE);
 		for (Maplinedef maplinedef : oldLines) {
 			Vertex vertex1 = vertexes.get(maplinedef.v1());
 			newLineByteBuffer.putShort(vertex1.x()); // v1.x
@@ -158,8 +155,8 @@ public class MapProcessor {
 			newLineByteBuffer.putShort(vertex2.x()); // v2.x
 			newLineByteBuffer.putShort(vertex2.y()); // v2.y
 
-			short dx = (short) (vertex2.x() - vertex1.x());
-			short dy = (short) (vertex2.y() - vertex1.y());
+			short dx = toShort(vertex2.x() - vertex1.x());
+			short dy = toShort(vertex2.y() - vertex1.y());
 			newLineByteBuffer.putShort(dx); // dx
 			newLineByteBuffer.putShort(dy); // dy
 
@@ -171,9 +168,9 @@ public class MapProcessor {
 			newLineByteBuffer.putShort(vertex1.x() < vertex2.x() ? vertex1.x() : vertex2.x()); // bbox[BOXLEFT]
 			newLineByteBuffer.putShort(vertex1.x() < vertex2.x() ? vertex2.x() : vertex1.x()); // bbox[BOXRIGHT]
 
-			newLineByteBuffer.put((byte) maplinedef.flags()); // flags
-			newLineByteBuffer.put((byte) maplinedef.special()); // special
-			newLineByteBuffer.put((byte) maplinedef.tag()); // tag
+			newLineByteBuffer.put(toByte(maplinedef.flags())); // flags
+			newLineByteBuffer.put(toByte(maplinedef.special())); // special
+			newLineByteBuffer.put(toByte(maplinedef.tag())); // tag
 
 			byte slopetype;
 			if (dx == 0) {
@@ -191,7 +188,7 @@ public class MapProcessor {
 			newLineByteBuffer.put(slopetype); // slopetype
 		}
 
-		Lump newLine = new Lump(lines.name(), newLineByteBuffer.array());
+		Lump newLine = new Lump(lines.name(), newLineByteBuffer);
 		wadFile.replaceLump(lineLumpNum, newLine);
 	}
 
@@ -269,8 +266,7 @@ public class MapProcessor {
 		// ****************************
 
 		int sizeofseg = 2 * 2 + 2 * 2 + 2 + 2 + 2 + 2 + 1 + 1;
-		ByteBuffer newSegsByteBuffer = ByteBuffer.allocate(segCount * sizeofseg);
-		newSegsByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		ByteBuffer newSegsByteBuffer = newByteBuffer(segCount * sizeofseg);
 		for (Mapseg oldSeg : oldSegs) {
 			Vertex v1 = vertexes.get(oldSeg.v1());
 			newSegsByteBuffer.putShort(v1.x()); // v1.x
@@ -281,7 +277,7 @@ public class MapProcessor {
 			newSegsByteBuffer.putShort(v2.y()); // v2.y
 
 			newSegsByteBuffer.putShort(oldSeg.offset()); // offset
-			newSegsByteBuffer.putShort((short) (oldSeg.angle() + ANG90_16)); // angle
+			newSegsByteBuffer.putShort(toShort(oldSeg.angle() + ANG90_16)); // angle
 
 			short linenum = oldSeg.linedef();
 			Line ldef = lines.get(linenum);
@@ -291,20 +287,20 @@ public class MapProcessor {
 
 			newSegsByteBuffer.putShort(linenum); // linenum
 
-			byte frontsectornum = (byte) sidedefs.get(sidenum).sector();
+			byte frontsectornum = toByte(sidedefs.get(sidenum).sector());
 			newSegsByteBuffer.put(frontsectornum); // frontsectornum
 
 			byte backsectornum = NO_INDEX8;
 			if ((ldef.flags() & ML_TWOSIDED) != 0) {
 				short backsectorside = ldef.sidenum()[side ^ 1];
 				if (backsectorside != NO_INDEX) {
-					backsectornum = (byte) sidedefs.get(backsectorside).sector();
+					backsectornum = toByte(sidedefs.get(backsectorside).sector());
 				}
 			}
 			newSegsByteBuffer.put(backsectornum); // backsectornum
 		}
 
-		Lump newSeg = new Lump(segs.name(), newSegsByteBuffer.array());
+		Lump newSeg = new Lump(segs.name(), newSegsByteBuffer);
 		wadFile.replaceLump(segsLumpNum, newSeg);
 	}
 
@@ -341,22 +337,21 @@ public class MapProcessor {
 
 		List<String> textureNames = getTextureNames();
 
-		ByteBuffer newSidedefByteBuffer = ByteBuffer.allocate(sideCount * (2 + 1 + 1 + 1 + 1 + 1));
-		newSidedefByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		ByteBuffer newSidedefByteBuffer = newByteBuffer(sideCount * (2 + 1 + 1 + 1 + 1 + 1));
 		for (Mapsidedef oldSidedef : oldSidedefs) {
 			newSidedefByteBuffer.putShort(oldSidedef.textureoffset()); // textureoffset
-			newSidedefByteBuffer.put((byte) oldSidedef.rowoffset()); // rowoffset
+			newSidedefByteBuffer.put(toByte(oldSidedef.rowoffset())); // rowoffset
 
 			newSidedefByteBuffer.put(getTextureNumForName(textureNames, oldSidedef.toptextureAsString())); // toptexture
 			newSidedefByteBuffer.put(getTextureNumForName(textureNames, oldSidedef.bottomtextureAsString()));// bottomtexture
 			newSidedefByteBuffer.put(getTextureNumForName(textureNames, oldSidedef.midtextureAsString())); // midtexture
 
-			newSidedefByteBuffer.put((byte) oldSidedef.sector()); // sector
+			newSidedefByteBuffer.put(toByte(oldSidedef.sector())); // sector
 		}
 
 		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
 		byte[] sidedefsLumpName = wadFile.getLumpByNum(sidesLumpNum).name();
-		Lump newSidedefs = new Lump(sidedefsLumpName, newSidedefByteBuffer.array());
+		Lump newSidedefs = new Lump(sidedefsLumpName, newSidedefByteBuffer);
 		wadFile.replaceLump(sidesLumpNum, newSidedefs);
 	}
 
@@ -381,7 +376,7 @@ public class MapProcessor {
 
 	private byte getTextureNumForName(List<String> names, String name) {
 		int index = names.indexOf(name);
-		return index == -1 ? 0 : (byte) index;
+		return index == -1 ? 0 : toByte(index);
 	}
 
 	/**
@@ -397,7 +392,7 @@ public class MapProcessor {
 		short derivedFirstseg = 0;
 		for (int i = 0; i < ssectors.length() / (2 + 2); i++) {
 			short numsegs = byteBuffer.getShort();
-			newnumsegs[i] = (byte) numsegs;
+			newnumsegs[i] = toByte(numsegs);
 
 			short firstseg = byteBuffer.getShort();
 			if (firstseg != derivedFirstseg) {
@@ -418,8 +413,7 @@ public class MapProcessor {
 		int sectorsLumpNum = lumpNum + ML_SECTORS;
 		Lump sectors = wadFile.getLumpByNum(sectorsLumpNum);
 		ByteBuffer oldbb = sectors.dataAsByteBuffer();
-		ByteBuffer newbb = ByteBuffer.allocate(65536);
-		newbb.order(ByteOrder.LITTLE_ENDIAN);
+		ByteBuffer newbb = newByteBuffer();
 		for (int i = 0; i < sectors.length() / 26; i++) {
 			short floorheight = oldbb.getShort();
 			short ceilingheight = oldbb.getShort();
@@ -462,13 +456,13 @@ public class MapProcessor {
 				newbb.put(floorpic);
 				newbb.put(ceilingpic);
 			}
-			newbb.put((byte) lightlevel);
-			newbb.put((byte) special);
+			newbb.put(toByte(lightlevel));
+			newbb.put(toByte(special));
 			newbb.putShort(tag);
 		}
 
 		int size = newbb.position();
-		Lump newLump = new Lump(sectors.name(), toByteArray(newbb, size));
+		Lump newLump = new Lump(sectors.name(), size, newbb);
 		wadFile.replaceLump(sectorsLumpNum, newLump);
 	}
 
@@ -542,9 +536,7 @@ public class MapProcessor {
 			mapOfLinenos.put(i, linenos);
 		}
 
-		ByteBuffer newBlockmap = ByteBuffer.allocate(65536);
-		newBlockmap.order(ByteOrder.LITTLE_ENDIAN);
-
+		ByteBuffer newBlockmap = newByteBuffer();
 		newBlockmap.putShort(bmaporgx);
 		newBlockmap.putShort(bmaporgy);
 		newBlockmap.putShort(bmapwidth);
@@ -552,7 +544,7 @@ public class MapProcessor {
 
 		// temp offset values
 		for (int i = 0; i < bmapwidth * bmapheight; i++) {
-			newBlockmap.putShort((short) -1);
+			newBlockmap.putShort(toShort(-1));
 		}
 
 		List<Map.Entry<Integer, List<Short>>> sorted = mapOfLinenos.entrySet().stream()
@@ -566,19 +558,19 @@ public class MapProcessor {
 			for (Map.Entry<List<Short>, Short> duplicateEntry : duplicateDataList) {
 				List<Short> duplicateLinos = duplicateEntry.getKey();
 				if (ListUtils.endsWith(duplicateLinos, linenos)) {
-					offset = (short) (duplicateEntry.getValue() + (duplicateLinos.size() - linenos.size()));
+					offset = toShort(duplicateEntry.getValue() + (duplicateLinos.size() - linenos.size()));
 					break;
 				}
 			}
 
 			if (offset == -1) {
-				offset = (short) (newBlockmap.position() / 2);
+				offset = toShort(newBlockmap.position() / 2);
 
-				newBlockmap.putShort((short) 0);
+				newBlockmap.putShort(toShort(0));
 				for (short lineno : linenos) {
 					newBlockmap.putShort(lineno);
 				}
-				newBlockmap.putShort((short) -1);
+				newBlockmap.putShort(toShort(-1));
 
 				duplicateDataList.add(Map.entry(linenos, offset));
 			}
@@ -593,7 +585,7 @@ public class MapProcessor {
 			newBlockmap.putShort(offset);
 		}
 
-		Lump newLump = new Lump(blockmap.name(), toByteArray(newBlockmap, newLength));
+		Lump newLump = new Lump(blockmap.name(), newLength, newBlockmap);
 		wadFile.replaceLump(blockmapLumpNum, newLump);
 	}
 

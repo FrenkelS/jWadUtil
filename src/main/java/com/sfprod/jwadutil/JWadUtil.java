@@ -6,8 +6,6 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import com.sfprod.jwadutil.WadFile.Lump;
-
 public class JWadUtil {
 
 	enum Game {

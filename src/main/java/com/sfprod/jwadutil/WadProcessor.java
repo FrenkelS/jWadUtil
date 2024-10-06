@@ -1,10 +1,9 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.jwadutil.ByteBufferUtils.toByteArray;
-import static com.sfprod.jwadutil.ByteUtils.toInt;
+import static com.sfprod.jwadutil.ByteBufferUtils.newByteBuffer;
+import static com.sfprod.jwadutil.NumberUtils.toInt;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import com.sfprod.jwadutil.JWadUtil.Game;
-import com.sfprod.jwadutil.WadFile.Lump;
 
 public class WadProcessor {
 
@@ -217,9 +215,7 @@ public class WadProcessor {
 			columns.add(column);
 		}
 
-		ByteBuffer doom8088Data = ByteBuffer.allocate(65536);
-		doom8088Data.order(ByteOrder.LITTLE_ENDIAN);
-
+		ByteBuffer doom8088Data = newByteBuffer();
 		doom8088Data.putShort(width);
 		doom8088Data.putShort(height);
 		doom8088Data.putShort(leftoffset);
@@ -257,8 +253,7 @@ public class WadProcessor {
 			doom8088Data.putInt(columnof);
 		}
 
-		byte[] doom8088ByteArray = toByteArray(doom8088Data, size);
-		return new Lump(vanillaLump.name(), doom8088ByteArray);
+		return new Lump(vanillaLump.name(), size, doom8088Data);
 	}
 
 	private void processWalls() {
@@ -306,9 +301,7 @@ public class WadProcessor {
 			columns.add(column);
 		}
 
-		ByteBuffer doom8088Data = ByteBuffer.allocate(65536);
-		doom8088Data.order(ByteOrder.LITTLE_ENDIAN);
-
+		ByteBuffer doom8088Data = newByteBuffer();
 		doom8088Data.putShort(width);
 		doom8088Data.putShort(height);
 		doom8088Data.putShort(leftoffset);
@@ -363,8 +356,7 @@ public class WadProcessor {
 			doom8088Data.putInt(columnof);
 		}
 
-		byte[] doom8088ByteArray = toByteArray(doom8088Data, size);
-		return new Lump(vanillaLump.name(), doom8088ByteArray);
+		return new Lump(vanillaLump.name(), size, doom8088Data);
 	}
 
 	/**
@@ -424,9 +416,7 @@ public class WadProcessor {
 			columns.add(column);
 		}
 
-		ByteBuffer compressedData = ByteBuffer.allocate(65536);
-		compressedData.order(ByteOrder.LITTLE_ENDIAN);
-
+		ByteBuffer compressedData = newByteBuffer();
 		compressedData.putShort(width);
 		compressedData.putShort(height);
 		compressedData.putShort(leftoffset);
@@ -459,8 +449,7 @@ public class WadProcessor {
 			compressedData.putInt(columnof);
 		}
 
-		byte[] compressedByteArray = toByteArray(compressedData, size);
-		return new Lump(picture.name(), compressedByteArray);
+		return new Lump(picture.name(), size, compressedData);
 	}
 
 }

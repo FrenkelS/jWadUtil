@@ -1,0 +1,38 @@
+package com.sfprod.jwadutil;
+
+public interface NumberUtils {
+
+	static byte toByte(int i) {
+		if (!(0 <= i && i < 256)) {
+			throw new IllegalArgumentException(i + " doesn't fit in a byte");
+		}
+
+		return (byte) i;
+	}
+
+	static byte toByte(short s) {
+		if (!(0 <= s && s < 256)) {
+			throw new IllegalArgumentException(s + " doesn't fit in a byte");
+		}
+
+		return (byte) s;
+	}
+
+	/**
+	 * Convert signed byte to an unsigned int.
+	 *
+	 * @param b
+	 * @return
+	 */
+	static int toInt(byte b) {
+		return b & 0xff;
+	}
+
+	static short toShort(int i) {
+		if (!(-32768 <= i && i < 65536)) {
+			throw new IllegalArgumentException(i + " doesn't fit in a short");
+		}
+
+		return (short) i;
+	}
+}

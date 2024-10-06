@@ -1,6 +1,7 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.jwadutil.ByteUtils.toInt;
+import static com.sfprod.jwadutil.NumberUtils.toByte;
+import static com.sfprod.jwadutil.NumberUtils.toInt;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -10,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
-
-import com.sfprod.jwadutil.WadFile.Lump;
 
 class WadProcessor16 extends WadProcessor {
 
@@ -195,7 +194,7 @@ class WadProcessor16 extends WadProcessor {
 
 		// colormap 0
 		for (int i = 0; i < 256; i++) {
-			colormapLump.data()[index] = (byte) i;
+			colormapLump.data()[index] = toByte(i);
 			index++;
 		}
 
@@ -257,7 +256,7 @@ class WadProcessor16 extends WadProcessor {
 			}
 		}
 
-		return (byte) closestColor;
+		return toByte(closestColor);
 	}
 
 	private List<Byte> createColormapInvulnerability() {
@@ -268,7 +267,7 @@ class WadProcessor16 extends WadProcessor {
 				0x77, 0x77, 0x0f, 0xf0, 0x8f, 0xf8, 0x7f, 0xf7, 0xff, 0xff, 0xff);
 
 		return CGA136_COLORS.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 6)
-				.map(grayscaleFromDarkToBright::get).mapToObj(i -> (byte) i).toList();
+				.map(grayscaleFromDarkToBright::get).mapToObj(NumberUtils::toByte).toList();
 	}
 
 	@Override

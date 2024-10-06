@@ -1,5 +1,6 @@
 package com.sfprod.jwadutil;
 
+import static com.sfprod.jwadutil.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.jwadutil.ByteBufferUtils.toByteArray;
 
 import java.io.IOException;
@@ -25,22 +26,6 @@ public class WadFile {
 	private final List<Lump> lumps = new ArrayList<>();
 
 	private static record Filelump(int filepos, int size, byte[] name) {
-	}
-
-	public static record Lump(byte[] name, byte[] data) {
-		public int length() {
-			return data.length;
-		}
-
-		public String nameAsString() {
-			return new String(name, StandardCharsets.US_ASCII).trim();
-		}
-
-		public ByteBuffer dataAsByteBuffer() {
-			ByteBuffer byteBuffer = ByteBuffer.wrap(data);
-			byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-			return byteBuffer;
-		}
 	}
 
 	public WadFile(String wadPath) throws IOException, URISyntaxException {
@@ -72,9 +57,9 @@ public class WadFile {
 
 		for (Filelump filelump : filelumps) {
 			byte[] data = new byte[filelump.size];
-			byteBuffer.position(filelump.filepos);
+			byteBuffer.position(filelump.filepos());
 			byteBuffer.get(data);
-			lumps.add(new Lump(filelump.name, data));
+			lumps.add(new Lump(filelump.name(), data));
 		}
 	}
 
@@ -82,8 +67,7 @@ public class WadFile {
 		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
 		int filesize = filepos + lumps.stream().mapToInt(Lump::length).sum();
 
-		ByteBuffer byteBuffer = ByteBuffer.allocate(filesize);
-		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		ByteBuffer byteBuffer = newByteBuffer(filesize);
 
 		byte[] fileSignature = "IWAD".getBytes(StandardCharsets.US_ASCII);
 		byteBuffer.put(fileSignature);
@@ -101,7 +85,7 @@ public class WadFile {
 				if (duplicateDataMap.containsKey(key)) {
 					int previousfilepos = duplicateDataMap.get(key);
 					byteBuffer.putInt(previousfilepos);
-					Lump newLump = new Lump(lump.name, new byte[] {});
+					Lump newLump = new Lump(lump.name(), new byte[] {});
 					lumps.set(lumpnum, newLump);
 					duplicateDataCount++;
 				} else {
