@@ -29,7 +29,7 @@ class WadProcessorTest {
 		WadFile wadFile = new WadFile("/doom1.wad");
 		int e1m1LabelPre = wadFile.getLumpNumByName(mapName);
 		Lump blockmapPre = wadFile.getLumpByNum(e1m1LabelPre + 10);
-		int blockmapSizePre = blockmapPre.data().length;
+		int blockmapSizePre = blockmapPre.length();
 		Map<Integer, List<Short>> mapOfLinenosPre = getMapOfLinenos(blockmapPre);
 
 		WadProcessor wadProcessor = WadProcessor.getWadProcessor(Game.DOOM8088, wadFile);
@@ -37,7 +37,7 @@ class WadProcessorTest {
 
 		int e1m1LabelPost = wadFile.getLumpNumByName(mapName);
 		Lump blockmapPost = wadFile.getLumpByNum(e1m1LabelPost + 9);
-		int blockmapSizePost = blockmapPost.data().length;
+		int blockmapSizePost = blockmapPost.length();
 		Map<Integer, List<Short>> mapOfLinenosPost = getMapOfLinenos(blockmapPost);
 
 		assertTrue(blockmapSizePost < blockmapSizePre);

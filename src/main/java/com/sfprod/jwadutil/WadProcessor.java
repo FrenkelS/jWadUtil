@@ -120,7 +120,7 @@ public class WadProcessor {
 		Lump vxl = wadFile.getLumpByNum(vtxLumpNum);
 		List<Vertex> vertexes = new ArrayList<>();
 		ByteBuffer vxlByteBuffer = vxl.dataAsByteBuffer();
-		for (int i = 0; i < vxl.data().length / (2 + 2); i++) {
+		for (int i = 0; i < vxl.length() / (2 + 2); i++) {
 			vertexes.add(new Vertex(vxlByteBuffer.getShort(), vxlByteBuffer.getShort()));
 		}
 		return vertexes;
@@ -146,7 +146,7 @@ public class WadProcessor {
 		ByteBuffer newByteBuffer = ByteBuffer.allocate(65536);
 		newByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-		for (int i = 0; i < things.data().length / (2 + 2 + 2 + 2 + 2); i++) {
+		for (int i = 0; i < things.length() / (2 + 2 + 2 + 2 + 2); i++) {
 			short x = oldByteBuffer.getShort();
 			short y = oldByteBuffer.getShort();
 			short angle = oldByteBuffer.getShort();
@@ -182,7 +182,7 @@ public class WadProcessor {
 
 		int sizeofmaplinedef = 2 + 2 + 2 + 2 + 2 + 2 * 2;
 
-		int lineCount = lines.data().length / sizeofmaplinedef;
+		int lineCount = lines.length() / sizeofmaplinedef;
 
 		List<Maplinedef> oldLines = new ArrayList<>(lineCount);
 		ByteBuffer oldLinesByteBuffer = lines.dataAsByteBuffer();
@@ -282,7 +282,7 @@ public class WadProcessor {
 		List<Mapsidedef> sides = new ArrayList<>();
 		ByteBuffer sidesByteBuffer = sxl.dataAsByteBuffer();
 		int sizeofmapsidedef = 2 + 2 + 8 + 8 + 8 + 2;
-		for (int i = 0; i < sxl.data().length / sizeofmapsidedef; i++) {
+		for (int i = 0; i < sxl.length() / sizeofmapsidedef; i++) {
 			short textureoffset = sidesByteBuffer.getShort();
 			short rowoffset = sidesByteBuffer.getShort();
 			byte[] toptexture = new byte[8];
@@ -309,7 +309,7 @@ public class WadProcessor {
 
 		int sizeofmapseg = 2 + 2 + 2 + 2 + 2 + 2;
 
-		int segCount = segs.data().length / sizeofmapseg;
+		int segCount = segs.length() / sizeofmapseg;
 
 		List<Mapseg> oldSegs = new ArrayList<>(segCount);
 		ByteBuffer oldSegsByteBuffer = segs.dataAsByteBuffer();
@@ -331,7 +331,7 @@ public class WadProcessor {
 		Lump lxl = wadFile.getLumpByNum(linesLumpNum);
 		List<Line> lines = new ArrayList<>();
 		ByteBuffer linesByteBuffer = lxl.dataAsByteBuffer();
-		for (int i = 0; i < lxl.data().length / Line.SIZE_OF_LINE; i++) {
+		for (int i = 0; i < lxl.length() / Line.SIZE_OF_LINE; i++) {
 			Vertex v1 = new Vertex(linesByteBuffer.getShort(), linesByteBuffer.getShort());
 			Vertex v2 = new Vertex(linesByteBuffer.getShort(), linesByteBuffer.getShort());
 			short dx = linesByteBuffer.getShort();
@@ -455,9 +455,9 @@ public class WadProcessor {
 		int ssectorsLumpNum = lumpNum + ML_SSECTORS;
 		Lump ssectors = wadFile.getLumpByNum(ssectorsLumpNum);
 		ByteBuffer byteBuffer = ssectors.dataAsByteBuffer();
-		byte[] newnumsegs = new byte[ssectors.data().length / (2 + 2)];
+		byte[] newnumsegs = new byte[ssectors.length() / (2 + 2)];
 		short derivedFirstseg = 0;
-		for (int i = 0; i < ssectors.data().length / (2 + 2); i++) {
+		for (int i = 0; i < ssectors.length() / (2 + 2); i++) {
 			short numsegs = byteBuffer.getShort();
 			newnumsegs[i] = (byte) numsegs;
 
@@ -482,7 +482,7 @@ public class WadProcessor {
 		ByteBuffer oldbb = sectors.dataAsByteBuffer();
 		ByteBuffer newbb = ByteBuffer.allocate(65536);
 		newbb.order(ByteOrder.LITTLE_ENDIAN);
-		for (int i = 0; i < sectors.data().length / 26; i++) {
+		for (int i = 0; i < sectors.length() / 26; i++) {
 			short floorheight = oldbb.getShort();
 			short ceilingheight = oldbb.getShort();
 			byte[] floorpic = new byte[8];

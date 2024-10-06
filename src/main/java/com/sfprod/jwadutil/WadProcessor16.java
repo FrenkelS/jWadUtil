@@ -150,7 +150,7 @@ class WadProcessor16 extends WadProcessor {
 	}
 
 	private void changePaletteRaw(Lump lump) {
-		for (int i = 0; i < lump.data().length; i++) {
+		for (int i = 0; i < lump.length(); i++) {
 			lump.data()[i] = convert256to16(lump.data()[i]);
 		}
 	}
@@ -300,7 +300,7 @@ class WadProcessor16 extends WadProcessor {
 	}
 
 	private void shuffleColorsRaw(Lump lump) {
-		for (int i = 0; i < lump.data().length; i++) {
+		for (int i = 0; i < lump.length(); i++) {
 			lump.data()[i] = shuffleColor(lump.data()[i]);
 		}
 	}

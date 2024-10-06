@@ -28,6 +28,10 @@ public class WadFile {
 	}
 
 	public static record Lump(byte[] name, byte[] data) {
+		public int length() {
+			return data.length;
+		}
+
 		public String nameAsString() {
 			return new String(name, StandardCharsets.US_ASCII).trim();
 		}
@@ -80,7 +84,7 @@ public class WadFile {
 
 	public void saveWadFile(String wadPath) throws IOException, URISyntaxException {
 		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
-		int filesize = filepos + lumps.stream().mapToInt(lump -> lump.data().length).map(this::roundUp).sum();
+		int filesize = filepos + lumps.stream().mapToInt(Lump::length).map(this::roundUp).sum();
 
 		ByteBuffer byteBuffer = ByteBuffer.allocate(filesize);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -94,7 +98,7 @@ public class WadFile {
 		int duplicateDataCount = 0;
 		for (int lumpnum = 0; lumpnum < lumps.size(); lumpnum++) {
 			Lump lump = lumps.get(lumpnum);
-			if (lump.data.length == 0) {
+			if (lump.length() == 0) {
 				byteBuffer.putInt(0);
 			} else {
 				String key = Arrays.toString(lump.data);
@@ -107,25 +111,25 @@ public class WadFile {
 				} else {
 					duplicateDataMap.put(key, filepos);
 					byteBuffer.putInt(filepos);
-					filepos += roundUp(lump.data.length);
+					filepos += roundUp(lump.length());
 				}
 			}
 
-			byteBuffer.putInt(lump.data.length);
+			byteBuffer.putInt(lump.length());
 			byteBuffer.put(lump.name());
 		}
 		System.out.println("Removed " + duplicateDataCount + " duplicate lumps");
 
 		for (Lump lump : lumps) {
 			byteBuffer.put(lump.data);
-			for (int i = 0; i < roundUp(lump.data.length) - lump.data.length; i++) {
+			for (int i = 0; i < roundUp(lump.length()) - lump.length(); i++) {
 				byteBuffer.put((byte) 0);
 			}
 		}
 
 		Path path = Path.of("target", wadPath);
 		int filesizeWithoutDuplicates = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8)
-				+ lumps.stream().mapToInt(lump -> lump.data().length).map(this::roundUp).sum();
+				+ lumps.stream().mapToInt(Lump::length).map(this::roundUp).sum();
 		Files.write(path, toByteArray(byteBuffer, filesizeWithoutDuplicates));
 		System.out.println("WAD file of size " + filesizeWithoutDuplicates + " written to " + path.toAbsolutePath());
 	}
