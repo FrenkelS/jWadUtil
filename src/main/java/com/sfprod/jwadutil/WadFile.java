@@ -43,10 +43,6 @@ public class WadFile {
 		}
 	}
 
-	private int roundUp(int x) {
-		return ((x + 1) & -2);
-	}
-
 	public WadFile(String wadPath) throws IOException, URISyntaxException {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(WadFile.class.getResourceAsStream(wadPath).readAllBytes());
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -84,7 +80,7 @@ public class WadFile {
 
 	public void saveWadFile(String wadPath) throws IOException, URISyntaxException {
 		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
-		int filesize = filepos + lumps.stream().mapToInt(Lump::length).map(this::roundUp).sum();
+		int filesize = filepos + lumps.stream().mapToInt(Lump::length).sum();
 
 		ByteBuffer byteBuffer = ByteBuffer.allocate(filesize);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -101,7 +97,7 @@ public class WadFile {
 			if (lump.length() == 0) {
 				byteBuffer.putInt(0);
 			} else {
-				String key = Arrays.toString(lump.data);
+				String key = Arrays.toString(lump.data());
 				if (duplicateDataMap.containsKey(key)) {
 					int previousfilepos = duplicateDataMap.get(key);
 					byteBuffer.putInt(previousfilepos);
@@ -111,7 +107,7 @@ public class WadFile {
 				} else {
 					duplicateDataMap.put(key, filepos);
 					byteBuffer.putInt(filepos);
-					filepos += roundUp(lump.length());
+					filepos += lump.length();
 				}
 			}
 
@@ -121,15 +117,12 @@ public class WadFile {
 		System.out.println("Removed " + duplicateDataCount + " duplicate lumps");
 
 		for (Lump lump : lumps) {
-			byteBuffer.put(lump.data);
-			for (int i = 0; i < roundUp(lump.length()) - lump.length(); i++) {
-				byteBuffer.put((byte) 0);
-			}
+			byteBuffer.put(lump.data());
 		}
 
 		Path path = Path.of("target", wadPath);
 		int filesizeWithoutDuplicates = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8)
-				+ lumps.stream().mapToInt(Lump::length).map(this::roundUp).sum();
+				+ lumps.stream().mapToInt(Lump::length).sum();
 		Files.write(path, toByteArray(byteBuffer, filesizeWithoutDuplicates));
 		System.out.println("WAD file of size " + filesizeWithoutDuplicates + " written to " + path.toAbsolutePath());
 	}
