@@ -436,24 +436,28 @@ public class MapProcessor {
 
 			if (FLAT_SPAN) {
 				// floorpic
+				short floorpicnum;
 				String floorflatname = new String(floorpic, StandardCharsets.US_ASCII).trim();
 				if (floorflatname.startsWith("NUKAGE")) {
-					newbb.putShort(NUKAGE);
+					floorpicnum = NUKAGE;
 				} else {
 					Lump floor = wadFile.getLumpByName(floorflatname);
-					newbb.putShort(calculateAverageColor(floor));
+					floorpicnum = calculateAverageColor(floor);
 				}
+				newbb.putShort(floorpicnum);
 
 				// ceilingpic
+				short ceilingpicnum;
 				String ceilingflatname = new String(ceilingpic, StandardCharsets.US_ASCII).trim();
 				if (ceilingflatname.startsWith("NUKAGE")) {
-					newbb.putShort(NUKAGE);
+					ceilingpicnum = NUKAGE;
 				} else if ("F_SKY1".equals(ceilingflatname)) {
-					newbb.putShort(SKY);
+					ceilingpicnum = SKY;
 				} else {
 					Lump ceiling = wadFile.getLumpByName(ceilingflatname);
-					newbb.putShort(calculateAverageColor(ceiling));
+					ceilingpicnum = calculateAverageColor(ceiling);
 				}
+				newbb.putShort(ceilingpicnum);
 			} else {
 				newbb.put(floorpic);
 				newbb.put(ceilingpic);
