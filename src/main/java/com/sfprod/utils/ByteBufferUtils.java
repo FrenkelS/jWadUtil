@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.utils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,7 +16,7 @@ public interface ByteBufferUtils {
 		return bb;
 	}
 
-	static byte[] toByteArray(ByteBuffer byteBuffer, int newLength) {
+	static byte[] toArray(ByteBuffer byteBuffer, int newLength) {
 		return Arrays.copyOf(byteBuffer.array(), newLength);
 	}
 

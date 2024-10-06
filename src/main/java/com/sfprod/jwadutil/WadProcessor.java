@@ -1,7 +1,7 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.jwadutil.ByteBufferUtils.newByteBuffer;
-import static com.sfprod.jwadutil.NumberUtils.toInt;
+import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
+import static com.sfprod.utils.NumberUtils.toInt;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

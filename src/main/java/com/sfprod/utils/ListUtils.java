@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.utils;
 
 import java.util.List;
 

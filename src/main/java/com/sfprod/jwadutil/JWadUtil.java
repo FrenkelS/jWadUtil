@@ -3,7 +3,6 @@ package com.sfprod.jwadutil;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class JWadUtil {
@@ -50,8 +49,7 @@ public class JWadUtil {
 	}
 
 	private static Lump getLump(String lumpname) throws IOException, URISyntaxException {
-		byte[] name = Arrays.copyOf(lumpname.getBytes(StandardCharsets.US_ASCII), 8);
 		byte[] data = WadFile.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
-		return new Lump(name, data);
+		return new Lump(lumpname, data);
 	}
 }

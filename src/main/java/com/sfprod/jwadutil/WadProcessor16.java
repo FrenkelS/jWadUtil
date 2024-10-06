@@ -1,7 +1,7 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.jwadutil.NumberUtils.toByte;
-import static com.sfprod.jwadutil.NumberUtils.toInt;
+import static com.sfprod.utils.NumberUtils.toByte;
+import static com.sfprod.utils.NumberUtils.toInt;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
+
+import com.sfprod.utils.NumberUtils;
 
 class WadProcessor16 extends WadProcessor {
 

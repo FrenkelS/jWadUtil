@@ -1,13 +1,14 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.jwadutil.ByteBufferUtils.newByteBuffer;
-import static com.sfprod.jwadutil.NumberUtils.toByte;
-import static com.sfprod.jwadutil.NumberUtils.toInt;
-import static com.sfprod.jwadutil.NumberUtils.toShort;
 import static com.sfprod.jwadutil.WadProcessor.FLAT_SPAN;
+import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
+import static com.sfprod.utils.ListUtils.endsWith;
+import static com.sfprod.utils.NumberUtils.toByte;
+import static com.sfprod.utils.NumberUtils.toInt;
+import static com.sfprod.utils.NumberUtils.toShort;
+import static com.sfprod.utils.StringUtils.toStringUpperCase;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -369,7 +370,7 @@ public class MapProcessor {
 			tex1ByteBuffer.position(offset);
 			byte[] name = new byte[8];
 			tex1ByteBuffer.get(name);
-			textureNames.add(new String(name, StandardCharsets.US_ASCII).trim().toUpperCase());
+			textureNames.add(toStringUpperCase(name));
 		}
 		return textureNames;
 	}
@@ -431,7 +432,7 @@ public class MapProcessor {
 			if (FLAT_SPAN) {
 				// floorpic
 				short floorpicnum;
-				String floorflatname = new String(floorpic, StandardCharsets.US_ASCII).trim();
+				String floorflatname = toStringUpperCase(floorpic);
 				if (floorflatname.startsWith("NUKAGE")) {
 					floorpicnum = NUKAGE;
 				} else {
@@ -442,7 +443,7 @@ public class MapProcessor {
 
 				// ceilingpic
 				short ceilingpicnum;
-				String ceilingflatname = new String(ceilingpic, StandardCharsets.US_ASCII).trim();
+				String ceilingflatname = toStringUpperCase(ceilingpic);
 				if (ceilingflatname.startsWith("NUKAGE")) {
 					ceilingpicnum = NUKAGE;
 				} else if ("F_SKY1".equals(ceilingflatname)) {
@@ -557,7 +558,7 @@ public class MapProcessor {
 			short offset = -1;
 			for (Map.Entry<List<Short>, Short> duplicateEntry : duplicateDataList) {
 				List<Short> duplicateLinos = duplicateEntry.getKey();
-				if (ListUtils.endsWith(duplicateLinos, linenos)) {
+				if (endsWith(duplicateLinos, linenos)) {
 					offset = toShort(duplicateEntry.getValue() + (duplicateLinos.size() - linenos.size()));
 					break;
 				}
@@ -605,20 +606,16 @@ public class MapProcessor {
 
 	private static record Mapsidedef(short textureoffset, short rowoffset, byte[] toptexture, byte[] bottomtexture,
 			byte[] midtexture, short sector) {
-		private String byteArrayToString(byte[] byteArray) {
-			return new String(byteArray, StandardCharsets.US_ASCII).trim().toUpperCase();
-		}
-
 		String toptextureAsString() {
-			return byteArrayToString(toptexture());
+			return toStringUpperCase(toptexture);
 		}
 
 		String bottomtextureAsString() {
-			return byteArrayToString(bottomtexture());
+			return toStringUpperCase(bottomtexture);
 		}
 
 		String midtextureAsString() {
-			return byteArrayToString(midtexture());
+			return toStringUpperCase(midtexture);
 		}
 	}
 }

@@ -1,13 +1,13 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.jwadutil.ByteBufferUtils.newByteBuffer;
-import static com.sfprod.jwadutil.ByteBufferUtils.toByteArray;
+import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
+import static com.sfprod.utils.ByteBufferUtils.toArray;
+import static com.sfprod.utils.StringUtils.toByteArray;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -69,8 +69,7 @@ public class WadFile {
 
 		ByteBuffer byteBuffer = newByteBuffer(filesize);
 
-		byte[] fileSignature = "IWAD".getBytes(StandardCharsets.US_ASCII);
-		byteBuffer.put(fileSignature);
+		byteBuffer.put(toByteArray("IWAD"));
 		byteBuffer.putInt(lumps.size());
 		byteBuffer.putInt(4 + 4 + 4);
 
@@ -107,7 +106,7 @@ public class WadFile {
 		Path path = Path.of("target", wadPath);
 		int filesizeWithoutDuplicates = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8)
 				+ lumps.stream().mapToInt(Lump::length).sum();
-		Files.write(path, toByteArray(byteBuffer, filesizeWithoutDuplicates));
+		Files.write(path, toArray(byteBuffer, filesizeWithoutDuplicates));
 		System.out.println("WAD file of size " + filesizeWithoutDuplicates + " written to " + path.toAbsolutePath());
 	}
 

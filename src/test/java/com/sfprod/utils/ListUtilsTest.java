@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.utils;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
