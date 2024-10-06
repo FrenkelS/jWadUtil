@@ -1,6 +1,7 @@
 package com.sfprod.jwadutil;
 
 import static com.sfprod.jwadutil.ByteBufferUtils.toByteArray;
+import static com.sfprod.jwadutil.ByteUtils.toInt;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -204,7 +205,7 @@ public class WadProcessor {
 			while (topdelta != -1) {
 				byte lengthByte = vanillaData.get();
 				column.add(lengthByte);
-				int length = lengthByte & 0xff;
+				int length = toInt(lengthByte);
 				for (int y = 0; y < length + 2; y++) {
 					column.add(vanillaData.get());
 				}
@@ -293,7 +294,7 @@ public class WadProcessor {
 			while (topdelta != -1) {
 				byte lengthByte = vanillaData.get();
 				column.add(lengthByte);
-				int length = lengthByte & 0xff;
+				int length = toInt(lengthByte);
 				for (int y = 0; y < length + 2; y++) {
 					column.add(vanillaData.get());
 				}
@@ -411,7 +412,7 @@ public class WadProcessor {
 			while (topdelta != -1) {
 				byte lengthByte = pictureData.get();
 				column.add(lengthByte);
-				int length = lengthByte & 0xff;
+				int length = toInt(lengthByte);
 				for (int y = 0; y < length + 2; y++) {
 					column.add(pictureData.get());
 				}

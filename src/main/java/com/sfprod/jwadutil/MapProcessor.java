@@ -1,6 +1,7 @@
 package com.sfprod.jwadutil;
 
 import static com.sfprod.jwadutil.ByteBufferUtils.toByteArray;
+import static com.sfprod.jwadutil.ByteUtils.toInt;
 import static com.sfprod.jwadutil.WadProcessor.FLAT_SPAN;
 
 import java.nio.ByteBuffer;
@@ -35,9 +36,13 @@ public class MapProcessor {
 	private static final byte ST_NEGATIVE = 3;
 
 	private static final short NO_INDEX = (short) 0xffff;
+	private static final byte NO_INDEX8 = (byte) 0xff;
 	private static final byte ML_TWOSIDED = 4;
 
 	private static final short ANG90_16 = 0x4000;
+
+	private static final short SKY = (short) -2;
+	private static final short NUKAGE = (short) -3;
 
 	private final WadFile wadFile;
 	private final List<Color> vgaColors;
@@ -49,9 +54,9 @@ public class MapProcessor {
 		ByteBuffer bb = playpal.dataAsByteBuffer();
 		List<Color> colors = new ArrayList<>();
 		for (int i = 0; i < 256; i++) {
-			int r = bb.get() & 0xff;
-			int g = bb.get() & 0xff;
-			int b = bb.get() & 0xff;
+			int r = toInt(bb.get());
+			int g = toInt(bb.get());
+			int b = toInt(bb.get());
 			colors.add(new Color(r, g, b));
 		}
 		this.vgaColors = colors;
@@ -289,7 +294,7 @@ public class MapProcessor {
 			byte frontsectornum = (byte) sidedefs.get(sidenum).sector();
 			newSegsByteBuffer.put(frontsectornum); // frontsectornum
 
-			byte backsectornum = (byte) 0xff;
+			byte backsectornum = NO_INDEX8;
 			if ((ldef.flags() & ML_TWOSIDED) != 0) {
 				short backsectorside = ldef.sidenum()[side ^ 1];
 				if (backsectorside != NO_INDEX) {
@@ -433,7 +438,7 @@ public class MapProcessor {
 				// floorpic
 				String floorflatname = new String(floorpic, StandardCharsets.US_ASCII).trim();
 				if (floorflatname.startsWith("NUKAGE")) {
-					newbb.putShort((short) -3);
+					newbb.putShort(NUKAGE);
 				} else {
 					Lump floor = wadFile.getLumpByName(floorflatname);
 					newbb.putShort(calculateAverageColor(floor));
@@ -442,9 +447,9 @@ public class MapProcessor {
 				// ceilingpic
 				String ceilingflatname = new String(ceilingpic, StandardCharsets.US_ASCII).trim();
 				if (ceilingflatname.startsWith("NUKAGE")) {
-					newbb.putShort((short) -3);
+					newbb.putShort(NUKAGE);
 				} else if ("F_SKY1".equals(ceilingflatname)) {
-					newbb.putShort((short) -2);
+					newbb.putShort(SKY);
 				} else {
 					Lump ceiling = wadFile.getLumpByName(ceilingflatname);
 					newbb.putShort(calculateAverageColor(ceiling));
@@ -469,7 +474,7 @@ public class MapProcessor {
 		int sumg = 0;
 		int sumb = 0;
 		for (byte b : source) {
-			Color color = vgaColors.get(b & 0xff);
+			Color color = vgaColors.get(toInt(b));
 			sumr += color.r() * color.r();
 			sumg += color.g() * color.g();
 			sumb += color.b() * color.b();

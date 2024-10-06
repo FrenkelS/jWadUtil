@@ -1,5 +1,7 @@
 package com.sfprod.jwadutil;
 
+import static com.sfprod.jwadutil.ByteUtils.toInt;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -115,7 +117,7 @@ class WadProcessor16 extends WadProcessor {
 	}
 
 	private byte convert256to16(byte b) {
-		return VGA256_TO_16_LUT.get(b & 0xff).byteValue();
+		return VGA256_TO_16_LUT.get(toInt(b)).byteValue();
 	}
 
 	@Override
@@ -174,7 +176,7 @@ class WadProcessor16 extends WadProcessor {
 			while (topdelta != -1) {
 				byte lengthByte = lump.data()[index];
 				index++;
-				int length = lengthByte & 0xff;
+				int length = toInt(lengthByte);
 				for (int i = 0; i < length + 2; i++) {
 					lump.data()[index] = convert256to16(lump.data()[index]);
 					index++;
@@ -324,7 +326,7 @@ class WadProcessor16 extends WadProcessor {
 			while (topdelta != -1) {
 				byte lengthByte = lump.data()[index];
 				index++;
-				int length = lengthByte & 0xff;
+				int length = toInt(lengthByte);
 				for (int i = 0; i < length + 2; i++) {
 					lump.data()[index] = shuffleColor(lump.data()[index]);
 					index++;
@@ -336,7 +338,7 @@ class WadProcessor16 extends WadProcessor {
 	}
 
 	private byte shuffleColor(byte b) {
-		List<Integer> list = CGA136_COLORS_SHUFFLE_MAP.get(b & 0xff);
+		List<Integer> list = CGA136_COLORS_SHUFFLE_MAP.get(toInt(b));
 		return list.get(random.nextInt(list.size())).byteValue();
 	}
 }
