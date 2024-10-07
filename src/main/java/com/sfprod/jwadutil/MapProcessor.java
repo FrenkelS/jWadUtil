@@ -30,11 +30,6 @@ public class MapProcessor {
 
 	private static final short MTF_NOTSINGLE = 16;
 
-	private static final byte ST_HORIZONTAL = 0;
-	private static final byte ST_VERTICAL = 1;
-	private static final byte ST_POSITIVE = 2;
-	private static final byte ST_NEGATIVE = 3;
-
 	private static final short NO_INDEX = (short) 0xffff;
 	private static final byte NO_INDEX8 = (byte) 0xff;
 	private static final byte ML_TWOSIDED = 4;
@@ -156,37 +151,12 @@ public class MapProcessor {
 			newLineByteBuffer.putShort(vertex2.x()); // v2.x
 			newLineByteBuffer.putShort(vertex2.y()); // v2.y
 
-			short dx = toShort(vertex2.x() - vertex1.x());
-			short dy = toShort(vertex2.y() - vertex1.y());
-			newLineByteBuffer.putShort(dx); // dx
-			newLineByteBuffer.putShort(dy); // dy
-
 			newLineByteBuffer.putShort(maplinedef.sidenum()[0]); // sidenum[0];
 			newLineByteBuffer.putShort(maplinedef.sidenum()[1]); // sidenum[1];
-
-			newLineByteBuffer.putShort(vertex1.y() < vertex2.y() ? vertex2.y() : vertex1.y()); // bbox[BOXTOP]
-			newLineByteBuffer.putShort(vertex1.y() < vertex2.y() ? vertex1.y() : vertex2.y()); // bbox[BOXBOTTOM]
-			newLineByteBuffer.putShort(vertex1.x() < vertex2.x() ? vertex1.x() : vertex2.x()); // bbox[BOXLEFT]
-			newLineByteBuffer.putShort(vertex1.x() < vertex2.x() ? vertex2.x() : vertex1.x()); // bbox[BOXRIGHT]
 
 			newLineByteBuffer.put(toByte(maplinedef.flags())); // flags
 			newLineByteBuffer.put(toByte(maplinedef.special())); // special
 			newLineByteBuffer.put(toByte(maplinedef.tag())); // tag
-
-			byte slopetype;
-			if (dx == 0) {
-				slopetype = ST_VERTICAL;
-			} else if (dy == 0) {
-				slopetype = ST_HORIZONTAL;
-			} else {
-				if (fixedDiv(dy, dx) > 0) {
-					slopetype = ST_POSITIVE;
-				} else {
-					slopetype = ST_NEGATIVE;
-				}
-			}
-
-			newLineByteBuffer.put(slopetype); // slopetype
 		}
 
 		Lump newLine = new Lump(lines.name(), newLineByteBuffer);
@@ -202,14 +172,6 @@ public class MapProcessor {
 			vertexes.add(new Vertex(vxlByteBuffer.getShort(), vxlByteBuffer.getShort()));
 		}
 		return vertexes;
-	}
-
-	private int fixedDiv(int a, int b) {
-		if (Math.abs(a) >> 14 >= Math.abs(b)) {
-			return ((a ^ b) >> 31) ^ Integer.MAX_VALUE;
-		} else {
-			return (int) ((((long) a) << 16) / b);
-		}
 	}
 
 	/**
@@ -249,16 +211,11 @@ public class MapProcessor {
 		for (int i = 0; i < lxl.length() / Line.SIZE_OF_LINE; i++) {
 			Vertex v1 = new Vertex(linesByteBuffer.getShort(), linesByteBuffer.getShort());
 			Vertex v2 = new Vertex(linesByteBuffer.getShort(), linesByteBuffer.getShort());
-			short dx = linesByteBuffer.getShort();
-			short dy = linesByteBuffer.getShort();
 			short[] sidenum = { linesByteBuffer.getShort(), linesByteBuffer.getShort() };
-			short[] bbox = { linesByteBuffer.getShort(), linesByteBuffer.getShort(), linesByteBuffer.getShort(),
-					linesByteBuffer.getShort() };
 			byte flags = linesByteBuffer.get();
 			byte special = linesByteBuffer.get();
 			byte tag = linesByteBuffer.get();
-			byte slopetype = linesByteBuffer.get();
-			lines.add(new Line(v1, v2, dx, dy, sidenum, bbox, flags, special, tag, slopetype));
+			lines.add(new Line(v1, v2, sidenum, flags, special, tag));
 		}
 
 		// And sides too...
@@ -596,9 +553,8 @@ public class MapProcessor {
 	private static record Vertex(short x, short y) {
 	}
 
-	private static record Line(Vertex v1, Vertex v2, short dx, short dy, short[] sidenum, short[] bbox, byte flags,
-			byte special, byte tag, byte slopetype) {
-		public static final int SIZE_OF_LINE = 2 * 2 + 2 * 2 + 2 + 2 + 2 * 2 + 4 * 2 + 1 + 1 + 1 + 1;
+	private static record Line(Vertex v1, Vertex v2, short[] sidenum, byte flags, byte special, byte tag) {
+		public static final int SIZE_OF_LINE = 2 * 2 + 2 * 2 + 2 * 2 + 1 + 1 + 1;
 	}
 
 	private static record Mapseg(short v1, short v2, short angle, short linedef, short side, short offset) {
