@@ -11,7 +11,7 @@ public interface NumberUtils {
 	}
 
 	static byte toByte(short s) {
-		if (!(0 <= s && s < 256)) {
+		if (!(-128 <= s && s < 256)) {
 			throw new IllegalArgumentException(s + " doesn't fit in a byte");
 		}
 

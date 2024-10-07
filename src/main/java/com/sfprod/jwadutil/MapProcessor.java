@@ -67,9 +67,12 @@ public class MapProcessor {
 
 	private void processMap(int lumpNum) {
 		processThings(lumpNum);
+
 		processLinedefs(lumpNum);
-		processSegs(lumpNum);
 		processSidedefs(lumpNum);
+		packSidedefs(lumpNum);
+
+		processSegs(lumpNum);
 		processSsectors(lumpNum);
 		processSectors(lumpNum);
 		processBlockmap(lumpNum);
@@ -112,7 +115,7 @@ public class MapProcessor {
 	}
 
 	/**
-	 * Change vertexes, dx, dy, bbox[4] and slopetype
+	 * Change vertexes
 	 *
 	 * @param lumpNum
 	 */
@@ -218,8 +221,20 @@ public class MapProcessor {
 			lines.add(new Line(v1, v2, sidenum, flags, special, tag));
 		}
 
-		// And sides too...
-		List<Mapsidedef> sidedefs = getSidedefs(lumpNum);
+		// And SideDefs. Must process sides first.
+		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
+		Lump oldSidedefs = wadFile.getLumpByNum(sidesLumpNum);
+		List<Sidedef> sidedefs = new ArrayList<>();
+		ByteBuffer sidesByteBuffer = oldSidedefs.dataAsByteBuffer();
+		for (int i = 0; i < oldSidedefs.length() / Sidedef.SIZE_OF_SIDE; i++) {
+			short textureoffset = sidesByteBuffer.getShort();
+			byte rowoffset = sidesByteBuffer.get();
+			byte toptexture = sidesByteBuffer.get();
+			byte bottomtexture = sidesByteBuffer.get();
+			byte midtexture = sidesByteBuffer.get();
+			byte sector = sidesByteBuffer.get();
+			sidedefs.add(new Sidedef(textureoffset, rowoffset, toptexture, bottomtexture, midtexture, sector));
+		}
 
 		// ****************************
 
@@ -295,7 +310,7 @@ public class MapProcessor {
 
 		List<String> textureNames = getTextureNames();
 
-		ByteBuffer newSidedefByteBuffer = newByteBuffer(sideCount * (2 + 1 + 1 + 1 + 1 + 1));
+		ByteBuffer newSidedefByteBuffer = newByteBuffer(sideCount * Sidedef.SIZE_OF_SIDE);
 		for (Mapsidedef oldSidedef : oldSidedefs) {
 			newSidedefByteBuffer.putShort(oldSidedef.textureoffset()); // textureoffset
 			newSidedefByteBuffer.put(toByte(oldSidedef.rowoffset())); // rowoffset
@@ -547,6 +562,112 @@ public class MapProcessor {
 		wadFile.replaceLump(blockmapLumpNum, newLump);
 	}
 
+	/**
+	 * Sidedef packing
+	 *
+	 * @param lumpNum
+	 */
+	private void packSidedefs(int lumpNum) {
+		int lineLumpNum = lumpNum + ML_LINEDEFS;
+		Lump oldLinedefs = wadFile.getLumpByNum(lineLumpNum);
+
+		List<Line> lines = new ArrayList<>();
+		ByteBuffer linesByteBuffer = oldLinedefs.dataAsByteBuffer();
+		for (int i = 0; i < oldLinedefs.length() / Line.SIZE_OF_LINE; i++) {
+			Vertex v1 = new Vertex(linesByteBuffer.getShort(), linesByteBuffer.getShort());
+			Vertex v2 = new Vertex(linesByteBuffer.getShort(), linesByteBuffer.getShort());
+			short[] sidenum = { linesByteBuffer.getShort(), linesByteBuffer.getShort() };
+			byte flags = linesByteBuffer.get();
+			byte special = linesByteBuffer.get();
+			byte tag = linesByteBuffer.get();
+			lines.add(new Line(v1, v2, sidenum, flags, special, tag));
+		}
+
+		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
+		Lump oldSidedefs = wadFile.getLumpByNum(sidesLumpNum);
+		List<Sidedef> sides = new ArrayList<>();
+		ByteBuffer sidesByteBuffer = oldSidedefs.dataAsByteBuffer();
+		for (int i = 0; i < oldSidedefs.length() / Sidedef.SIZE_OF_SIDE; i++) {
+			short textureoffset = sidesByteBuffer.getShort();
+			byte rowoffset = sidesByteBuffer.get();
+			byte toptexture = sidesByteBuffer.get();
+			byte bottomtexture = sidesByteBuffer.get();
+			byte midtexture = sidesByteBuffer.get();
+			byte sector = sidesByteBuffer.get();
+			sides.add(new Sidedef(textureoffset, rowoffset, toptexture, bottomtexture, midtexture, sector));
+		}
+
+		short newindex = 0;
+		List<Line> newLines = new ArrayList<>();
+		List<SidedefWithMetadata> sidedefWithMetadataList = new ArrayList<>();
+		for (Line oldLine : lines) {
+			Sidedef frontside = sides.get(oldLine.sidenum()[0]);
+			Sidedef backside = oldLine.sidenum()[1] != NO_INDEX ? sides.get(oldLine.sidenum()[1]) : null;
+
+			short newfrontside;
+			short newbackside;
+			if (oldLine.special() != 0) {
+				newfrontside = newindex;
+				newindex++;
+				sidedefWithMetadataList.add(new SidedefWithMetadata(frontside, true));
+
+				newbackside = NO_INDEX;
+				if (backside != null) {
+					newbackside = newindex;
+					newindex++;
+					sidedefWithMetadataList.add(new SidedefWithMetadata(backside, true));
+				}
+			} else {
+				SidedefWithMetadata frontkey = new SidedefWithMetadata(frontside, false);
+				newfrontside = (short) sidedefWithMetadataList.indexOf(frontkey);
+				if (newfrontside == -1) {
+					newfrontside = newindex;
+					newindex++;
+					sidedefWithMetadataList.add(frontkey);
+				}
+
+				newbackside = NO_INDEX;
+				if (backside != null) {
+					SidedefWithMetadata backkey = new SidedefWithMetadata(backside, false);
+					newbackside = (short) sidedefWithMetadataList.indexOf(backkey);
+					if (newbackside == -1) {
+						newbackside = newindex;
+						newindex++;
+						sidedefWithMetadataList.add(backkey);
+					}
+				}
+			}
+			newLines.add(new Line(oldLine.v1(), oldLine.v2(), new short[] { newfrontside, newbackside },
+					oldLine.flags(), oldLine.special(), oldLine.tag()));
+		}
+
+		ByteBuffer newLinesByteBuffer = newByteBuffer(oldLinedefs.length());
+		for (Line newLine : newLines) {
+			newLinesByteBuffer.putShort(newLine.v1().x());
+			newLinesByteBuffer.putShort(newLine.v1().y());
+			newLinesByteBuffer.putShort(newLine.v2().x());
+			newLinesByteBuffer.putShort(newLine.v2().y());
+			newLinesByteBuffer.putShort(newLine.sidenum()[0]);
+			newLinesByteBuffer.putShort(newLine.sidenum()[1]);
+			newLinesByteBuffer.put(newLine.flags());
+			newLinesByteBuffer.put(newLine.special());
+			newLinesByteBuffer.put(newLine.tag());
+		}
+		wadFile.replaceLump(lineLumpNum, new Lump(oldLinedefs.name(), newLinesByteBuffer));
+
+		ByteBuffer newSidesByteBuffer = newByteBuffer(sidedefWithMetadataList.size() * Sidedef.SIZE_OF_SIDE);
+		for (SidedefWithMetadata sidedefWithMetadata : sidedefWithMetadataList) {
+			Sidedef sidedef = sidedefWithMetadata.sidedef();
+			newSidesByteBuffer.putShort(sidedef.textureoffset());
+			newSidesByteBuffer.put(sidedef.rowoffset());
+			newSidesByteBuffer.put(sidedef.toptexture());
+			newSidesByteBuffer.put(sidedef.bottomtexture());
+			newSidesByteBuffer.put(sidedef.midtexture());
+			newSidesByteBuffer.put(sidedef.sector());
+		}
+		wadFile.replaceLump(sidesLumpNum, new Lump(oldSidedefs.name(), newSidesByteBuffer));
+	}
+
 	private static record Maplinedef(short v1, short v2, short flags, short special, short tag, short[] sidenum) {
 	}
 
@@ -573,5 +694,13 @@ public class MapProcessor {
 		String midtextureAsString() {
 			return toStringUpperCase(midtexture);
 		}
+	}
+
+	private static record Sidedef(short textureoffset, byte rowoffset, byte toptexture, byte bottomtexture,
+			byte midtexture, byte sector) {
+		public static final int SIZE_OF_SIDE = 2 + 1 + 1 + 1 + 1 + 1;
+	}
+
+	private static record SidedefWithMetadata(Sidedef sidedef, boolean special) {
 	}
 }
