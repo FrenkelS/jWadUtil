@@ -342,4 +342,13 @@ class WadProcessor16 extends WadProcessor {
 		List<Integer> list = CGA136_COLORS_SHUFFLE_MAP.get(toInt(b));
 		return list.get(RANDOM.nextInt(list.size())).byteValue();
 	}
+
+	@Override
+	protected void removeUnusedLumps() {
+		super.removeUnusedLumps();
+
+		for (int gamma = 1; gamma <= 5; gamma++) {
+			wadFile.removeLump("PLAYPAL" + gamma);
+		}
+	}
 }

@@ -120,7 +120,7 @@ public class WadProcessor {
 	 * Remove unused lumps
 	 *
 	 */
-	private void removeUnusedLumps() {
+	protected void removeUnusedLumps() {
 		wadFile.removeLump("CREDIT"); // Credits screen
 		wadFile.removeLump("SW18_7"); // Duplicate wall texture
 
