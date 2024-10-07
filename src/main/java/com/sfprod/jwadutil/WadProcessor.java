@@ -382,6 +382,12 @@ public class WadProcessor {
 		pictures.stream().map(this::compressPicture).forEach(wadFile::replaceLump);
 	}
 
+	/**
+	 * Graphic squashing
+	 *
+	 * @param picture
+	 * @return
+	 */
 	private Lump compressPicture(Lump picture) {
 		ByteBuffer pictureData = picture.dataAsByteBuffer();
 		short width = pictureData.getShort();

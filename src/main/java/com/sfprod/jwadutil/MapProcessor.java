@@ -461,7 +461,7 @@ public class MapProcessor {
 	}
 
 	/**
-	 * Compress blockmap
+	 * Blockmap stacking
 	 *
 	 * @param lumpNum
 	 */

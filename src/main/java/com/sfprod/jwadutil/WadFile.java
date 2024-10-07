@@ -73,6 +73,7 @@ public class WadFile {
 		byteBuffer.putInt(lumps.size());
 		byteBuffer.putInt(4 + 4 + 4);
 
+		// WAD lump merging
 		Map<String, Integer> duplicateDataMap = new HashMap<>();
 		int duplicateDataCount = 0;
 		for (int lumpnum = 0; lumpnum < lumps.size(); lumpnum++) {
