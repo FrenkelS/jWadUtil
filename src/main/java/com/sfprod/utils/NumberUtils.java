@@ -28,6 +28,10 @@ public interface NumberUtils {
 		return b & 0xff;
 	}
 
+	static short toShort(byte b) {
+		return (short) (b & 0xff);
+	}
+
 	static short toShort(int i) {
 		if (!(-32768 <= i && i < 65536)) {
 			throw new IllegalArgumentException(i + " doesn't fit in a short");

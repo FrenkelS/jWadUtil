@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class MapProcessor {
 
@@ -40,21 +41,13 @@ public class MapProcessor {
 	private static final short NUKAGE = (short) -3;
 
 	private final WadFile wadFile;
-	private final List<Color> vgaColors;
+	private final List<Color> colors;
+	private final Function<Byte, Byte> shuffleColorFunction;
 
-	public MapProcessor(WadFile wadFile) {
+	public MapProcessor(WadFile wadFile, List<Color> colors, Function<Byte, Byte> shuffleColorFunction) {
 		this.wadFile = wadFile;
-
-		Lump playpal = wadFile.getLumpByName("PLAYPAL");
-		ByteBuffer bb = playpal.dataAsByteBuffer();
-		List<Color> colors = new ArrayList<>();
-		for (int i = 0; i < 256; i++) {
-			int r = toInt(bb.get());
-			int g = toInt(bb.get());
-			int b = toInt(bb.get());
-			colors.add(new Color(r, g, b));
-		}
-		this.vgaColors = colors;
+		this.colors = colors;
+		this.shuffleColorFunction = shuffleColorFunction;
 	}
 
 	public void processMaps() {
@@ -445,7 +438,7 @@ public class MapProcessor {
 		int sumg = 0;
 		int sumb = 0;
 		for (byte b : source) {
-			Color color = vgaColors.get(toInt(b));
+			Color color = colors.get(toInt(b));
 			sumr += color.r() * color.r();
 			sumg += color.g() * color.g();
 			sumb += color.b() * color.b();
@@ -458,9 +451,9 @@ public class MapProcessor {
 		short closestAverageColorIndex = -1;
 		int minDistance = Integer.MAX_VALUE;
 		for (short i = 0; i < 256; i++) {
-			Color vgaColor = vgaColors.get(i);
+			Color color = colors.get(i);
 
-			int distance = averageColor.calculateDistance(vgaColor);
+			int distance = averageColor.calculateDistance(color);
 			if (distance == 0) {
 				closestAverageColorIndex = i;
 				break;
@@ -472,7 +465,7 @@ public class MapProcessor {
 			}
 		}
 
-		return closestAverageColorIndex;
+		return toShort(shuffleColorFunction.apply(toByte(closestAverageColorIndex)));
 	}
 
 	/**

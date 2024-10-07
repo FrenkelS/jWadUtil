@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.sfprod.jwadutil.JWadUtil.Game;
@@ -19,9 +20,26 @@ public class WadProcessor {
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 
-	WadProcessor(WadFile wadFile) {
+	private WadProcessor(WadFile wadFile) {
+		this(wadFile, createVgaColors(wadFile), Function.identity());
+	}
+
+	WadProcessor(WadFile wadFile, List<Color> colors, Function<Byte, Byte> shuffleColorFunction) {
 		this.wadFile = wadFile;
-		this.mapProcessor = new MapProcessor(wadFile);
+		this.mapProcessor = new MapProcessor(wadFile, colors, shuffleColorFunction);
+	}
+
+	private static List<Color> createVgaColors(WadFile wadFile) {
+		Lump playpal = wadFile.getLumpByName("PLAYPAL");
+		ByteBuffer bb = playpal.dataAsByteBuffer();
+		List<Color> vgaColors = new ArrayList<>();
+		for (int i = 0; i < 256; i++) {
+			int r = toInt(bb.get());
+			int g = toInt(bb.get());
+			int b = toInt(bb.get());
+			vgaColors.add(new Color(r, g, b));
+		}
+		return vgaColors;
 	}
 
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {

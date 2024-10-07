@@ -16,7 +16,7 @@ import com.sfprod.utils.NumberUtils;
 
 class WadProcessor16 extends WadProcessor {
 
-	private final Random random = new Random(0x1d4a11);
+	private static final Random RANDOM = new Random(0x1d4a11);
 
 	private static final List<Color> CGA_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black
@@ -79,7 +79,7 @@ class WadProcessor16 extends WadProcessor {
 	);
 
 	WadProcessor16(WadFile wadFile) {
-		super(wadFile);
+		super(wadFile, CGA136_COLORS, WadProcessor16::shuffleColor);
 	}
 
 	private static List<Color> createCga136Colors() {
@@ -280,8 +280,8 @@ class WadProcessor16 extends WadProcessor {
 		rawGraphics.add(wadFile.getLumpByName("STBAR"));
 		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
 		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
-		// Flats
-		rawGraphics.addAll(wadFile.getLumpsBetween("F1_START", "F1_END"));
+		// Flat
+		rawGraphics.add(wadFile.getLumpByName("FLOOR4_8"));
 		rawGraphics.forEach(this::shuffleColorsRaw);
 
 		// Graphics in picture format
@@ -338,8 +338,8 @@ class WadProcessor16 extends WadProcessor {
 		}
 	}
 
-	private byte shuffleColor(byte b) {
+	private static byte shuffleColor(byte b) {
 		List<Integer> list = CGA136_COLORS_SHUFFLE_MAP.get(toInt(b));
-		return list.get(random.nextInt(list.size())).byteValue();
+		return list.get(RANDOM.nextInt(list.size())).byteValue();
 	}
 }
