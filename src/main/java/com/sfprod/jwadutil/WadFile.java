@@ -179,6 +179,10 @@ public class WadFile {
 		lumps.removeIf(l -> l.nameAsString().startsWith(prefix));
 	}
 
+	public void addLump(Lump lump) {
+		lumps.add(lump);
+	}
+
 	public void mergeWadFile(WadFile wadFile) {
 		lumps.addAll(wadFile.lumps);
 	}

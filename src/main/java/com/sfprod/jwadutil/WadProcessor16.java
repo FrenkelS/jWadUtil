@@ -190,51 +190,63 @@ class WadProcessor16 extends WadProcessor {
 
 	@Override
 	void processColormap() {
-		Lump colormapLump = wadFile.getLumpByName("COLORMAP");
+		List<Byte> colormapInvulnerability = createColormapInvulnerability();
 
-		int index = 0;
+		for (int gamma = 0; gamma < 6; gamma++) {
+			Lump colormapLump;
+			if (gamma == 0) {
+				colormapLump = wadFile.getLumpByName("COLORMAP");
+			} else {
+				colormapLump = new Lump("COLORMP" + gamma, new byte[34 * 256]);
+				wadFile.addLump(colormapLump);
+			}
 
-		// colormap 0
-		for (int i = 0; i < 256; i++) {
-			colormapLump.data()[index] = toByte(i);
-			index++;
-		}
+			int index = 0;
 
-		// colormap 1-31 from bright to dark
-		for (int colormap = 1; colormap < 32; colormap++) {
-			List<Byte> colormapBytes = createColormap(colormap);
-			for (byte b : colormapBytes) {
-				colormapLump.data()[index] = b;
+			// colormap 0-31 from bright to dark
+			int colormap = 0 - (int) (gamma * (32.0 / 5));
+			for (int i = 0; i < 32; i++) {
+				List<Byte> colormapBytes = createColormap(colormap);
+				for (byte b : colormapBytes) {
+					colormapLump.data()[index] = b;
+					index++;
+				}
+				colormap++;
+			}
+
+			// colormap 32 invulnerability powerup
+			for (int i = 0; i < 256; i++) {
+				colormapLump.data()[index] = colormapInvulnerability.get(i);
 				index++;
 			}
-		}
 
-		// colormap 32 invulnerability powerup
-		List<Byte> colormapInvulnerability = createColormapInvulnerability();
-		for (int i = 0; i < 256; i++) {
-			colormapLump.data()[index] = colormapInvulnerability.get(i);
-			index++;
-		}
-
-		// colormap 33 all black
-		for (int i = 0; i < 256; i++) {
-			colormapLump.data()[index] = 0;
-			index++;
+			// colormap 33 all black
+			for (int i = 0; i < 256; i++) {
+				colormapLump.data()[index] = 0;
+				index++;
+			}
 		}
 	}
 
 	private List<Byte> createColormap(int colormap) {
-		int c = 32 - colormap;
-
 		List<Byte> result = new ArrayList<>();
-		for (Color color : CGA136_COLORS) {
-			int r = (int) Math.sqrt(color.r() * color.r() * c / 32);
-			int g = (int) Math.sqrt(color.g() * color.g() * c / 32);
-			int b = (int) Math.sqrt(color.b() * color.b() * c / 32);
 
-			byte closestColor = calculateClosestColor(new Color(r, g, b));
-			byte shuffledColor = shuffleColor(closestColor);
-			result.add(shuffledColor);
+		if (colormap == 0) {
+			for (int i = 0; i < 256; i++) {
+				result.add(toByte(i));
+			}
+		} else {
+			int c = 32 - colormap;
+
+			for (Color color : CGA136_COLORS) {
+				int r = Math.clamp((long) Math.sqrt(color.r() * color.r() * c / 32), 0, 255);
+				int g = Math.clamp((long) Math.sqrt(color.g() * color.g() * c / 32), 0, 255);
+				int b = Math.clamp((long) Math.sqrt(color.b() * color.b() * c / 32), 0, 255);
+
+				byte closestColor = calculateClosestColor(new Color(r, g, b));
+				byte shuffledColor = shuffleColor(closestColor);
+				result.add(shuffledColor);
+			}
 		}
 
 		return result;
