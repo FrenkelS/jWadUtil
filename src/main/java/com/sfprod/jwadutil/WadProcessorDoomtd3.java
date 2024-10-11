@@ -1,5 +1,6 @@
 package com.sfprod.jwadutil;
 
+import static com.sfprod.jwadutil.JWadUtil.getLump;
 import static com.sfprod.utils.NumberUtils.toInt;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 
 	WadProcessorDoomtd3(WadFile wadFile) throws IOException {
 		super(wadFile, createColors(wadFile), Function.identity());
-		wadFile.addLump(JWadUtil.getLump("CACHE"));
+		wadFile.addLump(getLump("CACHE"));
 	}
 
 	// FIXME
