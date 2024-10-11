@@ -5,7 +5,6 @@ import static com.sfprod.utils.ByteBufferUtils.toArray;
 import static com.sfprod.utils.StringUtils.toByteArray;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
@@ -28,7 +27,7 @@ public class WadFile {
 	private static record Filelump(int filepos, int size, byte[] name) {
 	}
 
-	public WadFile(String wadPath) throws IOException, URISyntaxException {
+	public WadFile(String wadPath) throws IOException {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(WadFile.class.getResourceAsStream(wadPath).readAllBytes());
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -63,7 +62,7 @@ public class WadFile {
 		}
 	}
 
-	public void saveWadFile(String wadPath) throws IOException, URISyntaxException {
+	public void saveWadFile(String wadPath) throws IOException {
 		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
 		int filesize = filepos + lumps.stream().mapToInt(Lump::length).sum();
 

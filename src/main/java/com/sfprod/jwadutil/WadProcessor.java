@@ -3,6 +3,7 @@ package com.sfprod.jwadutil;
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.NumberUtils.toInt;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,12 +43,12 @@ public class WadProcessor {
 		return vgaColors;
 	}
 
-	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
-		if (game == Game.DOOM8088_16_COLOR) {
-			return new WadProcessor16(wadFile);
-		} else {
-			return new WadProcessor(wadFile);
-		}
+	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) throws IOException {
+		return switch (game) {
+		case DOOM8088_16_COLOR -> new WadProcessor16(wadFile);
+		case DOOMTD3_LITTLE_ENDIAN -> new WadProcessorDoomtd3(wadFile);
+		default -> new WadProcessor(wadFile);
+		};
 	}
 
 	public void processWad() {
