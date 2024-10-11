@@ -159,6 +159,10 @@ public class WadFile {
 		lumps.set(lumpnum, newLump);
 	}
 
+	public void removeLump(int lumpnum) {
+		lumps.remove(lumpnum);
+	}
+
 	public void removeLump(Lump lump) {
 		removeLump(lump.nameAsString());
 	}
