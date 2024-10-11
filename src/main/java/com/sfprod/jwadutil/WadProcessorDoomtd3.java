@@ -16,7 +16,7 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 		wadFile.addLump(getLump("CACHE"));
 	}
 
-	// FIXME
+	// FIXME monochrome
 	private static List<Color> createColors(WadFile wadFile) {
 		Lump playpal = wadFile.getLumpByName("PLAYPAL");
 		ByteBuffer bb = playpal.dataAsByteBuffer();
@@ -30,6 +30,7 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 		return vgaColors;
 	}
 
+	// TODO remove more lumps
 	@Override
 	protected void removeUnusedLumps() {
 		super.removeUnusedLumps();
