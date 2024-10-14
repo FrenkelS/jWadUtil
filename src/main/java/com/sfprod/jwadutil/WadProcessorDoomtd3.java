@@ -78,6 +78,8 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 			}
 		}
 
+		wadFile.removeLumps("PLAY");
+
 		wadFile.removeLump("WALL03_1");
 		wadFile.removeLump("WALL03_4");
 		wadFile.removeLumps("WALL04");
