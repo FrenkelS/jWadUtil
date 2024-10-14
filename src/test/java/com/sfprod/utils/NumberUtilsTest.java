@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * This class tests {@link NumberUtils}
+ *
  */
 class NumberUtilsTest {
 
