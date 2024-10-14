@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.sfprod.jwadutil.JWadUtil.Game;
-
 public class WadProcessor {
 
 	public static final boolean FLAT_SPAN = true;

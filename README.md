@@ -12,6 +12,4 @@ By storing vertexes in LINEDEFS and SEGS the VERTEXES lump can be removed.
 
 Build: `mvn verify`
 
-Usage for 256 colors: `java -jar target/jwadutil-1.0.0-SNAPSHOT.jar`
-
-Usage for  16 colors: `java -jar target/jwadutil-1.0.0-SNAPSHOT.jar -NR_OF_COLORS=16`
+Usage: `java -jar target/jwadutil-1.0-SNAPSHOT.jar`

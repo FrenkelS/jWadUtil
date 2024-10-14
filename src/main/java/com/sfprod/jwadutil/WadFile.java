@@ -5,7 +5,7 @@ import static com.sfprod.utils.ByteBufferUtils.toArray;
 import static com.sfprod.utils.StringUtils.toByteArray;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
@@ -28,9 +28,15 @@ public class WadFile {
 	private static record Filelump(int filepos, int size, byte[] name) {
 	}
 
-	public WadFile(String wadPath) throws IOException, URISyntaxException {
-		ByteBuffer byteBuffer = ByteBuffer.wrap(WadFile.class.getResourceAsStream(wadPath).readAllBytes());
-		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+	public WadFile(String wadPath) {
+		ByteBuffer byteBuffer;
+
+		try {
+			byteBuffer = ByteBuffer.wrap(WadFile.class.getResourceAsStream(wadPath).readAllBytes());
+			byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 
 		byte[] identification = new byte[4];
 		byteBuffer.get(identification);
@@ -63,7 +69,7 @@ public class WadFile {
 		}
 	}
 
-	public void saveWadFile(String wadPath) throws IOException, URISyntaxException {
+	public void saveWadFile(String wadPath) {
 		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
 		int filesize = filepos + lumps.stream().mapToInt(Lump::length).sum();
 
@@ -107,7 +113,13 @@ public class WadFile {
 		Path path = Path.of("target", wadPath);
 		int filesizeWithoutDuplicates = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8)
 				+ lumps.stream().mapToInt(Lump::length).sum();
-		Files.write(path, toArray(byteBuffer, filesizeWithoutDuplicates));
+
+		try {
+			Files.write(path, toArray(byteBuffer, filesizeWithoutDuplicates));
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+
 		System.out.println("WAD file of size " + filesizeWithoutDuplicates + " written to " + path.toAbsolutePath());
 	}
 
