@@ -7,6 +7,7 @@ import java.util.Arrays;
 public class JWadUtil {
 
 	public static void main(String[] args) {
+		// createWad(Game.DOOMTD3_LITTLE_ENDIAN);
 		Arrays.stream(Game.values()).forEach(JWadUtil::createWad);
 	}
 

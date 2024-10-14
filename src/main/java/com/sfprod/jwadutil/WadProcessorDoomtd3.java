@@ -10,6 +10,19 @@ import java.util.function.Function;
 
 public class WadProcessorDoomtd3 extends WadProcessor {
 
+	private static final List<String> SPRNAMES = List.of( //
+			"TROO", "SHTG", "PISG", "PISF", "SHTF", //
+			"BLUD", "PUFF", "BAL1", //
+			"PLAY", "POSS", //
+			"SPOS", "SARG", //
+			"ARM1", "ARM2", "BAR1", "BEXP", //
+			"BON1", "BON2", "BKEY", "RKEY", "YKEY", "STIM", "MEDI", //
+			"SOUL", "PINS", "SUIT", "PMAP", "CLIP", "AMMO", //
+			"ROCK", "BROK", "SHEL", "SBOX", "BPAK", "MGUN", "CSAW", //
+			"LAUN", "SHOT", "COLU", "POL5", //
+			"CBRA", "ELEC" //
+	);
+
 	WadProcessorDoomtd3(WadFile wadFile) {
 		super(wadFile, createColors(wadFile), Function.identity());
 		wadFile.addLump(getLump("CACHE"));
@@ -28,19 +41,6 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 		}
 		return vgaColors;
 	}
-
-	private static final List<String> sprnames = List.of( //
-			"TROO", "SHTG", "PISG", "PISF", "SHTF", //
-			"BLUD", "PUFF", "BAL1", //
-			"PLAY", "POSS", //
-			"SPOS", "SARG", //
-			"ARM1", "ARM2", "BAR1", "BEXP", //
-			"BON1", "BON2", "BKEY", "RKEY", "YKEY", "STIM", "MEDI", //
-			"SOUL", "PINS", "SUIT", "PMAP", "CLIP", "AMMO", //
-			"ROCK", "BROK", "SHEL", "SBOX", "BPAK", "MGUN", "CSAW", //
-			"LAUN", "SHOT", "COLU", "POL5", //
-			"CBRA", "ELEC" //
-	);
 
 	@Override
 	protected void removeUnusedLumps() {
@@ -67,13 +67,11 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 		wadFile.removeLumps("WI");
 		wadFile.removeLump("CREDITS");
 		wadFile.removeLump("P_START");
-//		wadFile.removeLump("P1_START");
-//		wadFile.removeLump("P1_END");
 		wadFile.removeLump("P_END");
 
 		List<Lump> sprites = new ArrayList<>(wadFile.getLumpsBetween("S_START", "S_END"));
 		for (Lump sprite : sprites) {
-			if (!sprnames.contains(sprite.nameAsString().substring(0, 4))) {
+			if (!SPRNAMES.contains(sprite.nameAsString().substring(0, 4))) {
 				wadFile.removeLump(sprite);
 			}
 		}
