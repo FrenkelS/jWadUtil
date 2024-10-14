@@ -17,8 +17,8 @@ import org.junit.jupiter.params.provider.EnumSource;
 class JWadUtilTest {
 
 	private static final Map<Game, String> EXPECTED_CHECKSUMS = new EnumMap<>(Map.of(//
-			Game.DOOM8088, "59BD83D9", //
-			Game.DOOM8088_16_COLOR, "63B79AEA" //
+			Game.DOOM8088, "5F5AF43D", //
+			Game.DOOM8088_16_COLOR, "5BAE0590" //
 	));
 
 	@ParameterizedTest
