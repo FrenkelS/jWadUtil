@@ -17,7 +17,7 @@ public class WadProcessor {
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 
-	private WadProcessor(WadFile wadFile) {
+	WadProcessor(WadFile wadFile) {
 		this(wadFile, createVgaColors(wadFile));
 	}
 
@@ -40,11 +40,11 @@ public class WadProcessor {
 	}
 
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
-		if (game == Game.DOOM8088_16_COLOR) {
-			return new WadProcessor16(wadFile);
-		} else {
-			return new WadProcessor(wadFile);
-		}
+		return switch (game) {
+		case DOOM8088_16_COLOR -> new WadProcessor16(wadFile);
+		case DOOMTD3_LITTLE_ENDIAN -> new WadProcessorDoomtd3(wadFile);
+		default -> new WadProcessor(wadFile);
+		};
 	}
 
 	public void processWad() {

@@ -7,6 +7,7 @@ import java.util.Arrays;
 public class JWadUtil {
 
 	public static void main(String[] args) {
+		// createWad(Game.DOOMTD3_LITTLE_ENDIAN);
 		Arrays.stream(Game.values()).forEach(JWadUtil::createWad);
 	}
 
@@ -34,7 +35,7 @@ public class JWadUtil {
 		System.out.println();
 	}
 
-	private static Lump getLump(String lumpname) {
+	static Lump getLump(String lumpname) {
 		try {
 			byte[] data = JWadUtil.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
 			return new Lump(lumpname, data);

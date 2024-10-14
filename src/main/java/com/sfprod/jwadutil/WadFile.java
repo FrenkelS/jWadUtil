@@ -20,9 +20,6 @@ public class WadFile {
 
 	private static final List<String> FILE_SIGNATURES = List.of("IWAD", "PWAD");
 
-	private final int numlumps;
-	private final int infotableofs;
-
 	private final List<Lump> lumps = new ArrayList<>();
 
 	private static record Filelump(int filepos, int size, byte[] name) {
@@ -46,8 +43,8 @@ public class WadFile {
 			throw new IllegalArgumentException(wadPath + " is not a WAD file");
 		}
 
-		this.numlumps = byteBuffer.getInt();
-		this.infotableofs = byteBuffer.getInt();
+		int numlumps = byteBuffer.getInt();
+		int infotableofs = byteBuffer.getInt();
 
 		byteBuffer.position(infotableofs);
 
@@ -170,6 +167,10 @@ public class WadFile {
 	public void replaceLump(Lump newLump) {
 		int lumpnum = getLumpNumByName(newLump.nameAsString());
 		lumps.set(lumpnum, newLump);
+	}
+
+	public void removeLump(int lumpnum) {
+		lumps.remove(lumpnum);
 	}
 
 	public void removeLump(Lump lump) {
