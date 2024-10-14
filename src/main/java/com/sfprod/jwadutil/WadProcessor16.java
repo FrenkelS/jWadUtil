@@ -79,7 +79,7 @@ class WadProcessor16 extends WadProcessor {
 	);
 
 	WadProcessor16(WadFile wadFile) {
-		super(wadFile, color -> shuffleColor(convert256to16(color)));
+		super(wadFile, CGA136_COLORS);
 	}
 
 	private static List<Color> createCga136Colors() {
@@ -117,7 +117,7 @@ class WadProcessor16 extends WadProcessor {
 		return shuffleMap;
 	}
 
-	private static byte convert256to16(byte b) {
+	private byte convert256to16(byte b) {
 		return VGA256_TO_16_LUT.get(toInt(b)).byteValue();
 	}
 
@@ -350,7 +350,7 @@ class WadProcessor16 extends WadProcessor {
 		}
 	}
 
-	private static byte shuffleColor(byte b) {
+	private byte shuffleColor(byte b) {
 		List<Integer> list = CGA136_COLORS_SHUFFLE_MAP.get(toInt(b));
 		return list.get(RANDOM.nextInt(list.size())).byteValue();
 	}
