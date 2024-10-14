@@ -3,7 +3,6 @@ package com.sfprod.jwadutil;
 import static com.sfprod.jwadutil.JWadUtil.getLump;
 import static com.sfprod.utils.NumberUtils.toInt;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.function.Function;
 
 public class WadProcessorDoomtd3 extends WadProcessor {
 
-	WadProcessorDoomtd3(WadFile wadFile) throws IOException {
+	WadProcessorDoomtd3(WadFile wadFile) {
 		super(wadFile, createColors(wadFile), Function.identity());
 		wadFile.addLump(getLump("CACHE"));
 	}

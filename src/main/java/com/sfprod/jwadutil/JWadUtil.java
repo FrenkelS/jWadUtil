@@ -1,34 +1,17 @@
 package com.sfprod.jwadutil;
 
 import java.io.IOException;
-import java.nio.ByteOrder;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 
 public class JWadUtil {
 
-	enum Game {
-		DOOM8088(ByteOrder.LITTLE_ENDIAN, "DOOM1.WAD"), //
-		DOOM8088_16_COLOR(ByteOrder.LITTLE_ENDIAN, "DOOM16.WAD"), //
-		DOOMTD3_BIG_ENDIAN(ByteOrder.BIG_ENDIAN, "DOOMTD3B.WAD"), //
-		DOOMTD3_LITTLE_ENDIAN(ByteOrder.LITTLE_ENDIAN, "DOOMTD3L.WAD"), //
-		ELKSDOOM(ByteOrder.LITTLE_ENDIAN, "elksdoom.wad");
-
-		private final ByteOrder byteOrder;
-		private final String wadFile;
-
-		Game(ByteOrder byteOrder, String wadFile) {
-			this.byteOrder = byteOrder;
-			this.wadFile = wadFile;
-		}
+	public static void main(String[] args) {
+		Arrays.stream(Game.values()).forEach(JWadUtil::createWad);
 	}
 
-	public static void main(String[] args) throws IOException {
-		Game game = Game.DOOM8088;
-		if (Arrays.asList(args).contains("-NR_OF_COLORS=16")) {
-			game = Game.DOOM8088_16_COLOR;
-		} else if (Arrays.asList(args).contains("-doomtd3l")) {
-			game = Game.DOOMTD3_LITTLE_ENDIAN;
-		}
+	static void createWad(Game game) {
+		System.out.println("Creating WAD file for " + game);
 
 		WadFile iwadFile = new WadFile("/doom1.wad");
 
@@ -46,11 +29,17 @@ public class JWadUtil {
 		WadProcessor wadProcessor = WadProcessor.getWadProcessor(game, iwadFile);
 		wadProcessor.processWad();
 
-		iwadFile.saveWadFile(game.wadFile);
+		iwadFile.saveWadFile(game.getWadFile());
+
+		System.out.println();
 	}
 
-	static Lump getLump(String lumpname) throws IOException {
-		byte[] data = WadFile.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
-		return new Lump(lumpname, data);
+	static Lump getLump(String lumpname) {
+		try {
+			byte[] data = JWadUtil.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
+			return new Lump(lumpname, data);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 }
