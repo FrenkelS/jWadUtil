@@ -79,7 +79,7 @@ class WadProcessor16 extends WadProcessor {
 	);
 
 	WadProcessor16(WadFile wadFile) {
-		super(wadFile, CGA136_COLORS, WadProcessor16::shuffleColor);
+		super(wadFile, color -> shuffleColor(convert256to16(color)));
 	}
 
 	private static List<Color> createCga136Colors() {
@@ -117,7 +117,7 @@ class WadProcessor16 extends WadProcessor {
 		return shuffleMap;
 	}
 
-	private byte convert256to16(byte b) {
+	private static byte convert256to16(byte b) {
 		return VGA256_TO_16_LUT.get(toInt(b)).byteValue();
 	}
 
@@ -129,8 +129,8 @@ class WadProcessor16 extends WadProcessor {
 		rawGraphics.add(wadFile.getLumpByName("STBAR"));
 		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
 		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
-		// Flats
-		rawGraphics.addAll(wadFile.getLumpsBetween("F1_START", "F1_END"));
+		// Finale background flat
+		rawGraphics.add(wadFile.getLumpByName("FLOOR4_8"));
 		rawGraphics.forEach(this::changePaletteRaw);
 
 		// Graphics in picture format

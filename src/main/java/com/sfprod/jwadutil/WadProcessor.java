@@ -19,25 +19,12 @@ public class WadProcessor {
 	private final MapProcessor mapProcessor;
 
 	private WadProcessor(WadFile wadFile) {
-		this(wadFile, createVgaColors(wadFile), Function.identity());
+		this(wadFile, Function.identity());
 	}
 
-	WadProcessor(WadFile wadFile, List<Color> colors, Function<Byte, Byte> shuffleColorFunction) {
+	WadProcessor(WadFile wadFile, Function<Byte, Byte> shuffleColorFunction) {
 		this.wadFile = wadFile;
-		this.mapProcessor = new MapProcessor(wadFile, colors, shuffleColorFunction);
-	}
-
-	private static List<Color> createVgaColors(WadFile wadFile) {
-		Lump playpal = wadFile.getLumpByName("PLAYPAL");
-		ByteBuffer bb = playpal.dataAsByteBuffer();
-		List<Color> vgaColors = new ArrayList<>();
-		for (int i = 0; i < 256; i++) {
-			int r = toInt(bb.get());
-			int g = toInt(bb.get());
-			int b = toInt(bb.get());
-			vgaColors.add(new Color(r, g, b));
-		}
-		return vgaColors;
+		this.mapProcessor = new MapProcessor(wadFile, shuffleColorFunction);
 	}
 
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
@@ -49,11 +36,11 @@ public class WadProcessor {
 	}
 
 	public void processWad() {
-		changeColors();
-		processColormap();
 		processTexture1();
 		processPNames();
 		mapProcessor.processMaps();
+		changeColors();
+		processColormap();
 		processPlayerSprites();
 		removeUnusedLumps();
 		processSprites();
