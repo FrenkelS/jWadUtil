@@ -4,7 +4,6 @@ import static com.sfprod.jwadutil.JWadUtil.getLump;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class WadProcessorDoomtd3 extends WadProcessor {
 
@@ -22,8 +21,13 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 	);
 
 	WadProcessorDoomtd3(WadFile wadFile) {
-		super(wadFile, Function.identity());
+		super(wadFile, createColors(wadFile));
 		wadFile.addLump(getLump("CACHE"));
+	}
+
+	// TODO implement me
+	private static List<Color> createColors(WadFile wadFile) {
+		return createVgaColors(wadFile);
 	}
 
 	@Override

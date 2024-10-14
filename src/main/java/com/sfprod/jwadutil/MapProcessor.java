@@ -1,6 +1,7 @@
 package com.sfprod.jwadutil;
 
 import static com.sfprod.jwadutil.WadProcessor.FLAT_SPAN;
+import static com.sfprod.jwadutil.WadProcessor.createVgaColors;
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.ListUtils.endsWith;
 import static com.sfprod.utils.NumberUtils.toByte;
@@ -14,7 +15,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 public class MapProcessor {
 
@@ -41,26 +41,20 @@ public class MapProcessor {
 	private static final short NUKAGE = (short) -3;
 
 	private final WadFile wadFile;
+
 	private final List<Color> vgaColors;
-	private final Function<Byte, Byte> convertColorFunction;
 
-	public MapProcessor(WadFile wadFile, Function<Byte, Byte> convertColorFunction) {
+	private final Map<String, Short> flatToColor = new HashMap<>();
+	private final Map<Short, Color> availableColorsMap = new HashMap<>();
+
+	public MapProcessor(WadFile wadFile, List<Color> availableColors) {
 		this.wadFile = wadFile;
-		this.vgaColors = createVgaColors();
-		this.convertColorFunction = convertColorFunction;
-	}
 
-	private List<Color> createVgaColors() {
-		Lump playpal = wadFile.getLumpByName("PLAYPAL");
-		ByteBuffer bb = playpal.dataAsByteBuffer();
-		List<Color> vgaColors = new ArrayList<>();
-		for (int i = 0; i < 256; i++) {
-			int r = toInt(bb.get());
-			int g = toInt(bb.get());
-			int b = toInt(bb.get());
-			vgaColors.add(new Color(r, g, b));
+		this.vgaColors = createVgaColors(wadFile);
+
+		for (short i = 0; i < 256; i++) {
+			this.availableColorsMap.put(i, availableColors.get(i));
 		}
-		return vgaColors;
 	}
 
 	public void processMaps() {
@@ -414,8 +408,7 @@ public class MapProcessor {
 				if (floorflatname.startsWith("NUKAGE")) {
 					floorpicnum = NUKAGE;
 				} else {
-					Lump floor = wadFile.getLumpByName(floorflatname);
-					floorpicnum = calculateAverageColor(floor);
+					floorpicnum = calculateAverageColor(floorflatname);
 				}
 				newbb.putShort(floorpicnum);
 
@@ -427,8 +420,7 @@ public class MapProcessor {
 				} else if ("F_SKY1".equals(ceilingflatname)) {
 					ceilingpicnum = SKY;
 				} else {
-					Lump ceiling = wadFile.getLumpByName(ceilingflatname);
-					ceilingpicnum = calculateAverageColor(ceiling);
+					ceilingpicnum = calculateAverageColor(ceilingflatname);
 				}
 				newbb.putShort(ceilingpicnum);
 			} else {
@@ -445,40 +437,48 @@ public class MapProcessor {
 		wadFile.replaceLump(sectorsLumpNum, newLump);
 	}
 
-	private short calculateAverageColor(Lump flat) {
-		byte[] source = flat.data();
-		int sumr = 0;
-		int sumg = 0;
-		int sumb = 0;
-		for (byte b : source) {
-			Color color = vgaColors.get(toInt(b));
-			sumr += color.r() * color.r();
-			sumg += color.g() * color.g();
-			sumb += color.b() * color.b();
-		}
-		int averager = (int) Math.sqrt(sumr / (64 * 64));
-		int averageg = (int) Math.sqrt(sumg / (64 * 64));
-		int averageb = (int) Math.sqrt(sumb / (64 * 64));
-		Color averageColor = new Color(averager, averageg, averageb);
+	private short calculateAverageColor(String flatname) {
+		if (!flatToColor.containsKey(flatname)) {
+			Lump flat = wadFile.getLumpByName(flatname);
 
-		short closestAverageColorIndex = -1;
-		int minDistance = Integer.MAX_VALUE;
-		for (short i = 0; i < 256; i++) {
-			Color color = vgaColors.get(i);
-
-			int distance = averageColor.calculateDistance(color);
-			if (distance == 0) {
-				closestAverageColorIndex = i;
-				break;
+			byte[] source = flat.data();
+			int sumr = 0;
+			int sumg = 0;
+			int sumb = 0;
+			for (byte b : source) {
+				Color color = vgaColors.get(toInt(b));
+				sumr += color.r() * color.r();
+				sumg += color.g() * color.g();
+				sumb += color.b() * color.b();
 			}
+			int averager = (int) Math.sqrt(sumr / (64 * 64));
+			int averageg = (int) Math.sqrt(sumg / (64 * 64));
+			int averageb = (int) Math.sqrt(sumb / (64 * 64));
+			Color averageColor = new Color(averager, averageg, averageb);
 
-			if (distance < minDistance) {
-				minDistance = distance;
-				closestAverageColorIndex = i;
+			short closestAverageColorIndex = -1;
+			int minDistance = Integer.MAX_VALUE;
+			for (Map.Entry<Short, Color> entry : availableColorsMap.entrySet()) {
+				short i = entry.getKey();
+				Color color = entry.getValue();
+
+				int distance = averageColor.calculateDistance(color);
+				if (distance == 0) {
+					closestAverageColorIndex = i;
+					break;
+				}
+
+				if (distance < minDistance) {
+					minDistance = distance;
+					closestAverageColorIndex = i;
+				}
 			}
+			availableColorsMap.remove(closestAverageColorIndex);
+
+			flatToColor.put(flatname, closestAverageColorIndex);
 		}
 
-		return toShort(convertColorFunction.apply(toByte(closestAverageColorIndex)));
+		return flatToColor.get(flatname);
 	}
 
 	/**
