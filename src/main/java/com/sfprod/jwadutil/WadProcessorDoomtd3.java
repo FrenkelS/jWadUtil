@@ -1,11 +1,15 @@
 package com.sfprod.jwadutil;
 
 import static com.sfprod.jwadutil.JWadUtil.getLump;
+import static com.sfprod.utils.NumberUtils.toByte;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class WadProcessorDoomtd3 extends WadProcessor {
+
+	private static final Random RANDOM = new Random(0x1d4a11);
 
 	private static final List<String> SPRNAMES = List.of( //
 			"TROO", "SHTG", "PISG", "PISF", "SHTF", //
@@ -20,14 +24,74 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 			"CBRA", "ELEC" //
 	);
 
+	private final List<Color> vgaColors;
+	private final List<List<Integer>> listsOfBits;
+
 	WadProcessorDoomtd3(WadFile wadFile) {
-		super(wadFile, createColors(wadFile));
+		super(wadFile);
 		wadFile.addLump(getLump("CACHE"));
+
+		this.vgaColors = createVgaColors(wadFile);
+
+		this.listsOfBits = new ArrayList<>();
+		for (int i = 0; i <= 8; i++) {
+			listsOfBits.add(new ArrayList<>());
+		}
+		for (int i = 0; i < 256; i++) {
+			int bits = Integer.bitCount(i);
+			listsOfBits.get(bits).add(i);
+		}
 	}
 
-	// TODO implement me
-	private static List<Color> createColors(WadFile wadFile) {
-		return createVgaColors(wadFile);
+	@Override
+	protected void processColormap() {
+		Lump colormapLump = wadFile.getLumpByName("COLORMAP");
+
+		int index = 0;
+
+		// colormap 0-31 from bright to dark
+		int colormap = 0;
+		for (int i = 0; i < 32; i++) {
+			List<Byte> colormapBytes = createColormap(colormap);
+			for (byte b : colormapBytes) {
+				colormapLump.data()[index] = b;
+				index++;
+			}
+			colormap++;
+		}
+
+		// colormap 32 invulnerability powerup, unused in doomtd3
+		for (int i = 0; i < 256; i++) {
+			colormapLump.data()[index] = 0;
+			index++;
+		}
+
+		// colormap 33 all black
+		for (int i = 0; i < 256; i++) {
+			colormapLump.data()[index] = 0;
+			index++;
+		}
+	}
+
+	private List<Byte> createColormap(int colormap) {
+		List<Byte> result = new ArrayList<>();
+
+		int c = 32 - (colormap * 2);
+
+		for (Color color : vgaColors) {
+			int r = Math.clamp((long) Math.sqrt(color.r() * color.r() * c / 32), 0, 255);
+			int g = Math.clamp((long) Math.sqrt(color.g() * color.g() * c / 32), 0, 255);
+			int b = Math.clamp((long) Math.sqrt(color.b() * color.b() * c / 32), 0, 255);
+			Color dimmedColor = new Color(r, g, b);
+			double gray = dimmedColor.gray();
+			int bitbucket = (int) (gray / (255 / 8));
+			List<Integer> list = listsOfBits.get(bitbucket);
+
+			byte shuffledColor = toByte(list.get(RANDOM.nextInt(list.size())));
+			result.add(shuffledColor);
+		}
+
+		return result;
 	}
 
 	@Override

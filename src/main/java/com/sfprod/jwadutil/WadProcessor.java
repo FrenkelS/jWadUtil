@@ -17,7 +17,7 @@ public class WadProcessor {
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 
-	private WadProcessor(WadFile wadFile) {
+	WadProcessor(WadFile wadFile) {
 		this(wadFile, createVgaColors(wadFile));
 	}
 
