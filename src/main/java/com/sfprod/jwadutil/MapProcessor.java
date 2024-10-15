@@ -406,7 +406,7 @@ public class MapProcessor {
 		int sectorsLumpNum = lumpNum + ML_SECTORS;
 		Lump sectors = wadFile.getLumpByNum(sectorsLumpNum);
 		ByteBuffer oldbb = sectors.dataAsByteBuffer();
-		ByteBuffer newbb = newByteBuffer();
+		ByteBuffer newbb = newByteBuffer(byteOrder);
 		for (int i = 0; i < sectors.length() / 26; i++) {
 			short floorheight = oldbb.getShort();
 			short ceilingheight = oldbb.getShort();
@@ -535,7 +535,7 @@ public class MapProcessor {
 			mapOfLinenos.put(i, linenos);
 		}
 
-		ByteBuffer newBlockmap = newByteBuffer();
+		ByteBuffer newBlockmap = newByteBuffer(byteOrder);
 		newBlockmap.putShort(bmaporgx);
 		newBlockmap.putShort(bmaporgy);
 		newBlockmap.putShort(bmapwidth);

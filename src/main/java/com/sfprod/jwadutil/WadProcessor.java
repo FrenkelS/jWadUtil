@@ -15,6 +15,7 @@ public class WadProcessor {
 
 	public static final boolean FLAT_SPAN = true;
 
+	private final ByteOrder byteOrder;
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 
@@ -23,6 +24,7 @@ public class WadProcessor {
 	}
 
 	WadProcessor(ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
+		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
 		this.mapProcessor = new MapProcessor(byteOrder, wadFile, availableColors);
 	}
@@ -108,7 +110,7 @@ public class WadProcessor {
 			textures.add(new Maptexture(name, masked, width, height, columndirectory, patchcount, patches));
 		}
 
-		ByteBuffer newbb = newByteBuffer();
+		ByteBuffer newbb = newByteBuffer(byteOrder);
 		newbb.putInt(numtextures);
 
 		// temp offset values
@@ -149,13 +151,22 @@ public class WadProcessor {
 	 *
 	 */
 	private void processPNames() {
-		Lump lump = wadFile.getLumpByName("PNAMES");
-		byte[] data = lump.data();
-		for (int i = 4; i < data.length; i++) {
-			if ('a' <= data[i] && data[i] <= 'z') {
-				data[i] &= 0b11011111;
+		Lump oldPNames = wadFile.getLumpByName("PNAMES");
+		ByteBuffer oldData = oldPNames.dataAsByteBuffer();
+		ByteBuffer newData = newByteBuffer(byteOrder, oldPNames.length());
+		int nummappatches = oldData.getInt();
+		newData.putInt(nummappatches);
+
+		for (int i = 0; i < nummappatches * 8; i++) {
+			byte b = oldData.get();
+			if ('a' <= b && b <= 'z') {
+				b &= 0b11011111;
 			}
+			newData.put(b);
 		}
+
+		Lump newPNames = new Lump(oldPNames.name(), newData);
+		wadFile.replaceLump(newPNames);
 	}
 
 	/**
