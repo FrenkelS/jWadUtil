@@ -100,7 +100,8 @@ public class WadFile {
 				}
 			}
 
-			byteBuffer.putInt(lump.length());
+			byteBuffer.putShort(toShort(lump.length()));
+			byteBuffer.putShort(toShort(0));
 			byteBuffer.put(lump.name());
 		}
 		System.out.println("Removed " + duplicateDataCount + " duplicate lumps");
