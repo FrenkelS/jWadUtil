@@ -62,15 +62,15 @@ public class WadFile {
 			byte[] data = new byte[filelump.size];
 			byteBuffer.position(filelump.filepos());
 			byteBuffer.get(data);
-			lumps.add(new Lump(filelump.name(), data));
+			lumps.add(new Lump(filelump.name(), data, ByteOrder.LITTLE_ENDIAN));
 		}
 	}
 
-	public void saveWadFile(String wadPath) {
+	public void saveWadFile(ByteOrder byteOrder, String wadPath) {
 		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
 		int filesize = filepos + lumps.stream().mapToInt(Lump::length).sum();
 
-		ByteBuffer byteBuffer = newByteBuffer(filesize);
+		ByteBuffer byteBuffer = newByteBuffer(byteOrder, filesize);
 
 		byteBuffer.put(toByteArray("IWAD"));
 		byteBuffer.putInt(lumps.size());
@@ -88,7 +88,7 @@ public class WadFile {
 				if (duplicateDataMap.containsKey(key)) {
 					int previousfilepos = duplicateDataMap.get(key);
 					byteBuffer.putInt(previousfilepos);
-					Lump newLump = new Lump(lump.name(), new byte[] {});
+					Lump newLump = new Lump(lump.name(), new byte[] {}, byteOrder);
 					lumps.set(lumpnum, newLump);
 					duplicateDataCount++;
 				} else {

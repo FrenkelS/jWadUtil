@@ -10,11 +10,14 @@ import static com.sfprod.utils.NumberUtils.toShort;
 import static com.sfprod.utils.StringUtils.toStringUpperCase;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.sfprod.utils.ByteBufferUtils;
 
 public class MapProcessor {
 
@@ -26,6 +29,7 @@ public class MapProcessor {
 	private static final int ML_VERTEXES = 4; // Vertices, edited and BSP splits generated
 	private static final int ML_SEGS = 5; // LineSegs, from LineDefs split by BSP
 	private static final int ML_SSECTORS = 6; // SubSectors, list of LineSegs
+	private static final int ML_NODES = 7; // BSP nodes
 	private static final int ML_SECTORS = 8; // Sectors, from editing
 	private static final int ML_BLOCKMAP = 10; // LUT, motion clipping, walls/grid element
 
@@ -40,6 +44,7 @@ public class MapProcessor {
 	private static final short SKY = (short) -2;
 	private static final short NUKAGE = (short) -3;
 
+	private final ByteOrder byteOrder;
 	private final WadFile wadFile;
 
 	private final List<Color> vgaColors;
@@ -47,7 +52,8 @@ public class MapProcessor {
 	private final Map<String, Short> flatToColor = new HashMap<>();
 	private final Map<Short, Color> availableColorsMap = new HashMap<>();
 
-	public MapProcessor(WadFile wadFile, List<Color> availableColors) {
+	public MapProcessor(ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
+		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
 
 		this.vgaColors = createVgaColors(wadFile);
@@ -74,6 +80,7 @@ public class MapProcessor {
 
 		processSegs(lumpNum);
 		processSsectors(lumpNum);
+		processNodes(lumpNum);
 		processSectors(lumpNum);
 		processBlockmap(lumpNum);
 	}
@@ -87,7 +94,7 @@ public class MapProcessor {
 		int thingsLumpNum = lumpNum + ML_THINGS;
 		Lump things = wadFile.getLumpByNum(thingsLumpNum);
 		ByteBuffer oldByteBuffer = things.dataAsByteBuffer();
-		ByteBuffer newByteBuffer = newByteBuffer();
+		ByteBuffer newByteBuffer = newByteBuffer(byteOrder);
 
 		for (int i = 0; i < things.length() / (2 + 2 + 2 + 2 + 2); i++) {
 			short x = oldByteBuffer.getShort();
@@ -144,7 +151,7 @@ public class MapProcessor {
 		// We need vertexes for this...
 		List<Vertex> vertexes = getVertexes(lumpNum);
 
-		ByteBuffer newLineByteBuffer = newByteBuffer(lineCount * Line.SIZE_OF_LINE);
+		ByteBuffer newLineByteBuffer = newByteBuffer(byteOrder, lineCount * Line.SIZE_OF_LINE);
 		for (Maplinedef maplinedef : oldLines) {
 			Vertex vertex1 = vertexes.get(maplinedef.v1());
 			newLineByteBuffer.putShort(vertex1.x()); // v1.x
@@ -239,7 +246,7 @@ public class MapProcessor {
 		// ****************************
 
 		int sizeofseg = 2 * 2 + 2 * 2 + 2 + 2 + 2 + 2 + 1 + 1;
-		ByteBuffer newSegsByteBuffer = newByteBuffer(segCount * sizeofseg);
+		ByteBuffer newSegsByteBuffer = newByteBuffer(byteOrder, segCount * sizeofseg);
 		for (Mapseg oldSeg : oldSegs) {
 			Vertex v1 = vertexes.get(oldSeg.v1());
 			newSegsByteBuffer.putShort(v1.x()); // v1.x
@@ -277,10 +284,16 @@ public class MapProcessor {
 		wadFile.replaceLump(segsLumpNum, newSeg);
 	}
 
-	private List<Mapsidedef> getSidedefs(int lumpNum) {
+	/**
+	 * Change textureoffset, rowoffset, toptexture, bottomtexture, midtexture and
+	 * sector
+	 *
+	 * @param lumpNum
+	 */
+	private void processSidedefs(int lumpNum) {
 		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
 		Lump sxl = wadFile.getLumpByNum(sidesLumpNum);
-		List<Mapsidedef> sides = new ArrayList<>();
+		List<Mapsidedef> oldSidedefs = new ArrayList<>();
 		ByteBuffer sidesByteBuffer = sxl.dataAsByteBuffer();
 		int sizeofmapsidedef = 2 + 2 + 8 + 8 + 8 + 2;
 		for (int i = 0; i < sxl.length() / sizeofmapsidedef; i++) {
@@ -293,24 +306,14 @@ public class MapProcessor {
 			byte[] midtexture = new byte[8];
 			sidesByteBuffer.get(midtexture);
 			short sector = sidesByteBuffer.getShort();
-			sides.add(new Mapsidedef(textureoffset, rowoffset, toptexture, bottomtexture, midtexture, sector));
+			oldSidedefs.add(new Mapsidedef(textureoffset, rowoffset, toptexture, bottomtexture, midtexture, sector));
 		}
-		return sides;
-	}
 
-	/**
-	 * Change textureoffset, rowoffset, toptexture, bottomtexture, midtexture and
-	 * sector
-	 *
-	 * @param lumpNum
-	 */
-	private void processSidedefs(int lumpNum) {
-		List<Mapsidedef> oldSidedefs = getSidedefs(lumpNum);
 		int sideCount = oldSidedefs.size();
 
 		List<String> textureNames = getTextureNames();
 
-		ByteBuffer newSidedefByteBuffer = newByteBuffer(sideCount * Sidedef.SIZE_OF_SIDE);
+		ByteBuffer newSidedefByteBuffer = newByteBuffer(byteOrder, sideCount * Sidedef.SIZE_OF_SIDE);
 		for (Mapsidedef oldSidedef : oldSidedefs) {
 			newSidedefByteBuffer.putShort(oldSidedef.textureoffset()); // textureoffset
 			newSidedefByteBuffer.put(toByte(oldSidedef.rowoffset())); // rowoffset
@@ -322,7 +325,6 @@ public class MapProcessor {
 			newSidedefByteBuffer.put(toByte(oldSidedef.sector())); // sector
 		}
 
-		int sidesLumpNum = lumpNum + ML_SIDEDEFS;
 		byte[] sidedefsLumpName = wadFile.getLumpByNum(sidesLumpNum).name();
 		Lump newSidedefs = new Lump(sidedefsLumpName, newSidedefByteBuffer);
 		wadFile.replaceLump(sidesLumpNum, newSidedefs);
@@ -373,7 +375,25 @@ public class MapProcessor {
 			}
 			derivedFirstseg += numsegs;
 		}
-		wadFile.replaceLump(ssectorsLumpNum, new Lump(ssectors.name(), newnumsegs));
+		wadFile.replaceLump(ssectorsLumpNum, new Lump(ssectors.name(), newnumsegs, ByteBufferUtils.DONT_CARE));
+	}
+
+	/**
+	 * Change byte order
+	 *
+	 * @param lumpNum
+	 */
+	private void processNodes(int lumpNum) {
+		int nodesLumpNum = lumpNum + ML_NODES;
+		Lump oldNodes = wadFile.getLumpByNum(nodesLumpNum);
+		ByteBuffer oldNodesByteBuffer = oldNodes.dataAsByteBuffer();
+		ByteBuffer newNodesByteBuffer = newByteBuffer(byteOrder, oldNodes.length());
+		for (int i = 0; i < oldNodes.length() / 2; i++) {
+			short s = oldNodesByteBuffer.getShort();
+			newNodesByteBuffer.putShort(s);
+		}
+		Lump newNodes = new Lump(oldNodes.name(), newNodesByteBuffer);
+		wadFile.replaceLump(nodesLumpNum, newNodes);
 	}
 
 	/**
@@ -647,7 +667,7 @@ public class MapProcessor {
 					oldLine.flags(), oldLine.special(), oldLine.tag()));
 		}
 
-		ByteBuffer newLinesByteBuffer = newByteBuffer(oldLinedefs.length());
+		ByteBuffer newLinesByteBuffer = newByteBuffer(byteOrder, oldLinedefs.length());
 		for (Line newLine : newLines) {
 			newLinesByteBuffer.putShort(newLine.v1().x());
 			newLinesByteBuffer.putShort(newLine.v1().y());
@@ -661,7 +681,7 @@ public class MapProcessor {
 		}
 		wadFile.replaceLump(lineLumpNum, new Lump(oldLinedefs.name(), newLinesByteBuffer));
 
-		ByteBuffer newSidesByteBuffer = newByteBuffer(sidedefWithMetadataList.size() * Sidedef.SIZE_OF_SIDE);
+		ByteBuffer newSidesByteBuffer = newByteBuffer(byteOrder, sidedefWithMetadataList.size() * Sidedef.SIZE_OF_SIDE);
 		for (SidedefWithMetadata sidedefWithMetadata : sidedefWithMetadataList) {
 			Sidedef sidedef = sidedefWithMetadata.sidedef();
 			newSidesByteBuffer.putShort(sidedef.textureoffset());

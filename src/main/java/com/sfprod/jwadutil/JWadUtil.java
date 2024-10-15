@@ -2,13 +2,13 @@ package com.sfprod.jwadutil;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Arrays;
+import java.nio.ByteOrder;
 
 public class JWadUtil {
 
 	public static void main(String[] args) {
-		// createWad(Game.DOOMTD3_LITTLE_ENDIAN);
-		Arrays.stream(Game.values()).forEach(JWadUtil::createWad);
+		createWad(Game.DOOMTD3_BIG_ENDIAN);
+//		Arrays.stream(Game.values()).forEach(JWadUtil::createWad);
 	}
 
 	static void createWad(Game game) {
@@ -30,7 +30,7 @@ public class JWadUtil {
 		WadProcessor wadProcessor = WadProcessor.getWadProcessor(game, iwadFile);
 		wadProcessor.processWad();
 
-		iwadFile.saveWadFile(game.getWadFile());
+		iwadFile.saveWadFile(game.getByteOrder(), game.getWadFile());
 
 		System.out.println();
 	}
@@ -38,7 +38,7 @@ public class JWadUtil {
 	static Lump getLump(String lumpname) {
 		try {
 			byte[] data = JWadUtil.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
-			return new Lump(lumpname, data);
+			return new Lump(lumpname, data, ByteOrder.LITTLE_ENDIAN);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
