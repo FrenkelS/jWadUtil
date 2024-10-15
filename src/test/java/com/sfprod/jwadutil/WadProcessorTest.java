@@ -20,7 +20,7 @@ class WadProcessorTest {
 
 	@ParameterizedTest
 	@ValueSource(ints = { 1, 2, 3, 4, 5, 6, 7, 8, 9 })
-	void processBlockmap(int map) throws Exception {
+	void processBlockmap(int map) {
 		String mapName = "E1M" + map;
 
 		WadFile wadFile = new WadFile("/doom1.wad");
