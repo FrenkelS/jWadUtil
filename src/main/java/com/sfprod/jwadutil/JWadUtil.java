@@ -3,12 +3,13 @@ package com.sfprod.jwadutil;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 public class JWadUtil {
 
 	public static void main(String[] args) {
-		createWad(Game.DOOMTD3_BIG_ENDIAN);
-//		Arrays.stream(Game.values()).forEach(JWadUtil::createWad);
+		// createWad(Game.DOOMTD3_BIG_ENDIAN);
+		Arrays.stream(Game.values()).forEach(JWadUtil::createWad);
 	}
 
 	static void createWad(Game game) {

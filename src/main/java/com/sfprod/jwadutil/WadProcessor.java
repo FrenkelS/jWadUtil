@@ -45,7 +45,7 @@ public class WadProcessor {
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
 		return switch (game) {
 		case DOOM8088_16_COLOR -> new WadProcessor16(game.getByteOrder(), wadFile);
-		case DOOMTD3_LITTLE_ENDIAN -> new WadProcessorDoomtd3(game.getByteOrder(), wadFile);
+		case DOOMTD3_BIG_ENDIAN, DOOMTD3_LITTLE_ENDIAN -> new WadProcessorDoomtd3(game.getByteOrder(), wadFile);
 		default -> new WadProcessor(game.getByteOrder(), wadFile);
 		};
 	}
@@ -316,7 +316,7 @@ public class WadProcessor {
 			columns.add(column);
 		}
 
-		ByteBuffer doom8088Data = newByteBuffer();
+		ByteBuffer doom8088Data = newByteBuffer(byteOrder);
 		doom8088Data.putShort(width);
 		doom8088Data.putShort(height);
 		doom8088Data.putShort(leftoffset);
@@ -402,7 +402,7 @@ public class WadProcessor {
 			columns.add(column);
 		}
 
-		ByteBuffer doom8088Data = newByteBuffer();
+		ByteBuffer doom8088Data = newByteBuffer(byteOrder);
 		doom8088Data.putShort(width);
 		doom8088Data.putShort(height);
 		doom8088Data.putShort(leftoffset);
@@ -523,7 +523,7 @@ public class WadProcessor {
 			columns.add(column);
 		}
 
-		ByteBuffer compressedData = newByteBuffer();
+		ByteBuffer compressedData = newByteBuffer(byteOrder);
 		compressedData.putShort(width);
 		compressedData.putShort(height);
 		compressedData.putShort(leftoffset);

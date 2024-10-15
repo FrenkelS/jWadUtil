@@ -2,6 +2,7 @@ package com.sfprod.jwadutil;
 
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.ByteBufferUtils.toArray;
+import static com.sfprod.utils.NumberUtils.toShort;
 import static com.sfprod.utils.StringUtils.toByteArray;
 
 import java.io.IOException;
@@ -73,7 +74,8 @@ public class WadFile {
 		ByteBuffer byteBuffer = newByteBuffer(byteOrder, filesize);
 
 		byteBuffer.put(toByteArray("IWAD"));
-		byteBuffer.putInt(lumps.size());
+		byteBuffer.putShort(toShort(lumps.size()));
+		byteBuffer.putShort(toShort(0));
 		byteBuffer.putInt(4 + 4 + 4);
 
 		// WAD lump merging

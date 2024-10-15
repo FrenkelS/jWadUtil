@@ -10,7 +10,7 @@ import java.util.Random;
 
 public class WadProcessorDoomtd3 extends WadProcessor {
 
-	private static final Random RANDOM = new Random(0x1d4a11);
+	private final Random random = new Random(0x1d4a11);
 
 	private static final List<String> SPRNAMES = List.of( //
 			"TROO", "SHTG", "PISG", "PISF", "SHTF", //
@@ -88,7 +88,7 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 			int bitbucket = (int) (gray / (255 / 8));
 			List<Integer> list = listsOfBits.get(bitbucket);
 
-			byte shuffledColor = toByte(list.get(RANDOM.nextInt(list.size())));
+			byte shuffledColor = toByte(list.get(random.nextInt(list.size())));
 			result.add(shuffledColor);
 		}
 

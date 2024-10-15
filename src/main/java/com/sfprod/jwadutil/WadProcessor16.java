@@ -18,7 +18,7 @@ import com.sfprod.utils.NumberUtils;
 
 class WadProcessor16 extends WadProcessor {
 
-	private static final Random RANDOM = new Random(0x1d4a11);
+	private final Random random = new Random(0x1d4a11);
 
 	private static final List<Color> CGA_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black
@@ -354,7 +354,7 @@ class WadProcessor16 extends WadProcessor {
 
 	private byte shuffleColor(byte b) {
 		List<Integer> list = CGA136_COLORS_SHUFFLE_MAP.get(toInt(b));
-		return list.get(RANDOM.nextInt(list.size())).byteValue();
+		return list.get(random.nextInt(list.size())).byteValue();
 	}
 
 	@Override
