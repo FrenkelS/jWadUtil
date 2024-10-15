@@ -9,9 +9,7 @@ public interface ByteBufferUtils {
 	ByteOrder DONT_CARE = ByteOrder.LITTLE_ENDIAN;
 
 	static ByteBuffer newByteBuffer(ByteOrder byteOrder) {
-		ByteBuffer bb = ByteBuffer.allocate(65536);
-		bb.order(byteOrder);
-		return bb;
+		return newByteBuffer(byteOrder, 65536);
 	}
 
 	static ByteBuffer newByteBuffer(ByteOrder byteOrder, int capacity) {
