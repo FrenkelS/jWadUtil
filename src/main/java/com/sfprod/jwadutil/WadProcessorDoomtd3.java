@@ -3,13 +3,14 @@ package com.sfprod.jwadutil;
 import static com.sfprod.jwadutil.JWadUtil.getLump;
 import static com.sfprod.utils.NumberUtils.toByte;
 
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class WadProcessorDoomtd3 extends WadProcessor {
 
-	private static final Random RANDOM = new Random(0x1d4a11);
+	private final Random random = new Random(0x1d4a11);
 
 	private static final List<String> SPRNAMES = List.of( //
 			"TROO", "SHTG", "PISG", "PISF", "SHTF", //
@@ -27,8 +28,8 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 	private final List<Color> vgaColors;
 	private final List<List<Integer>> listsOfBits;
 
-	WadProcessorDoomtd3(WadFile wadFile) {
-		super(wadFile);
+	WadProcessorDoomtd3(ByteOrder byteOrder, WadFile wadFile) {
+		super(byteOrder, wadFile);
 		wadFile.addLump(getLump("CACHE"));
 
 		this.vgaColors = createVgaColors(wadFile);
@@ -87,7 +88,7 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 			int bitbucket = (int) (gray / (255 / 8));
 			List<Integer> list = listsOfBits.get(bitbucket);
 
-			byte shuffledColor = toByte(list.get(RANDOM.nextInt(list.size())));
+			byte shuffledColor = toByte(list.get(random.nextInt(list.size())));
 			result.add(shuffledColor);
 		}
 

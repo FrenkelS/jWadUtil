@@ -4,6 +4,7 @@ import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.NumberUtils.toInt;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,16 +15,18 @@ public class WadProcessor {
 
 	public static final boolean FLAT_SPAN = true;
 
+	private final ByteOrder byteOrder;
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 
-	WadProcessor(WadFile wadFile) {
-		this(wadFile, createVgaColors(wadFile));
+	WadProcessor(ByteOrder byteOrder, WadFile wadFile) {
+		this(byteOrder, wadFile, createVgaColors(wadFile));
 	}
 
-	WadProcessor(WadFile wadFile, List<Color> availableColors) {
+	WadProcessor(ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
+		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
-		this.mapProcessor = new MapProcessor(wadFile, availableColors);
+		this.mapProcessor = new MapProcessor(byteOrder, wadFile, availableColors);
 	}
 
 	static List<Color> createVgaColors(WadFile wadFile) {
@@ -41,9 +44,9 @@ public class WadProcessor {
 
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
 		return switch (game) {
-		case DOOM8088_16_COLOR -> new WadProcessor16(wadFile);
-		case DOOMTD3_LITTLE_ENDIAN -> new WadProcessorDoomtd3(wadFile);
-		default -> new WadProcessor(wadFile);
+		case DOOM8088_16_COLOR -> new WadProcessor16(game.getByteOrder(), wadFile);
+		case DOOMTD3_BIG_ENDIAN, DOOMTD3_LITTLE_ENDIAN -> new WadProcessorDoomtd3(game.getByteOrder(), wadFile);
+		default -> new WadProcessor(game.getByteOrder(), wadFile);
 		};
 	}
 
@@ -107,7 +110,7 @@ public class WadProcessor {
 			textures.add(new Maptexture(name, masked, width, height, columndirectory, patchcount, patches));
 		}
 
-		ByteBuffer newbb = newByteBuffer();
+		ByteBuffer newbb = newByteBuffer(byteOrder);
 		newbb.putInt(numtextures);
 
 		// temp offset values
@@ -148,13 +151,22 @@ public class WadProcessor {
 	 *
 	 */
 	private void processPNames() {
-		Lump lump = wadFile.getLumpByName("PNAMES");
-		byte[] data = lump.data();
-		for (int i = 4; i < data.length; i++) {
-			if ('a' <= data[i] && data[i] <= 'z') {
-				data[i] &= 0b11011111;
+		Lump oldPNames = wadFile.getLumpByName("PNAMES");
+		ByteBuffer oldData = oldPNames.dataAsByteBuffer();
+		ByteBuffer newData = newByteBuffer(byteOrder, oldPNames.length());
+		int nummappatches = oldData.getInt();
+		newData.putInt(nummappatches);
+
+		for (int i = 0; i < nummappatches * 8; i++) {
+			byte b = oldData.get();
+			if ('a' <= b && b <= 'z') {
+				b &= 0b11011111;
 			}
+			newData.put(b);
 		}
+
+		Lump newPNames = new Lump(oldPNames.name(), newData);
+		wadFile.replaceLump(newPNames);
 	}
 
 	/**
@@ -173,7 +185,7 @@ public class WadProcessor {
 				String suffix = playerSprite.nameAsString().substring(4);
 				Lump zombiemanSprite = zombiemanSprites.stream().filter(z -> z.nameAsString().endsWith(suffix))
 						.findAny().orElseThrow();
-				Lump newLump = new Lump(playerSprite.name(), zombiemanSprite.data());
+				Lump newLump = new Lump(playerSprite.name(), zombiemanSprite.data(), zombiemanSprite.byteOrder());
 				wadFile.replaceLump(newLump);
 			}
 		}
@@ -182,7 +194,8 @@ public class WadProcessor {
 				.orElseThrow();
 		Lump zombieBloodyMess = zombiemanSprites.stream().filter(z -> "POSSU0".equals(z.nameAsString())).findAny()
 				.orElseThrow();
-		Lump newBloodyMessLump = new Lump(playerBloodyMess.name(), zombieBloodyMess.data());
+		Lump newBloodyMessLump = new Lump(playerBloodyMess.name(), zombieBloodyMess.data(),
+				zombieBloodyMess.byteOrder());
 		wadFile.replaceLump(newBloodyMessLump);
 	}
 
@@ -303,7 +316,7 @@ public class WadProcessor {
 			columns.add(column);
 		}
 
-		ByteBuffer doom8088Data = newByteBuffer();
+		ByteBuffer doom8088Data = newByteBuffer(byteOrder);
 		doom8088Data.putShort(width);
 		doom8088Data.putShort(height);
 		doom8088Data.putShort(leftoffset);
@@ -389,7 +402,7 @@ public class WadProcessor {
 			columns.add(column);
 		}
 
-		ByteBuffer doom8088Data = newByteBuffer();
+		ByteBuffer doom8088Data = newByteBuffer(byteOrder);
 		doom8088Data.putShort(width);
 		doom8088Data.putShort(height);
 		doom8088Data.putShort(leftoffset);
@@ -510,7 +523,7 @@ public class WadProcessor {
 			columns.add(column);
 		}
 
-		ByteBuffer compressedData = newByteBuffer();
+		ByteBuffer compressedData = newByteBuffer(byteOrder);
 		compressedData.putShort(width);
 		compressedData.putShort(height);
 		compressedData.putShort(leftoffset);

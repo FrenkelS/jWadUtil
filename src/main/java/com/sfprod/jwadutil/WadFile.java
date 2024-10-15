@@ -2,6 +2,7 @@ package com.sfprod.jwadutil;
 
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.ByteBufferUtils.toArray;
+import static com.sfprod.utils.NumberUtils.toShort;
 import static com.sfprod.utils.StringUtils.toByteArray;
 
 import java.io.IOException;
@@ -62,18 +63,19 @@ public class WadFile {
 			byte[] data = new byte[filelump.size];
 			byteBuffer.position(filelump.filepos());
 			byteBuffer.get(data);
-			lumps.add(new Lump(filelump.name(), data));
+			lumps.add(new Lump(filelump.name(), data, ByteOrder.LITTLE_ENDIAN));
 		}
 	}
 
-	public void saveWadFile(String wadPath) {
+	public void saveWadFile(ByteOrder byteOrder, String wadPath) {
 		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
 		int filesize = filepos + lumps.stream().mapToInt(Lump::length).sum();
 
-		ByteBuffer byteBuffer = newByteBuffer(filesize);
+		ByteBuffer byteBuffer = newByteBuffer(byteOrder, filesize);
 
 		byteBuffer.put(toByteArray("IWAD"));
-		byteBuffer.putInt(lumps.size());
+		byteBuffer.putShort(toShort(lumps.size()));
+		byteBuffer.putShort(toShort(0));
 		byteBuffer.putInt(4 + 4 + 4);
 
 		// WAD lump merging
@@ -88,7 +90,7 @@ public class WadFile {
 				if (duplicateDataMap.containsKey(key)) {
 					int previousfilepos = duplicateDataMap.get(key);
 					byteBuffer.putInt(previousfilepos);
-					Lump newLump = new Lump(lump.name(), new byte[] {});
+					Lump newLump = new Lump(lump.name(), new byte[] {}, byteOrder);
 					lumps.set(lumpnum, newLump);
 					duplicateDataCount++;
 				} else {
@@ -98,7 +100,8 @@ public class WadFile {
 				}
 			}
 
-			byteBuffer.putInt(lump.length());
+			byteBuffer.putShort(toShort(lump.length()));
+			byteBuffer.putShort(toShort(0));
 			byteBuffer.put(lump.name());
 		}
 		System.out.println("Removed " + duplicateDataCount + " duplicate lumps");

@@ -7,17 +7,18 @@ import static com.sfprod.utils.StringUtils.toStringUpperCase;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public record Lump(byte[] name, byte[] data) {
-	public Lump(String name, byte[] data) {
-		this(toByteArray(name, 8), data);
+public record Lump(byte[] name, byte[] data, ByteOrder byteOrder) {
+
+	public Lump(String name, byte[] data, ByteOrder byteOrder) {
+		this(toByteArray(name, 8), data, byteOrder);
 	}
 
 	public Lump(byte[] name, ByteBuffer byteBuffer) {
-		this(name, byteBuffer.array());
+		this(name, byteBuffer.array(), byteBuffer.order());
 	}
 
 	public Lump(byte[] name, int size, ByteBuffer byteBuffer) {
-		this(name, toArray(byteBuffer, size));
+		this(name, toArray(byteBuffer, size), byteBuffer.order());
 	}
 
 	public int length() {
@@ -30,7 +31,8 @@ public record Lump(byte[] name, byte[] data) {
 
 	public ByteBuffer dataAsByteBuffer() {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(data);
-		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		byteBuffer.order(byteOrder);
 		return byteBuffer;
 	}
+
 }

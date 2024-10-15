@@ -6,13 +6,15 @@ import java.util.Arrays;
 
 public interface ByteBufferUtils {
 
-	static ByteBuffer newByteBuffer() {
-		return newByteBuffer(65536);
+	ByteOrder DONT_CARE = ByteOrder.LITTLE_ENDIAN;
+
+	static ByteBuffer newByteBuffer(ByteOrder byteOrder) {
+		return newByteBuffer(byteOrder, 65536);
 	}
 
-	static ByteBuffer newByteBuffer(int capacity) {
+	static ByteBuffer newByteBuffer(ByteOrder byteOrder, int capacity) {
 		ByteBuffer bb = ByteBuffer.allocate(capacity);
-		bb.order(ByteOrder.LITTLE_ENDIAN);
+		bb.order(byteOrder);
 		return bb;
 	}
 

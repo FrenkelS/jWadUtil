@@ -4,6 +4,7 @@ import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -12,11 +13,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import com.sfprod.utils.ByteBufferUtils;
 import com.sfprod.utils.NumberUtils;
 
 class WadProcessor16 extends WadProcessor {
 
-	private static final Random RANDOM = new Random(0x1d4a11);
+	private final Random random = new Random(0x1d4a11);
 
 	private static final List<Color> CGA_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black
@@ -78,8 +80,8 @@ class WadProcessor16 extends WadProcessor {
 			0x47 // cream-colored
 	);
 
-	WadProcessor16(WadFile wadFile) {
-		super(wadFile, CGA136_COLORS);
+	WadProcessor16(ByteOrder byteOrder, WadFile wadFile) {
+		super(byteOrder, wadFile, CGA136_COLORS);
 	}
 
 	private static List<Color> createCga136Colors() {
@@ -197,7 +199,7 @@ class WadProcessor16 extends WadProcessor {
 			if (gamma == 0) {
 				colormapLump = wadFile.getLumpByName("COLORMAP");
 			} else {
-				colormapLump = new Lump("COLORMP" + gamma, new byte[34 * 256]);
+				colormapLump = new Lump("COLORMP" + gamma, new byte[34 * 256], ByteBufferUtils.DONT_CARE);
 				wadFile.addLump(colormapLump);
 			}
 
@@ -352,7 +354,7 @@ class WadProcessor16 extends WadProcessor {
 
 	private byte shuffleColor(byte b) {
 		List<Integer> list = CGA136_COLORS_SHUFFLE_MAP.get(toInt(b));
-		return list.get(RANDOM.nextInt(list.size())).byteValue();
+		return list.get(random.nextInt(list.size())).byteValue();
 	}
 
 	@Override
