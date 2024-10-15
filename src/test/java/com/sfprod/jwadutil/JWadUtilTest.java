@@ -20,7 +20,8 @@ class JWadUtilTest {
 			Game.DOOM8088, "1470921E", //
 			Game.DOOM8088_16_COLOR, "95B6D388", //
 			Game.DOOMTD3_BIG_ENDIAN, "D8F76736", //
-			Game.DOOMTD3_LITTLE_ENDIAN, "B215BC27" //
+			Game.DOOMTD3_LITTLE_ENDIAN, "B215BC27", //
+			Game.ELKSDOOM, "1470921E" //
 	));
 
 	@ParameterizedTest
