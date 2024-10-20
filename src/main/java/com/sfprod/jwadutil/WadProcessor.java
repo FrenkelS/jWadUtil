@@ -259,6 +259,7 @@ public class WadProcessor {
 				"WIP2", // P2
 				"WIP3", // P3
 				"WIP4", // P4
+				"WIURH1", // You are here
 				"WIVCTMS" // Victims
 		).forEach(prefix -> wadFile.removeLumps(prefix));
 
