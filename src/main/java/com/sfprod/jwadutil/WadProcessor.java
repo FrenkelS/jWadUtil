@@ -252,6 +252,7 @@ public class WadProcessor {
 				"WIKILRS", // Killers
 				"WILV1", // Episode 2 level names
 				"WILV2", // Episode 3 level names
+				"WIMINUS", // Minus
 				"WIMSTAR", // You
 				"WIOSTF", // F.
 				"WIOSTS", // Scrt
