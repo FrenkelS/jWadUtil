@@ -1,6 +1,5 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.jwadutil.JWadUtil.getLump;
 import static com.sfprod.utils.NumberUtils.toByte;
 
 import java.nio.ByteOrder;

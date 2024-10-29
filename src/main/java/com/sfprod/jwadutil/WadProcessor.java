@@ -3,6 +3,8 @@ package com.sfprod.jwadutil;
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.NumberUtils.toInt;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -27,6 +29,30 @@ public class WadProcessor {
 		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
 		this.mapProcessor = new MapProcessor(byteOrder, wadFile, availableColors);
+
+		wadFile.addLump(getLump("CREDITS"));
+		wadFile.addLump(getLump("M_ARUN"));
+		wadFile.addLump(getLump("M_GAMMA"));
+		wadFile.addLump(getLump("STGANUM0"));
+		wadFile.addLump(getLump("STGANUM1"));
+		wadFile.addLump(getLump("STGANUM2"));
+		wadFile.addLump(getLump("STGANUM3"));
+		wadFile.addLump(getLump("STGANUM4"));
+		wadFile.addLump(getLump("STGANUM5"));
+		wadFile.addLump(getLump("STGANUM6"));
+		wadFile.addLump(getLump("STGANUM7"));
+		wadFile.addLump(getLump("STGANUM8"));
+		wadFile.addLump(getLump("STGANUM9"));
+		wadFile.addLump(getLump("PLAYPAL1"));
+		wadFile.addLump(getLump("PLAYPAL2"));
+		wadFile.addLump(getLump("PLAYPAL3"));
+		wadFile.addLump(getLump("PLAYPAL4"));
+		wadFile.addLump(getLump("PLAYPAL5"));
+
+		wadFile.replaceLump(getLump("HELP2"));
+		wadFile.replaceLump(getLump("STBAR"));
+		wadFile.replaceLump(getLump("TITLEPIC"));
+		wadFile.replaceLump(getLump("WIMAP0"));
 	}
 
 	static List<Color> createVgaColors(WadFile wadFile) {
@@ -48,6 +74,15 @@ public class WadProcessor {
 		case DOOMTD3_BIG_ENDIAN, DOOMTD3_LITTLE_ENDIAN -> new WadProcessorDoomtd3(game.getByteOrder(), wadFile);
 		default -> new WadProcessor(game.getByteOrder(), wadFile);
 		};
+	}
+
+	protected Lump getLump(String lumpname) {
+		try {
+			byte[] data = JWadUtil.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
+			return new Lump(lumpname, data, ByteOrder.LITTLE_ENDIAN);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	public void processWad() {
