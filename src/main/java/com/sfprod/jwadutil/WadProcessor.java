@@ -2,6 +2,7 @@ package com.sfprod.jwadutil;
 
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.NumberUtils.toInt;
+import static com.sfprod.utils.StringUtils.toByteArray;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -13,9 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.sfprod.utils.ByteBufferUtils;
+
 public class WadProcessor {
 
 	public static final boolean FLAT_SPAN = true;
+
+	private static final String CREDITS = """
+			Doom8088 by Frenkel Smeijers
+			based on
+			GBA PrBoom port created by doomhack
+			SVN by Kippykip
+			Doom II status bar by Torus Games""".replace("\n", "\r\n");
 
 	private final ByteOrder byteOrder;
 	final WadFile wadFile;
@@ -30,7 +40,7 @@ public class WadProcessor {
 		this.wadFile = wadFile;
 		this.mapProcessor = new MapProcessor(byteOrder, wadFile, availableColors);
 
-		wadFile.addLump(getLump("CREDITS"));
+		wadFile.addLump(new Lump("CREDITS", toByteArray(CREDITS), ByteBufferUtils.DONT_CARE));
 		wadFile.addLump(getLump("M_ARUN"));
 		wadFile.addLump(getLump("M_GAMMA"));
 		wadFile.addLump(getLump("STGANUM0"));
