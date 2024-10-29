@@ -15,23 +15,36 @@ public class JWadUtil {
 	static void createWad(Game game) {
 		System.out.println("Creating WAD file for " + game);
 
-		WadFile iwadFile = new WadFile("/doom1.wad");
+		WadFile wadFile = new WadFile("/doom1.wad");
 
-		// Also insert the GBADoom wad file. (Extra menu options etc)
-		WadFile pwadFile = new WadFile("/gbadoom.wad");
+		wadFile.addLump(getLump("CREDITS"));
+		wadFile.addLump(getLump("M_ARUN"));
+		wadFile.addLump(getLump("M_GAMMA"));
+		wadFile.addLump(getLump("STGANUM0"));
+		wadFile.addLump(getLump("STGANUM1"));
+		wadFile.addLump(getLump("STGANUM2"));
+		wadFile.addLump(getLump("STGANUM3"));
+		wadFile.addLump(getLump("STGANUM4"));
+		wadFile.addLump(getLump("STGANUM5"));
+		wadFile.addLump(getLump("STGANUM6"));
+		wadFile.addLump(getLump("STGANUM7"));
+		wadFile.addLump(getLump("STGANUM8"));
+		wadFile.addLump(getLump("STGANUM9"));
+		wadFile.addLump(getLump("PLAYPAL1"));
+		wadFile.addLump(getLump("PLAYPAL2"));
+		wadFile.addLump(getLump("PLAYPAL3"));
+		wadFile.addLump(getLump("PLAYPAL4"));
+		wadFile.addLump(getLump("PLAYPAL5"));
 
-		iwadFile.mergeWadFile(pwadFile);
+		wadFile.replaceLump(getLump("HELP2"));
+		wadFile.replaceLump(getLump("STBAR"));
+		wadFile.replaceLump(getLump("TITLEPIC"));
+		wadFile.replaceLump(getLump("WIMAP0"));
 
-		iwadFile.replaceLump(getLump("CREDITS"));
-		iwadFile.replaceLump(getLump("HELP2"));
-		iwadFile.replaceLump(getLump("STBAR"));
-		iwadFile.replaceLump(getLump("TITLEPIC"));
-		iwadFile.replaceLump(getLump("WIMAP0"));
-
-		WadProcessor wadProcessor = WadProcessor.getWadProcessor(game, iwadFile);
+		WadProcessor wadProcessor = WadProcessor.getWadProcessor(game, wadFile);
 		wadProcessor.processWad();
 
-		iwadFile.saveWadFile(game.getByteOrder(), game.getWadFile());
+		wadFile.saveWadFile(game.getByteOrder(), game.getWadFile());
 
 		System.out.println();
 	}

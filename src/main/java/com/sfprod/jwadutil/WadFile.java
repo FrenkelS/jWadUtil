@@ -199,8 +199,4 @@ public class WadFile {
 		lumps.add(lump);
 	}
 
-	public void mergeWadFile(WadFile wadFile) {
-		lumps.addAll(wadFile.lumps);
-	}
-
 }
