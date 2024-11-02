@@ -39,10 +39,10 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 			new Color(0xFF, 0xFF, 0xFF) // white
 	);
 
-	private static final List<Color> CGA136_COLORS = createCga136Colors();
-	private static final Map<Integer, List<Integer>> CGA136_COLORS_SHUFFLE_MAP = createCga136ColorsShuffleMap();
+	private static final List<Color> CGA_DITHERED_COLORS = createCgaDitheredColors();
+	private static final Map<Integer, List<Integer>> CGA_DITHERED_COLORS_SHUFFLE_MAP = createCgaDitheredColorsShuffleMap();
 
-	private static final List<Integer> VGA256_TO_16_LUT = List.of( //
+	private static final List<Integer> VGA256_TO_DITHERED_LUT = List.of( //
 			0x00, 0x06, 0x00, // black
 			0x88, // grey
 			0xff, // white
@@ -81,10 +81,10 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 	);
 
 	WadProcessor16ColorsDithered(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile, CGA136_COLORS);
+		super(title, byteOrder, wadFile, CGA_DITHERED_COLORS);
 	}
 
-	private static List<Color> createCga136Colors() {
+	private static List<Color> createCgaDitheredColors() {
 		List<Color> colors = new ArrayList<>();
 		for (int h = 0; h < 16; h++) {
 			for (int l = 0; l < 16; l++) {
@@ -101,13 +101,13 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 		return colors;
 	}
 
-	private static Map<Integer, List<Integer>> createCga136ColorsShuffleMap() {
+	private static Map<Integer, List<Integer>> createCgaDitheredColorsShuffleMap() {
 		Map<Integer, List<Integer>> shuffleMap = new HashMap<>();
 		for (int i = 0; i < 256; i++) {
 			List<Integer> sameColorList = new ArrayList<>();
-			Color cgaColor = CGA136_COLORS.get(i);
+			Color cgaColor = CGA_DITHERED_COLORS.get(i);
 			for (int j = 0; j < 256; j++) {
-				Color otherColor = CGA136_COLORS.get(j);
+				Color otherColor = CGA_DITHERED_COLORS.get(j);
 				if (cgaColor.equals(otherColor)) {
 					sameColorList.add(j);
 				}
@@ -119,8 +119,8 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 		return shuffleMap;
 	}
 
-	private byte convert256to16(byte b) {
-		return VGA256_TO_16_LUT.get(toInt(b)).byteValue();
+	private byte convert256to16dithered(byte b) {
+		return VGA256_TO_DITHERED_LUT.get(toInt(b)).byteValue();
 	}
 
 	@Override
@@ -156,7 +156,7 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 
 	private void changePaletteRaw(Lump lump) {
 		for (int i = 0; i < lump.length(); i++) {
-			lump.data()[i] = convert256to16(lump.data()[i]);
+			lump.data()[i] = convert256to16dithered(lump.data()[i]);
 		}
 	}
 
@@ -181,7 +181,7 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 				index++;
 				int length = toInt(lengthByte);
 				for (int i = 0; i < length + 2; i++) {
-					lump.data()[index] = convert256to16(lump.data()[index]);
+					lump.data()[index] = convert256to16dithered(lump.data()[index]);
 					index++;
 				}
 				topdelta = lump.data()[index];
@@ -240,7 +240,7 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 		} else {
 			int c = 32 - colormap;
 
-			for (Color color : CGA136_COLORS) {
+			for (Color color : CGA_DITHERED_COLORS) {
 				int r = Math.clamp((long) Math.sqrt(color.r() * color.r() * c / 32), 0, 255);
 				int g = Math.clamp((long) Math.sqrt(color.g() * color.g() * c / 32), 0, 255);
 				int b = Math.clamp((long) Math.sqrt(color.b() * color.b() * c / 32), 0, 255);
@@ -259,7 +259,7 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 		int closestDist = Integer.MAX_VALUE;
 
 		for (int i = 0; i < 256; i++) {
-			int dist = c.calculateDistance(CGA136_COLORS.get(i));
+			int dist = c.calculateDistance(CGA_DITHERED_COLORS.get(i));
 			if (dist == 0) {
 				// perfect match
 				closestColor = i;
@@ -276,13 +276,13 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 	}
 
 	private List<Byte> createColormapInvulnerability() {
-		List<Double> grays = CGA136_COLORS.stream().map(Color::gray).collect(Collectors.toSet()).stream()
+		List<Double> grays = CGA_DITHERED_COLORS.stream().map(Color::gray).collect(Collectors.toSet()).stream()
 				.sorted(Comparator.reverseOrder()).toList();
 
 		List<Integer> grayscaleFromDarkToBright = List.of(0x00, 0x00, 0x08, 0x80, 0x88, 0x88, 0x07, 0x70, 0x78, 0x87,
 				0x77, 0x77, 0x0f, 0xf0, 0x8f, 0xf8, 0x7f, 0xf7, 0xff, 0xff, 0xff);
 
-		return CGA136_COLORS.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 6)
+		return CGA_DITHERED_COLORS.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 6)
 				.map(grayscaleFromDarkToBright::get).mapToObj(NumberUtils::toByte).toList();
 	}
 
@@ -353,7 +353,7 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 	}
 
 	private byte shuffleColor(byte b) {
-		List<Integer> list = CGA136_COLORS_SHUFFLE_MAP.get(toInt(b));
+		List<Integer> list = CGA_DITHERED_COLORS_SHUFFLE_MAP.get(toInt(b));
 		return list.get(random.nextInt(list.size())).byteValue();
 	}
 
