@@ -80,8 +80,8 @@ class WadProcessor16 extends WadProcessor {
 			0x47 // cream-colored
 	);
 
-	WadProcessor16(ByteOrder byteOrder, WadFile wadFile) {
-		super(byteOrder, wadFile, CGA136_COLORS);
+	WadProcessor16(String title, ByteOrder byteOrder, WadFile wadFile) {
+		super(title, byteOrder, wadFile, CGA136_COLORS);
 	}
 
 	private static List<Color> createCga136Colors() {

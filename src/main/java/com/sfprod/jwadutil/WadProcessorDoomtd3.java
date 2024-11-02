@@ -27,8 +27,8 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 	private final List<Color> vgaColors;
 	private final List<List<Integer>> listsOfBits;
 
-	WadProcessorDoomtd3(ByteOrder byteOrder, WadFile wadFile) {
-		super(byteOrder, wadFile);
+	WadProcessorDoomtd3(String title, ByteOrder byteOrder, WadFile wadFile) {
+		super(title, byteOrder, wadFile);
 		wadFile.addLump(getLump("CACHE"));
 
 		this.vgaColors = createVgaColors(wadFile);

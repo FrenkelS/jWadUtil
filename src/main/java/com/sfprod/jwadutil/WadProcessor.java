@@ -21,7 +21,7 @@ public class WadProcessor {
 	public static final boolean FLAT_SPAN = true;
 
 	private static final String CREDITS = """
-			Doom8088 by Frenkel Smeijers
+			${title} by Frenkel Smeijers
 			based on
 			GBA PrBoom port created by doomhack
 			SVN by Kippykip
@@ -31,16 +31,15 @@ public class WadProcessor {
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 
-	WadProcessor(ByteOrder byteOrder, WadFile wadFile) {
-		this(byteOrder, wadFile, createVgaColors(wadFile));
+	WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile) {
+		this(title, byteOrder, wadFile, createVgaColors(wadFile));
 	}
 
-	WadProcessor(ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
+	WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
 		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
 		this.mapProcessor = new MapProcessor(byteOrder, wadFile, availableColors);
 
-		wadFile.addLump(new Lump("CREDITS", toByteArray(CREDITS), ByteBufferUtils.DONT_CARE));
 		wadFile.addLump(getLump("M_ARUN"));
 		wadFile.addLump(getLump("M_GAMMA"));
 		wadFile.addLump(getLump("STGANUM0"));
@@ -58,6 +57,9 @@ public class WadProcessor {
 		wadFile.addLump(getLump("PLAYPAL3"));
 		wadFile.addLump(getLump("PLAYPAL4"));
 		wadFile.addLump(getLump("PLAYPAL5"));
+
+		wadFile.addLump(
+				new Lump("CREDITS", toByteArray(CREDITS.replace("${title}", title)), ByteBufferUtils.DONT_CARE));
 
 		wadFile.replaceLump(getLump("HELP2"));
 		wadFile.replaceLump(getLump("STBAR"));
@@ -80,9 +82,10 @@ public class WadProcessor {
 
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
 		return switch (game) {
-		case DOOM8088_136_COLOR -> new WadProcessor16(game.getByteOrder(), wadFile);
-		case DOOMTD3_BIG_ENDIAN, DOOMTD3_LITTLE_ENDIAN -> new WadProcessorDoomtd3(game.getByteOrder(), wadFile);
-		default -> new WadProcessor(game.getByteOrder(), wadFile);
+		case DOOM8088_136_COLOR -> new WadProcessor16(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOMTD3_BIG_ENDIAN, DOOMTD3_LITTLE_ENDIAN ->
+			new WadProcessorDoomtd3(game.getTitle(), game.getByteOrder(), wadFile);
+		default -> new WadProcessor(game.getTitle(), game.getByteOrder(), wadFile);
 		};
 	}
 
