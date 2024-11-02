@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import com.sfprod.utils.ByteBufferUtils;
 import com.sfprod.utils.NumberUtils;
 
-class WadProcessor16 extends WadProcessor {
+class WadProcessor16ColorsDithered extends WadProcessor {
 
 	private final Random random = new Random(0x1d4a11);
 
@@ -80,7 +80,7 @@ class WadProcessor16 extends WadProcessor {
 			0x47 // cream-colored
 	);
 
-	WadProcessor16(String title, ByteOrder byteOrder, WadFile wadFile) {
+	WadProcessor16ColorsDithered(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, CGA136_COLORS);
 	}
 
@@ -316,13 +316,13 @@ class WadProcessor16 extends WadProcessor {
 		graphics.forEach(this::shuffleColorPicture);
 	}
 
-	private void shuffleColorsRaw(Lump lump) {
+	protected void shuffleColorsRaw(Lump lump) {
 		for (int i = 0; i < lump.length(); i++) {
 			lump.data()[i] = shuffleColor(lump.data()[i]);
 		}
 	}
 
-	private void shuffleColorPicture(Lump lump) {
+	protected void shuffleColorPicture(Lump lump) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
 		dataByteBuffer.getShort(); // height

@@ -82,7 +82,10 @@ public class WadProcessor {
 
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
 		return switch (game) {
-		case DOOM8088_136_COLOR -> new WadProcessor16(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM8088_16_COLOR_DITHERED ->
+			new WadProcessor16ColorsDithered(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM8088_16_COLOR_DITHERED_TEXT_MODE ->
+			new WadProcessor16ColorsDitheredTextMode(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOMTD3_BIG_ENDIAN, DOOMTD3_LITTLE_ENDIAN ->
 			new WadProcessorDoomtd3(game.getTitle(), game.getByteOrder(), wadFile);
 		default -> new WadProcessor(game.getTitle(), game.getByteOrder(), wadFile);
