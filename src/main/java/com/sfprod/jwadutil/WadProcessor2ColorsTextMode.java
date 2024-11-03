@@ -26,7 +26,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 	private final double bucket3;
 
 	WadProcessor2ColorsTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile);
+		super(title, byteOrder, wadFile, new MapProcessor2ColorsTextMode(byteOrder, wadFile));
 
 		wadFile.replaceLump(new Lump("TITLEPIC", getLump("TP80X25M").data(), ByteBufferUtils.DONT_CARE));
 		wadFile.replaceLump(new Lump("WIMAP0", getLump("WM80X25M").data(), ByteBufferUtils.DONT_CARE));

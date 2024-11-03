@@ -31,14 +31,18 @@ public class WadProcessor {
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 
-	WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile) {
+	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile) {
 		this(title, byteOrder, wadFile, createVgaColors(wadFile));
 	}
 
-	WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
+	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
+		this(title, byteOrder, wadFile, new MapProcessor(byteOrder, wadFile, availableColors));
+	}
+
+	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, MapProcessor mapProcessor) {
 		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
-		this.mapProcessor = new MapProcessor(byteOrder, wadFile, availableColors);
+		this.mapProcessor = mapProcessor;
 
 		wadFile.addLump(getLump("M_ARUN"));
 		wadFile.addLump(getLump("M_GAMMA"));

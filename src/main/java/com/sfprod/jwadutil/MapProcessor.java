@@ -45,11 +45,12 @@ public class MapProcessor {
 	private static final short NUKAGE = (short) -3;
 
 	private final ByteOrder byteOrder;
-	private final WadFile wadFile;
+	protected final WadFile wadFile;
 
-	private final List<Color> vgaColors;
+	protected final List<Color> vgaColors;
 
 	private final Map<String, Short> flatToColor = new HashMap<>();
+	private final List<Color> availableColors;
 	private final Map<Short, Color> availableColorsMap = new HashMap<>();
 
 	public MapProcessor(ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
@@ -58,9 +59,7 @@ public class MapProcessor {
 
 		this.vgaColors = createVgaColors(wadFile);
 
-		for (short i = 0; i < 256; i++) {
-			this.availableColorsMap.put(i, availableColors.get(i));
-		}
+		this.availableColors = availableColors;
 	}
 
 	public void processMaps() {
@@ -457,7 +456,13 @@ public class MapProcessor {
 		wadFile.replaceLump(sectorsLumpNum, newLump);
 	}
 
-	private short calculateAverageColor(String flatname) {
+	protected short calculateAverageColor(String flatname) {
+		if (availableColorsMap.isEmpty()) {
+			for (short i = 0; i < 256; i++) {
+				this.availableColorsMap.put(i, availableColors.get(i));
+			}
+		}
+
 		if (!flatToColor.containsKey(flatname)) {
 			Lump flat = wadFile.getLumpByName(flatname);
 
