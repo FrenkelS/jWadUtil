@@ -82,6 +82,8 @@ public class WadProcessor {
 
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
 		return switch (game) {
+		case DOOM8088_2_COLOR_TEXT_MODE ->
+			new WadProcessor2ColorsTextMode(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_16_COLOR_DITHERED ->
 			new WadProcessor16ColorsDithered(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_16_COLOR_DITHERED_TEXT_MODE ->
