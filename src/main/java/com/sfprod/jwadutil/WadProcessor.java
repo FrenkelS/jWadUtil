@@ -31,14 +31,18 @@ public class WadProcessor {
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 
-	WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile) {
+	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile) {
 		this(title, byteOrder, wadFile, createVgaColors(wadFile));
 	}
 
-	WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
+	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
+		this(title, byteOrder, wadFile, new MapProcessor(byteOrder, wadFile, availableColors));
+	}
+
+	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, MapProcessor mapProcessor) {
 		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
-		this.mapProcessor = new MapProcessor(byteOrder, wadFile, availableColors);
+		this.mapProcessor = mapProcessor;
 
 		wadFile.addLump(getLump("M_ARUN"));
 		wadFile.addLump(getLump("M_GAMMA"));
@@ -82,6 +86,8 @@ public class WadProcessor {
 
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
 		return switch (game) {
+		case DOOM8088_2_COLOR_TEXT_MODE ->
+			new WadProcessor2ColorsTextMode(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_16_COLOR_DITHERED ->
 			new WadProcessor16ColorsDithered(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_16_COLOR_DITHERED_TEXT_MODE ->
