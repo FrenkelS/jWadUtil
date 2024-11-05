@@ -21,10 +21,10 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 
 	private final List<Double> grays;
 	private final List<Byte> lookupTable;
-	private final double bucket0;
-	private final double bucket1;
-	private final double bucket2;
-	private final double bucket3;
+	private final double bucketLimit0;
+	private final double bucketLimit1;
+	private final double bucketLimit2;
+	private final double bucketLimit3;
 
 	WadProcessor2ColorsTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, new MapProcessor2ColorsTextMode(byteOrder, wadFile));
@@ -37,44 +37,26 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		this.grays = vgaColors.stream().map(Color::gray).toList();
 
 		List<Double> sortedGrays = grays.stream().sorted().toList();
-		this.bucket0 = sortedGrays.get(52);
-		this.bucket1 = sortedGrays.get(103);
-		this.bucket2 = sortedGrays.get(153);
-		this.bucket3 = sortedGrays.get(205);
+		this.bucketLimit0 = sortedGrays.get(52);
+		this.bucketLimit1 = sortedGrays.get(103);
+		this.bucketLimit2 = sortedGrays.get(153);
+		this.bucketLimit3 = sortedGrays.get(205);
 
 		List<Byte> lut = new ArrayList<>();
 		for (Double gray : grays) {
-			if (gray < bucket0) {
+			if (gray < bucketLimit0) {
 				lut.add(C0);
-			} else if (gray < bucket1) {
+			} else if (gray < bucketLimit1) {
 				lut.add(C1);
-			} else if (gray < bucket2) {
+			} else if (gray < bucketLimit2) {
 				lut.add(C2);
-			} else if (gray < bucket3) {
+			} else if (gray < bucketLimit3) {
 				lut.add(C3);
 			} else {
 				lut.add(C4);
 			}
 		}
 		this.lookupTable = lut;
-	}
-
-	private List<Byte> createColormapInvulnerability() {
-		List<Byte> colormapInvulnerability = new ArrayList<>();
-		for (double gray : grays) {
-			if (gray < bucket0) {
-				colormapInvulnerability.add(C4);
-			} else if (gray < bucket1) {
-				colormapInvulnerability.add(C3);
-			} else if (gray < bucket2) {
-				colormapInvulnerability.add(C2);
-			} else if (gray < bucket3) {
-				colormapInvulnerability.add(C1);
-			} else {
-				colormapInvulnerability.add(C0);
-			}
-		}
-		return colormapInvulnerability;
 	}
 
 	@Override
@@ -190,6 +172,24 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		}
 
 		return result;
+	}
+
+	private List<Byte> createColormapInvulnerability() {
+		List<Byte> colormapInvulnerability = new ArrayList<>();
+
+		for (int i = 0; i < 256; i++) {
+			colormapInvulnerability.add(toByte(i));
+		}
+
+		colormapInvulnerability.set(toInt(C0), C4);
+		colormapInvulnerability.set(toInt(C1), C3);
+		colormapInvulnerability.set(toInt(C3), C1);
+		colormapInvulnerability.set(toInt(C4), C0);
+
+		colormapInvulnerability.set(205, toByte(209));
+		colormapInvulnerability.set(209, toByte(205));
+
+		return colormapInvulnerability;
 	}
 
 	@Override
