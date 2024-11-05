@@ -171,6 +171,15 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			result.add(toByte(i));
 		}
 
+		if (colormap != 0) {
+			int c = 32 - colormap;
+
+			for (int color = 0; color < 5; color++) {
+				int newcolor = Math.clamp(color * c / 32, 0, 4);
+				result.set(toInt(COLORS[color]), COLORS[newcolor]);
+			}
+		}
+
 		return result;
 	}
 
