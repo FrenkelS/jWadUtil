@@ -17,6 +17,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 	private static final byte C2 = toByte(0xb1);
 	private static final byte C3 = toByte(0xb2);
 	private static final byte C4 = toByte(0xdb);
+	public static final byte COLORS[] = { C0, C1, C2, C3, C4 };
 
 	private final List<Double> grays;
 	private final List<Byte> lookupTable;

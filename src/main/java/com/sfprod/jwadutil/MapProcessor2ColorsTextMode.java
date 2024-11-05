@@ -1,5 +1,6 @@
 package com.sfprod.jwadutil;
 
+import static com.sfprod.jwadutil.WadProcessor2ColorsTextMode.COLORS;
 import static com.sfprod.utils.NumberUtils.toInt;
 import static com.sfprod.utils.NumberUtils.toShort;
 
@@ -11,12 +12,6 @@ import java.util.Map;
 
 public class MapProcessor2ColorsTextMode extends MapProcessor {
 
-	private static final short C0 = toShort(0x00);
-	private static final short C1 = toShort(0xb0);
-	private static final short C2 = toShort(0xb1);
-	private static final short C3 = toShort(0xb2);
-	private static final short C4 = toShort(0xdb);
-
 	private final double bucket0;
 	private final double bucket1;
 	private final double bucket2;
@@ -24,7 +19,7 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 
 	private final Map<String, Short> flatToColor = new HashMap<>();
 
-	private final Map<Integer, Short> buckets = new HashMap<>();
+	private final short[] buckets = new short[5];
 
 	public MapProcessor2ColorsTextMode(ByteOrder byteOrder, WadFile wadFile) {
 		super(byteOrder, wadFile, Collections.emptyList());
@@ -36,12 +31,6 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 		this.bucket1 = sortedGrays.get(103);
 		this.bucket2 = sortedGrays.get(153);
 		this.bucket3 = sortedGrays.get(205);
-
-		buckets.put(0, toShort(0));
-		buckets.put(1, toShort(0));
-		buckets.put(2, toShort(0));
-		buckets.put(3, toShort(0));
-		buckets.put(4, toShort(0));
 	}
 
 	@Override
@@ -65,28 +54,22 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 			Color averageColor = new Color(averager, averageg, averageb);
 
 			double gray = averageColor.gray();
-			short c;
+
+			int bucket;
 			if (gray < bucket0) {
-				short n = buckets.get(0);
-				c = toShort((n << 8) | C0);
-				buckets.put(0, toShort(n + 1));
+				bucket = 0;
 			} else if (gray < bucket1) {
-				short n = buckets.get(1);
-				c = toShort((n << 8) | C1);
-				buckets.put(1, toShort(n + 1));
+				bucket = 1;
 			} else if (gray < bucket2) {
-				short n = buckets.get(2);
-				c = toShort((n << 8) | C2);
-				buckets.put(2, toShort(n + 1));
+				bucket = 2;
 			} else if (gray < bucket3) {
-				short n = buckets.get(3);
-				c = toShort((n << 8) | C3);
-				buckets.put(3, toShort(n + 1));
+				bucket = 3;
 			} else {
-				short n = buckets.get(4);
-				c = toShort((n << 8) | C4);
-				buckets.put(4, toShort(n + 1));
+				bucket = 4;
 			}
+			short n = buckets[bucket];
+			short c = toShort((n << 8) | toShort(COLORS[bucket]));
+			buckets[bucket]++;
 
 			flatToColor.put(flatname, c);
 		}

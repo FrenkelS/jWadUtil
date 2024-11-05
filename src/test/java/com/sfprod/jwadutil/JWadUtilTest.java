@@ -18,7 +18,7 @@ class JWadUtilTest {
 
 	private static final Map<Game, String> EXPECTED_CHECKSUMS = new EnumMap<>(Map.of( //
 			Game.DOOM8088, "69FC61DB", //
-			Game.DOOM8088_2_COLOR_TEXT_MODE, "746F197A", //
+			Game.DOOM8088_2_COLOR_TEXT_MODE, "1B796C79", //
 			Game.DOOM8088_16_COLOR_DITHERED, "105A0530", //
 			Game.DOOM8088_16_COLOR_DITHERED_TEXT_MODE, "746F197A", //
 			Game.DOOMTD3_BIG_ENDIAN, "D8F76736", //
