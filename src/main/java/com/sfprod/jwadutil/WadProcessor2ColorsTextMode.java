@@ -33,25 +33,20 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		this.grays = vgaColors.stream().map(Color::gray).toList();
 
 		List<Double> sortedGrays = grays.stream().sorted().toList();
-		double[] bucketLimits = new double[COLORS.length - 1];
+		double[] bucketLimits = new double[COLORS.length];
 		bucketLimits[0] = sortedGrays.get(52);
 		bucketLimits[1] = sortedGrays.get(103);
 		bucketLimits[2] = sortedGrays.get(153);
 		bucketLimits[3] = sortedGrays.get(205);
+		bucketLimits[4] = Double.MAX_VALUE;
 
 		List<Byte> lut = new ArrayList<>();
 		for (Double gray : grays) {
-			if (gray < bucketLimits[0]) {
-				lut.add(C0);
-			} else if (gray < bucketLimits[1]) {
-				lut.add(C1);
-			} else if (gray < bucketLimits[2]) {
-				lut.add(C2);
-			} else if (gray < bucketLimits[3]) {
-				lut.add(C3);
-			} else {
-				lut.add(C4);
+			int bucket = 0;
+			while (gray >= bucketLimits[bucket]) {
+				bucket++;
 			}
+			lut.add(COLORS[bucket]);
 		}
 		this.lookupTable = lut;
 	}

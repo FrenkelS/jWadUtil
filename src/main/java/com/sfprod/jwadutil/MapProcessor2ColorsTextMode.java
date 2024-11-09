@@ -15,7 +15,7 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 	private final Map<String, Short> flatToColor = new HashMap<>();
 
 	private final short[] buckets = new short[COLORS.length];
-	private final double[] bucketLimits = new double[COLORS.length - 1];
+	private final double[] bucketLimits = new double[COLORS.length];
 
 	public MapProcessor2ColorsTextMode(ByteOrder byteOrder, WadFile wadFile) {
 		super(byteOrder, wadFile, Collections.emptyList());
@@ -27,6 +27,7 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 		this.bucketLimits[1] = sortedGrays.get(103);
 		this.bucketLimits[2] = sortedGrays.get(153);
 		this.bucketLimits[3] = sortedGrays.get(205);
+		this.bucketLimits[4] = Double.MAX_VALUE;
 	}
 
 	@Override
@@ -51,18 +52,11 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 
 			double gray = averageColor.gray();
 
-			int bucket;
-			if (gray < bucketLimits[0]) {
-				bucket = 0;
-			} else if (gray < bucketLimits[1]) {
-				bucket = 1;
-			} else if (gray < bucketLimits[2]) {
-				bucket = 2;
-			} else if (gray < bucketLimits[3]) {
-				bucket = 3;
-			} else {
-				bucket = 4;
+			int bucket = 0;
+			while (gray >= bucketLimits[bucket]) {
+				bucket++;
 			}
+
 			short n = buckets[bucket];
 			short c = toShort((n << 8) | toShort(COLORS[bucket]));
 			buckets[bucket]++;
