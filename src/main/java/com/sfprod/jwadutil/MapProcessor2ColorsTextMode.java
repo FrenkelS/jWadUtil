@@ -12,14 +12,10 @@ import java.util.Map;
 
 public class MapProcessor2ColorsTextMode extends MapProcessor {
 
-	private final double bucketLimit0;
-	private final double bucketLimit1;
-	private final double bucketLimit2;
-	private final double bucketLimit3;
-
 	private final Map<String, Short> flatToColor = new HashMap<>();
 
-	private final short[] buckets = new short[5];
+	private final short[] buckets = new short[COLORS.length];
+	private final double[] bucketLimits = new double[COLORS.length - 1];
 
 	public MapProcessor2ColorsTextMode(ByteOrder byteOrder, WadFile wadFile) {
 		super(byteOrder, wadFile, Collections.emptyList());
@@ -27,10 +23,10 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 		List<Double> grays = vgaColors.stream().map(Color::gray).toList();
 
 		List<Double> sortedGrays = grays.stream().sorted().toList();
-		this.bucketLimit0 = sortedGrays.get(52);
-		this.bucketLimit1 = sortedGrays.get(103);
-		this.bucketLimit2 = sortedGrays.get(153);
-		this.bucketLimit3 = sortedGrays.get(205);
+		this.bucketLimits[0] = sortedGrays.get(52);
+		this.bucketLimits[1] = sortedGrays.get(103);
+		this.bucketLimits[2] = sortedGrays.get(153);
+		this.bucketLimits[3] = sortedGrays.get(205);
 	}
 
 	@Override
@@ -56,13 +52,13 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 			double gray = averageColor.gray();
 
 			int bucket;
-			if (gray < bucketLimit0) {
+			if (gray < bucketLimits[0]) {
 				bucket = 0;
-			} else if (gray < bucketLimit1) {
+			} else if (gray < bucketLimits[1]) {
 				bucket = 1;
-			} else if (gray < bucketLimit2) {
+			} else if (gray < bucketLimits[2]) {
 				bucket = 2;
-			} else if (gray < bucketLimit3) {
+			} else if (gray < bucketLimits[3]) {
 				bucket = 3;
 			} else {
 				bucket = 4;
