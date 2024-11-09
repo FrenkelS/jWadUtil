@@ -34,11 +34,13 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 
 		List<Double> sortedGrays = grays.stream().sorted().toList();
 		double[] bucketLimits = new double[COLORS.length];
-		bucketLimits[0] = sortedGrays.get(52);
-		bucketLimits[1] = sortedGrays.get(103);
-		bucketLimits[2] = sortedGrays.get(153);
-		bucketLimits[3] = sortedGrays.get(205);
-		bucketLimits[4] = Double.MAX_VALUE;
+		double fracstep = 256 / COLORS.length;
+		double frac = fracstep;
+		for (int i = 0; i < COLORS.length - 1; i++) {
+			bucketLimits[i] = sortedGrays.get(((int) frac));
+			frac += fracstep;
+		}
+		bucketLimits[COLORS.length - 1] = Double.MAX_VALUE;
 
 		List<Byte> lut = new ArrayList<>();
 		for (Double gray : grays) {
@@ -166,8 +168,8 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		if (colormap != 0) {
 			int c = 32 - colormap;
 
-			for (int color = 0; color < 5; color++) {
-				int newcolor = Math.clamp(color * c / 32, 0, 4);
+			for (int color = 0; color < COLORS.length; color++) {
+				int newcolor = Math.clamp(color * c / 32, 0, COLORS.length - 1);
 				result.set(toInt(COLORS[color]), COLORS[newcolor]);
 			}
 		}
@@ -182,10 +184,9 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			colormapInvulnerability.add(toByte(i));
 		}
 
-		colormapInvulnerability.set(toInt(C0), C4);
-		colormapInvulnerability.set(toInt(C1), C3);
-		colormapInvulnerability.set(toInt(C3), C1);
-		colormapInvulnerability.set(toInt(C4), C0);
+		for (int i = 0; i < COLORS.length; i++) {
+			colormapInvulnerability.set(toInt(COLORS[i]), COLORS[COLORS.length - i - 1]);
+		}
 
 		colormapInvulnerability.set(205, toByte(209));
 		colormapInvulnerability.set(209, toByte(205));

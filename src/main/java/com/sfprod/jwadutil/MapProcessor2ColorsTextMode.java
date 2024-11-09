@@ -23,11 +23,13 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 		List<Double> grays = vgaColors.stream().map(Color::gray).toList();
 
 		List<Double> sortedGrays = grays.stream().sorted().toList();
-		this.bucketLimits[0] = sortedGrays.get(52);
-		this.bucketLimits[1] = sortedGrays.get(103);
-		this.bucketLimits[2] = sortedGrays.get(153);
-		this.bucketLimits[3] = sortedGrays.get(205);
-		this.bucketLimits[4] = Double.MAX_VALUE;
+		double fracstep = 256 / COLORS.length;
+		double frac = fracstep;
+		for (int i = 0; i < COLORS.length - 1; i++) {
+			this.bucketLimits[i] = sortedGrays.get(((int) frac));
+			frac += fracstep;
+		}
+		this.bucketLimits[COLORS.length - 1] = Double.MAX_VALUE;
 	}
 
 	@Override
