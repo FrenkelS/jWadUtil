@@ -21,10 +21,6 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 
 	private final List<Double> grays;
 	private final List<Byte> lookupTable;
-	private final double bucketLimit0;
-	private final double bucketLimit1;
-	private final double bucketLimit2;
-	private final double bucketLimit3;
 
 	WadProcessor2ColorsTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, new MapProcessor2ColorsTextMode(byteOrder, wadFile));
@@ -37,10 +33,10 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		this.grays = vgaColors.stream().map(Color::gray).toList();
 
 		List<Double> sortedGrays = grays.stream().sorted().toList();
-		this.bucketLimit0 = sortedGrays.get(52);
-		this.bucketLimit1 = sortedGrays.get(103);
-		this.bucketLimit2 = sortedGrays.get(153);
-		this.bucketLimit3 = sortedGrays.get(205);
+		double bucketLimit0 = sortedGrays.get(52);
+		double bucketLimit1 = sortedGrays.get(103);
+		double bucketLimit2 = sortedGrays.get(153);
+		double bucketLimit3 = sortedGrays.get(205);
 
 		List<Byte> lut = new ArrayList<>();
 		for (Double gray : grays) {
