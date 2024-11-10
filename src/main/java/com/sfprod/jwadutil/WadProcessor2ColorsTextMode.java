@@ -12,12 +12,7 @@ import com.sfprod.utils.ByteBufferUtils;
 
 class WadProcessor2ColorsTextMode extends WadProcessor {
 
-	private static final byte C0 = toByte(0x00);
-	private static final byte C1 = toByte(0xb0);
-	private static final byte C2 = toByte(0xb1);
-	private static final byte C3 = toByte(0xb2);
-	private static final byte C4 = toByte(0xdb);
-	public static final byte COLORS[] = { C0, C1, C2, C3, C4 };
+	public static final byte[] COLORS = toByteArray(0, 176, 177, 178, 219);
 
 	private final List<Double> grays;
 	private final List<Byte> lookupTable;
@@ -51,6 +46,14 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			lut.add(COLORS[bucket]);
 		}
 		this.lookupTable = lut;
+	}
+
+	static byte[] toByteArray(int... colors) {
+		byte[] result = new byte[colors.length];
+		for (int i = 0; i < colors.length; i++) {
+			result[i] = toByte(colors[i]);
+		}
+		return result;
 	}
 
 	@Override
@@ -174,6 +177,10 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			}
 		}
 
+		result.set(205, toByte(205));
+		result.set(207, toByte(207));
+		result.set(209, toByte(209));
+
 		return result;
 	}
 
@@ -189,6 +196,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		}
 
 		colormapInvulnerability.set(205, toByte(209));
+		colormapInvulnerability.set(207, toByte(207));
 		colormapInvulnerability.set(209, toByte(205));
 
 		return colormapInvulnerability;
