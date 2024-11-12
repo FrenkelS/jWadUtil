@@ -7,19 +7,16 @@ import static com.sfprod.utils.NumberUtils.toShort;
 import java.nio.ByteOrder;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 public class MapProcessor2ColorsTextMode extends MapProcessor {
 
-	private final double bucketLimit0;
-	private final double bucketLimit1;
-	private final double bucketLimit2;
-	private final double bucketLimit3;
-
 	private final Map<String, Short> flatToColor = new HashMap<>();
 
-	private final short[] buckets = new short[5];
+	private final short[] buckets = new short[COLORS.length];
+	private final double[] bucketLimits = new double[COLORS.length];
 
 	public MapProcessor2ColorsTextMode(ByteOrder byteOrder, WadFile wadFile) {
 		super(byteOrder, wadFile, Collections.emptyList());
@@ -27,10 +24,13 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 		List<Double> grays = vgaColors.stream().map(Color::gray).toList();
 
 		List<Double> sortedGrays = grays.stream().sorted().toList();
-		this.bucketLimit0 = sortedGrays.get(52);
-		this.bucketLimit1 = sortedGrays.get(103);
-		this.bucketLimit2 = sortedGrays.get(153);
-		this.bucketLimit3 = sortedGrays.get(205);
+		double fracstep = 256 / COLORS.length;
+		double frac = fracstep;
+		for (int i = 0; i < COLORS.length - 1; i++) {
+			this.bucketLimits[i] = sortedGrays.get(((int) frac));
+			frac += fracstep;
+		}
+		this.bucketLimits[COLORS.length - 1] = Double.MAX_VALUE;
 	}
 
 	@Override
@@ -55,23 +55,17 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 
 			double gray = averageColor.gray();
 
-			int bucket;
-			if (gray < bucketLimit0) {
-				bucket = 0;
-			} else if (gray < bucketLimit1) {
-				bucket = 1;
-			} else if (gray < bucketLimit2) {
-				bucket = 2;
-			} else if (gray < bucketLimit3) {
-				bucket = 3;
-			} else {
-				bucket = 4;
+			int bucket = 0;
+			while (gray >= bucketLimits[bucket]) {
+				bucket++;
 			}
+
 			short n = buckets[bucket];
 			short c = toShort((n << 8) | toShort(COLORS[bucket]));
 			buckets[bucket]++;
 
 			flatToColor.put(flatname, c);
+			assert flatToColor.size() == new HashSet<>(flatToColor.values()).size();
 		}
 
 		return flatToColor.get(flatname);

@@ -12,19 +12,10 @@ import com.sfprod.utils.ByteBufferUtils;
 
 class WadProcessor2ColorsTextMode extends WadProcessor {
 
-	private static final byte C0 = toByte(0x00);
-	private static final byte C1 = toByte(0xb0);
-	private static final byte C2 = toByte(0xb1);
-	private static final byte C3 = toByte(0xb2);
-	private static final byte C4 = toByte(0xdb);
-	public static final byte COLORS[] = { C0, C1, C2, C3, C4 };
+	public static final byte[] COLORS = toByteArray(0, 176, 177, 178, 219);
 
 	private final List<Double> grays;
 	private final List<Byte> lookupTable;
-	private final double bucketLimit0;
-	private final double bucketLimit1;
-	private final double bucketLimit2;
-	private final double bucketLimit3;
 
 	WadProcessor2ColorsTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, new MapProcessor2ColorsTextMode(byteOrder, wadFile));
@@ -37,26 +28,32 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		this.grays = vgaColors.stream().map(Color::gray).toList();
 
 		List<Double> sortedGrays = grays.stream().sorted().toList();
-		this.bucketLimit0 = sortedGrays.get(52);
-		this.bucketLimit1 = sortedGrays.get(103);
-		this.bucketLimit2 = sortedGrays.get(153);
-		this.bucketLimit3 = sortedGrays.get(205);
+		double[] bucketLimits = new double[COLORS.length];
+		double fracstep = 256 / COLORS.length;
+		double frac = fracstep;
+		for (int i = 0; i < COLORS.length - 1; i++) {
+			bucketLimits[i] = sortedGrays.get(((int) frac));
+			frac += fracstep;
+		}
+		bucketLimits[COLORS.length - 1] = Double.MAX_VALUE;
 
 		List<Byte> lut = new ArrayList<>();
 		for (Double gray : grays) {
-			if (gray < bucketLimit0) {
-				lut.add(C0);
-			} else if (gray < bucketLimit1) {
-				lut.add(C1);
-			} else if (gray < bucketLimit2) {
-				lut.add(C2);
-			} else if (gray < bucketLimit3) {
-				lut.add(C3);
-			} else {
-				lut.add(C4);
+			int bucket = 0;
+			while (gray >= bucketLimits[bucket]) {
+				bucket++;
 			}
+			lut.add(COLORS[bucket]);
 		}
 		this.lookupTable = lut;
+	}
+
+	static byte[] toByteArray(int... colors) {
+		byte[] result = new byte[colors.length];
+		for (int i = 0; i < colors.length; i++) {
+			result[i] = toByte(colors[i]);
+		}
+		return result;
 	}
 
 	@Override
@@ -174,11 +171,15 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		if (colormap != 0) {
 			int c = 32 - colormap;
 
-			for (int color = 0; color < 5; color++) {
-				int newcolor = Math.clamp(color * c / 32, 0, 4);
+			for (int color = 0; color < COLORS.length; color++) {
+				int newcolor = Math.clamp(color * c / 32, 0, COLORS.length - 1);
 				result.set(toInt(COLORS[color]), COLORS[newcolor]);
 			}
 		}
+
+		result.set(205, toByte(205));
+		result.set(207, toByte(207));
+		result.set(209, toByte(209));
 
 		return result;
 	}
@@ -190,12 +191,12 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			colormapInvulnerability.add(toByte(i));
 		}
 
-		colormapInvulnerability.set(toInt(C0), C4);
-		colormapInvulnerability.set(toInt(C1), C3);
-		colormapInvulnerability.set(toInt(C3), C1);
-		colormapInvulnerability.set(toInt(C4), C0);
+		for (int i = 0; i < COLORS.length; i++) {
+			colormapInvulnerability.set(toInt(COLORS[i]), COLORS[COLORS.length - i - 1]);
+		}
 
 		colormapInvulnerability.set(205, toByte(209));
+		colormapInvulnerability.set(207, toByte(207));
 		colormapInvulnerability.set(209, toByte(205));
 
 		return colormapInvulnerability;
