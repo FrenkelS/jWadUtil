@@ -12,7 +12,8 @@ import com.sfprod.utils.ByteBufferUtils;
 
 class WadProcessor2ColorsTextMode extends WadProcessor {
 
-	public static final byte[] COLORS = toByteArray(0, 176, 179, 177, 186, 221, 222, 178, 219);
+	public static final byte[] COLORS_HORIZONTAL = toByteArray(32, 95, 196, 220, 223);
+	private static final byte[] COLORS_VERTICAL = toByteArray(0, 176, 179, 177, 186, 221, 222, 178, 219);
 
 	private final List<Double> grays;
 	private final List<Byte> lookupTable;
@@ -28,14 +29,14 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		this.grays = vgaColors.stream().map(Color::gray).toList();
 
 		List<Double> sortedGrays = grays.stream().sorted().toList();
-		double[] bucketLimits = new double[COLORS.length];
-		double fracstep = 256 / COLORS.length;
+		double[] bucketLimits = new double[COLORS_VERTICAL.length];
+		double fracstep = 256 / COLORS_VERTICAL.length;
 		double frac = fracstep;
-		for (int i = 0; i < COLORS.length - 1; i++) {
+		for (int i = 0; i < COLORS_VERTICAL.length - 1; i++) {
 			bucketLimits[i] = sortedGrays.get(((int) frac));
 			frac += fracstep;
 		}
-		bucketLimits[COLORS.length - 1] = Double.MAX_VALUE;
+		bucketLimits[COLORS_VERTICAL.length - 1] = Double.MAX_VALUE;
 
 		List<Byte> lut = new ArrayList<>();
 		for (Double gray : grays) {
@@ -43,7 +44,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			while (gray >= bucketLimits[bucket]) {
 				bucket++;
 			}
-			lut.add(COLORS[bucket]);
+			lut.add(COLORS_VERTICAL[bucket]);
 		}
 		this.lookupTable = lut;
 	}
@@ -171,9 +172,13 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		if (colormap != 0) {
 			int c = 32 - colormap;
 
-			for (int color = 0; color < COLORS.length; color++) {
-				int newcolor = Math.clamp(color * c / 32, 0, COLORS.length - 1);
-				result.set(toInt(COLORS[color]), COLORS[newcolor]);
+			for (int color = 0; color < COLORS_HORIZONTAL.length; color++) {
+				int newcolor = Math.clamp(color * c / 32, 0, COLORS_HORIZONTAL.length - 1);
+				result.set(toInt(COLORS_HORIZONTAL[color]), COLORS_HORIZONTAL[newcolor]);
+			}
+			for (int color = 0; color < COLORS_VERTICAL.length; color++) {
+				int newcolor = Math.clamp(color * c / 32, 0, COLORS_VERTICAL.length - 1);
+				result.set(toInt(COLORS_VERTICAL[color]), COLORS_VERTICAL[newcolor]);
 			}
 		}
 
@@ -191,8 +196,12 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			colormapInvulnerability.add(toByte(i));
 		}
 
-		for (int i = 0; i < COLORS.length; i++) {
-			colormapInvulnerability.set(toInt(COLORS[i]), COLORS[COLORS.length - i - 1]);
+		for (int i = 0; i < COLORS_HORIZONTAL.length; i++) {
+			colormapInvulnerability.set(toInt(COLORS_HORIZONTAL[i]),
+					COLORS_HORIZONTAL[COLORS_HORIZONTAL.length - i - 1]);
+		}
+		for (int i = 0; i < COLORS_VERTICAL.length; i++) {
+			colormapInvulnerability.set(toInt(COLORS_VERTICAL[i]), COLORS_VERTICAL[COLORS_VERTICAL.length - i - 1]);
 		}
 
 		colormapInvulnerability.set(205, toByte(209));
