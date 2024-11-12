@@ -12,7 +12,7 @@ import com.sfprod.utils.ByteBufferUtils;
 
 class WadProcessor2ColorsTextMode extends WadProcessor {
 
-	public static final byte[] COLORS = toByteArray(0, 176, 177, 178, 219);
+	public static final byte[] COLORS = toByteArray(0, 176, 179, 177, 186, 221, 222, 178, 219);
 
 	private final List<Double> grays;
 	private final List<Byte> lookupTable;
