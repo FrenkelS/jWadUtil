@@ -7,6 +7,7 @@ import static com.sfprod.utils.NumberUtils.toShort;
 import java.nio.ByteOrder;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -64,6 +65,7 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 			buckets[bucket]++;
 
 			flatToColor.put(flatname, c);
+			assert flatToColor.size() == new HashSet<>(flatToColor.values()).size();
 		}
 
 		return flatToColor.get(flatname);

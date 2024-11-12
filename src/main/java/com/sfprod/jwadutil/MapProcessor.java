@@ -14,6 +14,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -501,6 +502,7 @@ public class MapProcessor {
 			availableColorsMap.remove(closestAverageColorIndex);
 
 			flatToColor.put(flatname, closestAverageColorIndex);
+			assert flatToColor.size() == new HashSet<>(flatToColor.values()).size();
 		}
 
 		return flatToColor.get(flatname);
