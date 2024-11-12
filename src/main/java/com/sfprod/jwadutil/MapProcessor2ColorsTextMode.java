@@ -1,6 +1,6 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.jwadutil.WadProcessor2ColorsTextMode.COLORS_HORIZONTAL;
+import static com.sfprod.jwadutil.WadProcessor2ColorsTextMode.COLORS_FLOORS;
 import static com.sfprod.utils.NumberUtils.toInt;
 import static com.sfprod.utils.NumberUtils.toShort;
 
@@ -15,8 +15,8 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 
 	private final Map<String, Short> flatToColor = new HashMap<>();
 
-	private final short[] buckets = new short[COLORS_HORIZONTAL.length];
-	private final double[] bucketLimits = new double[COLORS_HORIZONTAL.length];
+	private final short[] buckets = new short[COLORS_FLOORS.length];
+	private final double[] bucketLimits = new double[COLORS_FLOORS.length];
 
 	public MapProcessor2ColorsTextMode(ByteOrder byteOrder, WadFile wadFile) {
 		super(byteOrder, wadFile, Collections.emptyList());
@@ -24,13 +24,13 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 		List<Double> grays = vgaColors.stream().map(Color::gray).toList();
 
 		List<Double> sortedGrays = grays.stream().sorted().toList();
-		double fracstep = 256 / COLORS_HORIZONTAL.length;
+		double fracstep = 256 / COLORS_FLOORS.length;
 		double frac = fracstep;
-		for (int i = 0; i < COLORS_HORIZONTAL.length - 1; i++) {
+		for (int i = 0; i < COLORS_FLOORS.length - 1; i++) {
 			this.bucketLimits[i] = sortedGrays.get(((int) frac));
 			frac += fracstep;
 		}
-		this.bucketLimits[COLORS_HORIZONTAL.length - 1] = Double.MAX_VALUE;
+		this.bucketLimits[COLORS_FLOORS.length - 1] = Double.MAX_VALUE;
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 			}
 
 			short n = buckets[bucket];
-			short c = toShort((n << 8) | toShort(COLORS_HORIZONTAL[bucket]));
+			short c = toShort((n << 8) | toShort(COLORS_FLOORS[bucket]));
 			buckets[bucket]++;
 
 			flatToColor.put(flatname, c);
