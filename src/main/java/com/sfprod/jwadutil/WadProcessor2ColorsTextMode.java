@@ -6,16 +6,40 @@ import static com.sfprod.utils.NumberUtils.toInt;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.sfprod.utils.ByteBufferUtils;
+import com.sfprod.utils.NumberUtils;
 
 class WadProcessor2ColorsTextMode extends WadProcessor {
 
-	public static final byte[] COLORS_FLOORS = toByteArray(32, 250, 46, 249, 45, 95, 196, 126, 7, 61, 248, 246, 9, 43,
-			247, 22, 240, 120, 42, 236, 4, 111, 254, 79, 88, 220, 223, 10, 8);
+	private static final List<Integer> MDA_FONT_BIT_COUNTS = List.of( //
+			0, 34, 60, 41, 25, 36, 42, 12, 100, 20, 92, 33, 32, 32, 48, 34, //
+			29, 29, 30, 32, 47, 44, 21, 36, 24, 24, 15, 15, 13, 20, 31, 31, //
+			0, 22, 14, 42, 41, 21, 37, 8, 18, 18, 24, 20, 8, 8, 4, 14, //
+			44, 25, 30, 30, 32, 32, 32, 25, 39, 33, 8, 10, 18, 12, 18, 23, //
+			43, 35, 41, 28, 38, 38, 32, 33, 39, 22, 26, 38, 28, 44, 45, 34, //
+			33, 42, 40, 33, 32, 37, 34, 44, 34, 30, 36, 22, 21, 22, 12, 8, //
+			6, 24, 32, 22, 32, 27, 27, 32, 33, 19, 27, 32, 21, 37, 25, 26, //
+			30, 30, 22, 24, 24, 25, 22, 32, 22, 30, 26, 21, 16, 21, 10, 23, //
+			35, 33, 33, 32, 32, 30, 34, 26, 35, 35, 33, 23, 25, 21, 39, 40, //
+			37, 35, 41, 34, 34, 32, 35, 31, 38, 38, 37, 32, 33, 36, 46, 34, //
+			30, 21, 32, 31, 35, 51, 23, 19, 23, 13, 13, 39, 43, 22, 20, 20, //
+			28, 56, 84, 28, 31, 34, 58, 31, 24, 58, 56, 39, 35, 35, 22, 17, //
+			20, 23, 21, 32, 9, 35, 36, 58, 35, 39, 37, 41, 58, 18, 60, 28, //
+			37, 30, 33, 35, 24, 26, 31, 61, 42, 19, 18, 126, 63, 56, 70, 63, //
+			28, 34, 27, 31, 32, 25, 27, 20, 36, 37, 37, 31, 24, 38, 23, 33, //
+			21, 28, 20, 20, 29, 27, 16, 20, 14, 4, 2, 30, 24, 19, 30, 0);
+
 	private static final byte[] COLORS_WALLS = toByteArray(0, 176, 179, 180, 195, 181, 197, 198, 216, 177, 186, 221,
 			182, 185, 199, 204, 206, 215, 222, 178, 219);
+	public static final byte[] COLORS_FLOORS = createColorsFloors();
 
 	private final List<Double> grays;
 	private final List<Byte> lookupTable;
@@ -49,6 +73,35 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			lut.add(COLORS_WALLS[bucket]);
 		}
 		this.lookupTable = lut;
+	}
+
+	private static byte[] createColorsFloors() {
+		List<Byte> colorsWallsAsList = IntStream.range(0, COLORS_WALLS.length).mapToObj(i -> COLORS_WALLS[i]).toList();
+		List<Byte> remainingColors = IntStream.range(0, 256).mapToObj(NumberUtils::toByte)
+				.filter(b -> !colorsWallsAsList.contains(b)).collect(Collectors.toList());
+		remainingColors.remove(Byte.valueOf(toByte(205)));
+		remainingColors.remove(Byte.valueOf(toByte(207)));
+		remainingColors.remove(Byte.valueOf(toByte(209)));
+
+		List<Integer> mdaFontBitCountsSorted = new HashSet<>(MDA_FONT_BIT_COUNTS).stream().sorted().toList();
+
+		Map<Integer, List<Integer>> map = new TreeMap<>();
+
+		for (byte remainingColor : remainingColors) {
+			int character = toInt(remainingColor);
+			int bitCount = MDA_FONT_BIT_COUNTS.get(character);
+			int index = mdaFontBitCountsSorted.indexOf(bitCount);
+			map.computeIfAbsent(index, k -> new ArrayList<>()).add(character);
+		}
+
+		List<Integer> remainingColorsSorted = map.entrySet().stream().map(Entry::getValue).flatMap(List::stream)
+				.toList();
+
+		byte[] result = new byte[remainingColorsSorted.size()];
+		for (int i = 0; i < remainingColorsSorted.size(); i++) {
+			result[i] = toByte(remainingColorsSorted.get(i));
+		}
+		return result;
 	}
 
 	private static byte[] toByteArray(int... colors) {
