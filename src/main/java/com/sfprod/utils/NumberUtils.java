@@ -25,11 +25,11 @@ public interface NumberUtils {
 	 * @return
 	 */
 	static int toInt(byte b) {
-		return b & 0xff;
+		return Byte.toUnsignedInt(b);
 	}
 
 	static short toShort(byte b) {
-		return (short) (b & 0xff);
+		return (short) Byte.toUnsignedInt(b);
 	}
 
 	static short toShort(int i) {
