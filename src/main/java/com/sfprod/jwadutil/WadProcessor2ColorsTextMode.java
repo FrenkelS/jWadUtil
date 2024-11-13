@@ -51,7 +51,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		this.lookupTable = lut;
 	}
 
-	static byte[] toByteArray(int... colors) {
+	private static byte[] toByteArray(int... colors) {
 		byte[] result = new byte[colors.length];
 		for (int i = 0; i < colors.length; i++) {
 			result[i] = toByte(colors[i]);
