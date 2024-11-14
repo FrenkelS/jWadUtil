@@ -7,17 +7,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.sfprod.utils.ByteBufferUtils;
-import com.sfprod.utils.NumberUtils;
 
 class WadProcessor2ColorsTextMode extends WadProcessor {
 
@@ -44,7 +38,12 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 //	private static final byte[] COLORS_WALLS = toByteArray(0, 176, 179, 180, 195, 181, 197, 198, 216, 177, 186, 221,
 //			182, 185, 199, 204, 206, 215, 222, 178, 219);
 	private static final byte[] COLORS_WALLS = toByteArray(0, 176, 179, 177, 186, 221, 222, 178, 219);
-	public static final byte[] COLORS_FLOORS = createColorsFloors();
+
+	public static final byte[] COLORS_FLOORS = toByteArray(32, 250, 46, 249, 96, 39, 44, 45, 58, 95, 196, 59, 126, 7,
+			61, 94, 28, 169, 170, 34, 47, 248, 26, 27, 124, 246, 191, 40, 41, 60, 62, 218, 217, 9, 29, 43, 174, 175,
+			192, 231, 247, 22, 37, 92, 108, 194, 240, 73, 91, 93, 99, 120, 127, 193, 238, 24, 25, 42, 236, 252, 4, 111,
+			226, 245, 67, 224, 16, 17, 244, 145, 211, 5, 157, 254, 30, 31, 214, 227, 155, 228, 239, 15, 79, 88, 232, 85,
+			233, 237, 72, 3, 36, 6, 35, 21, 220, 223);
 
 	private static final Map<Integer, List<Integer>> COLORS_WALLS_SHUFFLE_MAP = createColorsShuffleMap();
 
@@ -100,35 +99,6 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		}
 
 		return shuffleMap;
-	}
-
-	private static byte[] createColorsFloors() {
-		List<Byte> colorsWallsAsList = IntStream.range(0, COLORS_WALLS.length).mapToObj(i -> COLORS_WALLS[i]).toList();
-		List<Byte> remainingColors = IntStream.range(0, 256).mapToObj(NumberUtils::toByte)
-				.filter(b -> !colorsWallsAsList.contains(b)).collect(Collectors.toList());
-		remainingColors.remove(Byte.valueOf(toByte(205)));
-		remainingColors.remove(Byte.valueOf(toByte(207)));
-		remainingColors.remove(Byte.valueOf(toByte(209)));
-
-		List<Integer> mdaFontBitCountsSorted = new HashSet<>(MDA_FONT_BIT_COUNTS).stream().sorted().toList();
-
-		Map<Integer, List<Integer>> map = new TreeMap<>();
-
-		for (byte remainingColor : remainingColors) {
-			int character = toInt(remainingColor);
-			int bitCount = MDA_FONT_BIT_COUNTS.get(character);
-			int index = mdaFontBitCountsSorted.indexOf(bitCount);
-			map.computeIfAbsent(index, k -> new ArrayList<>()).add(character);
-		}
-
-		List<Integer> remainingColorsSorted = map.entrySet().stream().map(Entry::getValue).flatMap(List::stream)
-				.toList();
-
-		byte[] result = new byte[remainingColorsSorted.size()];
-		for (int i = 0; i < remainingColorsSorted.size(); i++) {
-			result[i] = toByte(remainingColorsSorted.get(i));
-		}
-		return result;
 	}
 
 	private static byte[] toByteArray(int... colors) {
