@@ -5,6 +5,7 @@ import static com.sfprod.utils.NumberUtils.toInt;
 import static com.sfprod.utils.NumberUtils.toShort;
 
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,24 +14,22 @@ import java.util.Map;
 
 public class MapProcessor2ColorsTextMode extends MapProcessor {
 
-	private final Map<String, Short> flatToColor = new HashMap<>();
+	private final List<Double> sortedGrays;
 
-	private final short[] buckets = new short[COLORS_FLOORS.length];
-	private final double[] bucketLimits = new double[COLORS_FLOORS.length];
+	private final Map<String, Short> flatToColor = new HashMap<>();
+	private final List<Short> availableColors;
 
 	public MapProcessor2ColorsTextMode(ByteOrder byteOrder, WadFile wadFile) {
 		super(byteOrder, wadFile, Collections.emptyList());
 
 		List<Double> grays = vgaColors.stream().map(Color::gray).toList();
+		this.sortedGrays = grays.stream().sorted().toList();
 
-		List<Double> sortedGrays = grays.stream().sorted().toList();
-		double fracstep = 256 / COLORS_FLOORS.length;
-		double frac = fracstep;
-		for (int i = 0; i < COLORS_FLOORS.length - 1; i++) {
-			this.bucketLimits[i] = sortedGrays.get(((int) frac));
-			frac += fracstep;
+		List<Short> colors = new ArrayList<>(COLORS_FLOORS.length);
+		for (byte b : COLORS_FLOORS) {
+			colors.add(toShort(b));
 		}
-		this.bucketLimits[COLORS_FLOORS.length - 1] = Double.MAX_VALUE;
+		this.availableColors = colors;
 	}
 
 	@Override
@@ -53,16 +52,13 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 			int averageb = (int) Math.sqrt(sumb / (64 * 64));
 			Color averageColor = new Color(averager, averageg, averageb);
 
-			double gray = averageColor.gray();
+			double averageGray = averageColor.gray();
+			int possibleIndex = Math.clamp(Math.abs(Collections.binarySearch(sortedGrays, averageGray)), 0,
+					sortedGrays.size() - 1);
 
-			int bucket = 0;
-			while (gray >= bucketLimits[bucket]) {
-				bucket++;
-			}
-
-			short n = buckets[bucket];
-			short c = toShort((n << 8) | toShort(COLORS_FLOORS[bucket]));
-			buckets[bucket]++;
+			int indexAvailableColors = possibleIndex * availableColors.size() / sortedGrays.size();
+			short c = availableColors.get(indexAvailableColors);
+			availableColors.remove(indexAvailableColors);
 
 			flatToColor.put(flatname, c);
 			assert flatToColor.size() == new HashSet<>(flatToColor.values()).size();
