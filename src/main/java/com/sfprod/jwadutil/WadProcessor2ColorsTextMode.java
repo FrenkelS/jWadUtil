@@ -35,9 +35,14 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			28, 34, 27, 31, 32, 25, 27, 20, 36, 37, 37, 31, 24, 38, 23, 33, //
 			21, 28, 20, 20, 29, 27, 16, 20, 14, 4, 2, 30, 24, 19, 30, 0);
 
-//	private static final byte[] COLORS_WALLS = toByteArray(0, 176, 179, 180, 195, 181, 197, 198, 216, 177, 186, 221,
-//			182, 185, 199, 204, 206, 215, 222, 178, 219);
+//	private static final byte[] COLORS_WALLS = toByteArray(0, 176, 179, 180, 195, 181, 197, 198, 216, 177, 186, 221, 182, 185, 199, 204, 206, 215, 222, 178, 219);
 	private static final byte[] COLORS_WALLS = toByteArray(0, 176, 179, 177, 186, 221, 222, 178, 219);
+	private static final byte[] COLORS_SPRITES = toByteArray(255, 180, 195, 181, 197, 198, 216, 182, 185, 199, 204, 206,
+			215);
+
+//	private static final byte[] COLORS_SPRITES = toByteArray(0, 176, 179, 177, 186, 221, 222, 178, 219);
+//	private static final byte[] COLORS_WALLS = toByteArray(255, 180, 195, 181, 197, 198, 216, 182, 185, 199, 204, 206,
+//			215);
 
 	public static final byte[] COLORS_FLOORS = toByteArray(32, 250, 46, 249, 96, 39, 44, 45, 58, 95, 196, 59, 126, 7,
 			61, 94, 28, 169, 170, 34, 47, 248, 26, 27, 124, 246, 191, 60, 62, 218, 217, 9, 29, 43, 174, 175, 192, 231,
@@ -47,8 +52,8 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 
 	private static final Map<Integer, List<Integer>> COLORS_WALLS_SHUFFLE_MAP = createColorsShuffleMap();
 
-	private final List<Double> grays;
-	private final List<Byte> lookupTable;
+	private final List<Byte> lookupTableWalls;
+	private final List<Byte> lookupTableSprites;
 
 	WadProcessor2ColorsTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, new MapProcessor2ColorsTextMode(byteOrder, wadFile));
@@ -58,17 +63,22 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		wadFile.replaceLump(new Lump("HELP2", getLump("HL80X25M").data(), ByteBufferUtils.DONT_CARE));
 
 		List<Color> vgaColors = createVgaColors(wadFile);
-		this.grays = vgaColors.stream().map(Color::gray).toList();
-
+		List<Double> grays = vgaColors.stream().map(Color::gray).toList();
 		List<Double> sortedGrays = grays.stream().sorted().toList();
-		double[] bucketLimits = new double[COLORS_WALLS.length];
-		double fracstep = 256 / COLORS_WALLS.length;
+
+		this.lookupTableWalls = createLookupTable(grays, sortedGrays, COLORS_WALLS);
+		this.lookupTableSprites = createLookupTable(grays, sortedGrays, COLORS_SPRITES);
+	}
+
+	private List<Byte> createLookupTable(List<Double> grays, List<Double> sortedGrays, byte[] colors) {
+		double[] bucketLimits = new double[colors.length];
+		double fracstep = 256 / colors.length;
 		double frac = fracstep;
-		for (int i = 0; i < COLORS_WALLS.length - 1; i++) {
+		for (int i = 0; i < colors.length - 1; i++) {
 			bucketLimits[i] = sortedGrays.get(((int) frac));
 			frac += fracstep;
 		}
-		bucketLimits[COLORS_WALLS.length - 1] = Double.MAX_VALUE;
+		bucketLimits[colors.length - 1] = Double.MAX_VALUE;
 
 		List<Byte> lut = new ArrayList<>();
 		for (Double gray : grays) {
@@ -76,9 +86,9 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			while (gray >= bucketLimits[bucket]) {
 				bucket++;
 			}
-			lut.add(COLORS_WALLS[bucket]);
+			lut.add(colors[bucket]);
 		}
-		this.lookupTable = lut;
+		return lut;
 	}
 
 	private static Map<Integer, List<Integer>> createColorsShuffleMap() {
@@ -116,35 +126,31 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		changePaletteRaw(wadFile.getLumpByName("FLOOR4_8"));
 
 		// Graphics in picture format
-		List<Lump> graphics = new ArrayList<>(256);
 		// Sprites
-		graphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
-		// Status bar
-		graphics.addAll(wadFile.getLumpsByName("STC"));
-		graphics.addAll(wadFile.getLumpsByName("STF"));
-		graphics.addAll(wadFile.getLumpsByName("STG"));
-		graphics.addAll(wadFile.getLumpsByName("STK"));
-		graphics.addAll(wadFile.getLumpsByName("STY"));
-		// Menu
-		graphics.addAll(wadFile.getLumpsByName("M_"));
-		// Intermission
-		graphics.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+		wadFile.getLumpsBetween("S_START", "S_END").forEach(this::changePaletteSprites);
 		// Walls
-		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-		graphics.forEach(this::changePalettePicture);
+		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::changePaletteWalls);
 	}
 
-	private byte convert256to2(byte b) {
+	private byte convert256to2(List<Byte> lookupTable, byte b) {
 		return lookupTable.get(toInt(b));
 	}
 
 	private void changePaletteRaw(Lump lump) {
 		for (int i = 0; i < lump.length(); i++) {
-			lump.data()[i] = convert256to2(lump.data()[i]);
+			lump.data()[i] = convert256to2(lookupTableWalls, lump.data()[i]);
 		}
 	}
 
-	private void changePalettePicture(Lump lump) {
+	private void changePaletteSprites(Lump lump) {
+		changePalettePicture(lookupTableSprites, lump);
+	}
+
+	private void changePaletteWalls(Lump lump) {
+		changePalettePicture(lookupTableWalls, lump);
+	}
+
+	private void changePalettePicture(List<Byte> lookupTable, Lump lump) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
 		dataByteBuffer.getShort(); // height
@@ -165,7 +171,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 				index++;
 				int length = toInt(lengthByte);
 				for (int i = 0; i < length + 2; i++) {
-					lump.data()[index] = convert256to2(lump.data()[index]);
+					lump.data()[index] = convert256to2(lookupTable, lump.data()[index]);
 					index++;
 				}
 				topdelta = lump.data()[index];
@@ -232,6 +238,10 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 				int newcolor = Math.clamp(color * c / 32, 0, COLORS_WALLS.length - 1);
 				result.set(toInt(COLORS_WALLS[color]), COLORS_WALLS[newcolor]);
 			}
+			for (int color = 0; color < COLORS_SPRITES.length; color++) {
+				int newcolor = Math.clamp(color * c / 32, 0, COLORS_SPRITES.length - 1);
+				result.set(toInt(COLORS_SPRITES[color]), COLORS_SPRITES[newcolor]);
+			}
 		}
 
 		result.set(205, toByte(205));
@@ -254,6 +264,9 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		for (int i = 0; i < COLORS_WALLS.length; i++) {
 			colormapInvulnerability.set(toInt(COLORS_WALLS[i]), COLORS_WALLS[COLORS_WALLS.length - i - 1]);
 		}
+		for (int i = 0; i < COLORS_SPRITES.length; i++) {
+			colormapInvulnerability.set(toInt(COLORS_SPRITES[i]), COLORS_SPRITES[COLORS_SPRITES.length - i - 1]);
+		}
 
 		colormapInvulnerability.set(205, toByte(209));
 		colormapInvulnerability.set(207, toByte(207));
@@ -274,10 +287,8 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		shuffleColorsRaw(wadFile.getLumpByName("FLOOR4_8"));
 
 		// Graphics in picture format
-		List<Lump> graphics = new ArrayList<>(256);
 		// Walls
-		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-		graphics.forEach(this::shuffleColorPicture);
+		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::shuffleColorPicture);
 	}
 
 	private void shuffleColorsRaw(Lump lump) {
