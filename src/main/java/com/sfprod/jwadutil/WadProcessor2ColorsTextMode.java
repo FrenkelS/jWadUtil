@@ -341,7 +341,8 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 
 		// Status bar graphics
 		List<Lump> stLumps = wadFile.getLumpsByName("ST");
-		stLumps.stream().filter(l -> !(l.nameAsString().startsWith("STEP"))).forEach(wadFile::removeLump);
+		stLumps.stream().filter(l -> !("STIMA0".equals(l.nameAsString()) || l.nameAsString().startsWith("STEP")))
+				.forEach(wadFile::removeLump);
 
 		// Intermission screen graphics
 		List<Lump> wiLumps = wadFile.getLumpsByName("WI");
