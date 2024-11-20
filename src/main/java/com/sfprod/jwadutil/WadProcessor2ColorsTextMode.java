@@ -35,19 +35,14 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			28, 34, 27, 31, 32, 25, 27, 20, 36, 37, 37, 31, 24, 38, 23, 33, //
 			21, 28, 20, 20, 29, 27, 16, 20, 14, 4, 2, 30, 24, 19, 30, 0);
 
-//	private static final byte[] COLORS_WALLS = toByteArray(0, 176, 179, 180, 195, 181, 197, 198, 216, 177, 186, 221, 182, 185, 199, 204, 206, 215, 222, 178, 219);
 	private static final byte[] COLORS_WALLS = toByteArray(0, 176, 179, 177, 186, 221, 222, 178, 219);
-	private static final byte[] COLORS_SPRITES = toByteArray(255, 124, 180, 195, 197, 182, 199, 215, 10, 8);
+	private static final byte[] COLORS_SPRITES = toByteArray(255, 250, 249, 124, 180, 195, 197, 182, 199, 215, 10, 8);
 
-//	private static final byte[] COLORS_SPRITES = toByteArray(0, 176, 179, 177, 186, 221, 222, 178, 219);
-//	private static final byte[] COLORS_WALLS = toByteArray(255, 180, 195, 181, 197, 198, 216, 182, 185, 199, 204, 206,
-//			215);
-
-	public static final byte[] COLORS_FLOORS = toByteArray(32, 250, 46, 249, 96, 39, 44, 45, 58, 95, 196, 59, 126, 7,
-			61, 94, 28, 169, 170, 34, 47, 248, 26, 27, 246, 191, 60, 62, 218, 217, 9, 29, 43, 174, 175, 192, 231, 247,
-			22, 37, 92, 108, 194, 240, 73, 91, 93, 99, 120, 127, 193, 238, 24, 25, 42, 236, 252, 4, 111, 226, 245, 67,
-			224, 16, 17, 244, 145, 211, 5, 157, 254, 30, 31, 214, 227, 155, 228, 239, 15, 79, 88, 232, 85, 233, 237, 72,
-			3, 36, 6, 35, 21, 220, 223);
+	public static final byte[] COLORS_FLOORS = toByteArray(32, 46, 96, 39, 44, 45, 58, 95, 196, 59, 126, 7, 61, 94, 28,
+			169, 170, 34, 47, 248, 26, 27, 246, 191, 60, 62, 218, 217, 9, 29, 43, 174, 175, 192, 231, 247, 22, 37, 92,
+			108, 194, 240, 73, 91, 93, 99, 120, 127, 193, 238, 24, 25, 42, 236, 252, 4, 111, 226, 245, 67, 224, 16, 17,
+			244, 145, 211, 5, 157, 254, 30, 31, 214, 227, 155, 228, 239, 15, 79, 88, 232, 85, 233, 237, 72, 3, 36, 6,
+			35, 21, 220, 223);
 
 	private static final Map<Integer, List<Integer>> COLORS_WALLS_SHUFFLE_MAP = createColorsShuffleMap();
 
