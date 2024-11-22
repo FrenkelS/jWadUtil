@@ -129,15 +129,15 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		changePaletteRaw(wadFile.getLumpByName("FLOOR4_8"));
 
 		// Graphics in picture format
-		List<String> switches = List.of("SW1S0", "SW1S1", "SW2S0", "SW2S1", "SW3S0", "SW3S1", "SW4S0", "SW4S1",
-				"WARNA0", "WARNB0");
+		List<String> switchesAndDoors = List.of("SW1S0", "SW1S1", "SW2S0", "SW2S1", "SW3S0", "SW3S1", "SW4S0", "SW4S1",
+				"WARNA0", "WARNB0", "DOOR2_1", "DOOR2_4", "DOOR3_6", "DOOR9_1");
 		// Sprites
 		List<Lump> sprites = new ArrayList<>(256);
-		sprites.addAll(switches.stream().map(wadFile::getLumpByName).toList());
+		sprites.addAll(switchesAndDoors.stream().map(wadFile::getLumpByName).toList());
 		sprites.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
 		sprites.forEach(this::changePaletteSprites);
 		// Walls
-		wadFile.getLumpsBetween("P1_START", "P1_END").stream().filter(l -> !switches.contains(l.nameAsString()))
+		wadFile.getLumpsBetween("P1_START", "P1_END").stream().filter(l -> !switchesAndDoors.contains(l.nameAsString()))
 				.forEach(this::changePaletteWalls);
 	}
 
