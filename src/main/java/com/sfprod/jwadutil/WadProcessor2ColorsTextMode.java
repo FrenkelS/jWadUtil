@@ -6,6 +6,7 @@ import static com.sfprod.utils.NumberUtils.toInt;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			244, 145, 211, 5, 157, 254, 30, 31, 214, 227, 155, 228, 239, 15, 79, 88, 232, 85, 233, 237, 72, 3, 36, 6,
 			35, 21, 220, 223);
 
-	private static final Map<Integer, List<Integer>> COLORS_WALLS_SHUFFLE_MAP = createColorsShuffleMap();
+	private static final Map<Integer, List<Integer>> COLORS_SHUFFLE_MAP = createColorsShuffleMap();
 
 	private final List<Byte> lookupTableWalls;
 	private final List<Byte> lookupTableSprites;
@@ -85,13 +86,14 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		return lut;
 	}
 
-	private static Map<Integer, List<Integer>> createColorsShuffleMap() {
+	private static Map<Integer, List<Integer>> createColorsShuffleMap(byte[] colors) {
 		Map<Integer, List<Integer>> shuffleMap = new HashMap<>();
-		for (byte colorWallsI : COLORS_WALLS) {
+
+		for (byte colorWallsI : colors) {
 			int i = toInt(colorWallsI);
 			List<Integer> sameColorList = new ArrayList<>();
 			int bitCount = MDA_FONT_BIT_COUNTS.get(i);
-			for (byte colorWallsJ : COLORS_WALLS) {
+			for (byte colorWallsJ : colors) {
 				int j = toInt(colorWallsJ);
 				int otherBitCount = MDA_FONT_BIT_COUNTS.get(j);
 				if (bitCount == otherBitCount) {
@@ -102,6 +104,13 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 			shuffleMap.put(i, sameColorList);
 		}
 
+		return shuffleMap;
+	}
+
+	private static Map<Integer, List<Integer>> createColorsShuffleMap() {
+		Map<Integer, List<Integer>> shuffleMap = new HashMap<>(Collections.emptyMap());
+		shuffleMap.putAll(createColorsShuffleMap(COLORS_WALLS));
+		shuffleMap.putAll(createColorsShuffleMap(COLORS_SPRITES));
 		return shuffleMap;
 	}
 
@@ -120,10 +129,16 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		changePaletteRaw(wadFile.getLumpByName("FLOOR4_8"));
 
 		// Graphics in picture format
+		List<String> switches = List.of("SW1S0", "SW1S1", "SW2S0", "SW2S1", "SW3S0", "SW3S1", "SW4S0", "SW4S1",
+				"WARNA0", "WARNB0");
 		// Sprites
-		wadFile.getLumpsBetween("S_START", "S_END").forEach(this::changePaletteSprites);
+		List<Lump> sprites = new ArrayList<>(256);
+		sprites.addAll(switches.stream().map(wadFile::getLumpByName).toList());
+		sprites.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
+		sprites.forEach(this::changePaletteSprites);
 		// Walls
-		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::changePaletteWalls);
+		wadFile.getLumpsBetween("P1_START", "P1_END").stream().filter(l -> !switches.contains(l.nameAsString()))
+				.forEach(this::changePaletteWalls);
 	}
 
 	private byte convert256to2(List<Byte> lookupTable, byte b) {
@@ -270,7 +285,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 	}
 
 	private byte shuffleColor(byte b) {
-		List<Integer> list = COLORS_WALLS_SHUFFLE_MAP.get(toInt(b));
+		List<Integer> list = COLORS_SHUFFLE_MAP.get(toInt(b));
 		return list.get(random.nextInt(list.size())).byteValue();
 	}
 
