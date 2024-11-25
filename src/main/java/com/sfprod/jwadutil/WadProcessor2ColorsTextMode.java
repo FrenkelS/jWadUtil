@@ -130,7 +130,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 
 		// Graphics in picture format
 		List<String> switchesAndDoors = List.of("SW1S0", "SW1S1", "SW2S0", "SW2S1", "SW3S0", "SW3S1", "SW4S0", "SW4S1",
-				"WARNA0", "WARNB0", "DOOR2_1", "DOOR2_4", "DOOR3_6", "DOOR9_1");
+				"WARNA0", "WARNB0", "DOOR2_1", "DOOR2_4", "DOOR2_5", "DOOR3_6", "DOOR9_1");
 		// Sprites
 		List<Lump> sprites = new ArrayList<>(256);
 		sprites.addAll(switchesAndDoors.stream().map(wadFile::getLumpByName).toList());
