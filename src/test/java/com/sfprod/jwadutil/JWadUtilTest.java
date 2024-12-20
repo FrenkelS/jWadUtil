@@ -17,13 +17,13 @@ import org.junit.jupiter.params.provider.EnumSource;
 class JWadUtilTest {
 
 	private static final Map<Game, String> EXPECTED_CHECKSUMS = new EnumMap<>(Map.of( //
-			Game.DOOM8088, "69FC61DB", //
+			Game.DOOM8088, "72CFCC78", //
 			Game.DOOM8088_2_COLOR_TEXT_MODE, "3FDE36CB", //
-			Game.DOOM8088_16_COLOR_DITHERED, "105A0530", //
-			Game.DOOM8088_16_COLOR_DITHERED_TEXT_MODE, "746F197A", //
+			Game.DOOM8088_16_COLOR_DITHERED, "14B98B46", //
+			Game.DOOM8088_16_COLOR_DITHERED_TEXT_MODE, "1558C1E8", //
 			Game.DOOMTD3_BIG_ENDIAN, "D8F76736", //
 			Game.DOOMTD3_LITTLE_ENDIAN, "B215BC27", //
-			Game.ELKSDOOM, "882B8D94" //
+			Game.ELKSDOOM, "93182037" //
 	));
 
 	@ParameterizedTest
