@@ -302,7 +302,6 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 		List<Lump> graphics = new ArrayList<>(256);
 		// Status bar
 		graphics.addAll(wadFile.getLumpsByName("STC"));
-		graphics.addAll(wadFile.getLumpsByName("STF"));
 		graphics.addAll(wadFile.getLumpsByName("STG"));
 		graphics.addAll(wadFile.getLumpsByName("STK"));
 		graphics.addAll(wadFile.getLumpsByName("STY"));
