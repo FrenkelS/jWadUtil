@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
@@ -52,6 +53,44 @@ class WadProcessor4Colors extends WadProcessor {
 
 	private static final List<Color> CGA_DITHERED_COLORS = createCgaDitheredColors();
 	private static final Map<Integer, List<Integer>> CGA_DITHERED_COLORS_SHUFFLE_MAP = createCgaDitheredColorsShuffleMap();
+
+	private static final List<Integer> VGA256_TO_4_LUT = List.of( //
+			0, 0, 0, // black
+			0, // grey
+			0, // white
+			0, 0, 0, 0, // black
+			0, 0, 0, 0, // dark green
+			0, 0, 0, // brown
+
+			3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, //
+			2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, // reddish
+
+			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, //
+			3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // orangeish
+
+			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, //
+			0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // gray
+
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // green
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // brown
+			3, 0, 0, 0, 0, 0, 0, 0, // brown
+			0, 0, 0, 0, 0, 0, 0, 0, // brown/green
+			3, 3, 3, 0, 0, 2, 0, 0, // gold
+
+			0, 0, 0, 0, 0, 0, 0, 0, //
+			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, // red
+
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // blue
+			3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // orange
+			3, 3, 0, 0, 0, 0, 0, 0, // yellow
+			0, 0, 0, 0, // dark orange
+			0, 0, 0, 0, // brown
+			0, 0, 0, 0, 0, 0, 0, 0, // dark blue
+			0, // orange
+			0, // yellow
+			0, 0, 0, 0, 0, // purple
+			0 // cream-colored
+	);
 
 	private static final List<Integer> VGA256_TO_DITHERED_LUT = List.of( //
 			0x00, 0x06, 0x00, // black
@@ -159,16 +198,10 @@ class WadProcessor4Colors extends WadProcessor {
 		return shuffleMap;
 	}
 
-	private byte convert256to16dithered(byte b) {
-		return VGA256_TO_DITHERED_LUT.get(toInt(b)).byteValue();
-	}
-
 	@Override
 	void changeColors() {
 		// Graphics in picture format
 		List<Lump> graphics = new ArrayList<>(256);
-		// Sprites
-		graphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
 		// Status bar
 		graphics.addAll(wadFile.getLumpsByName("STC"));
 		graphics.addAll(wadFile.getLumpsByName("STF"));
@@ -179,12 +212,25 @@ class WadProcessor4Colors extends WadProcessor {
 		graphics.addAll(wadFile.getLumpsByName("M_"));
 		// Intermission
 		graphics.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+		graphics.forEach(this::changePalettePictureGraphics);
+
+		List<Lump> spritesAndWalls = new ArrayList<>(256);
+		// Sprites
+		spritesAndWalls.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
 		// Walls
-		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-		graphics.forEach(this::changePalettePicture);
+		spritesAndWalls.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
+		spritesAndWalls.forEach(this::changePalettePictureSpritesAndWalls);
 	}
 
-	private void changePalettePicture(Lump lump) {
+	private void changePalettePictureGraphics(Lump lump) {
+		changePalettePicture(lump, b -> toByte(VGA256_TO_4_LUT.get(toInt(b)).byteValue() << 6));
+	}
+
+	private void changePalettePictureSpritesAndWalls(Lump lump) {
+		changePalettePicture(lump, b -> VGA256_TO_DITHERED_LUT.get(toInt(b)).byteValue());
+	}
+
+	private void changePalettePicture(Lump lump, Function<Byte, Byte> func) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
 		dataByteBuffer.getShort(); // height
@@ -205,7 +251,7 @@ class WadProcessor4Colors extends WadProcessor {
 				index++;
 				int length = toInt(lengthByte);
 				for (int i = 0; i < length + 2; i++) {
-					lump.data()[index] = convert256to16dithered(lump.data()[index]);
+					lump.data()[index] = func.apply(lump.data()[index]);
 					index++;
 				}
 				topdelta = lump.data()[index];
