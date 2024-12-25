@@ -104,7 +104,7 @@ class WadProcessor4Colors extends WadProcessor {
 	private Lump createCgaLump(String lumpname) {
 		try {
 			BufferedImage image = ImageIO
-					.read(WadProcessor4Colors.class.getResourceAsStream('/' + lumpname + "_CGA.PNG"));
+					.read(WadProcessor4Colors.class.getResourceAsStream("/CGA/" + lumpname + ".PNG"));
 			byte[] data = new byte[(image.getWidth() / 4) * image.getHeight()];
 			int i = 0;
 			for (int y = 0; y < image.getHeight(); y++) {
