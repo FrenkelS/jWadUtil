@@ -3,6 +3,9 @@ package com.sfprod.jwadutil;
 import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -12,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
 
 import com.sfprod.utils.ByteBufferUtils;
 import com.sfprod.utils.NumberUtils;
@@ -82,6 +87,40 @@ class WadProcessor4Colors extends WadProcessor {
 
 	WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, CGA_DITHERED_COLORS);
+
+		wadFile.replaceLump(createCgaLump("HELP2"));
+		wadFile.replaceLump(createCgaLump("STBAR"));
+		wadFile.replaceLump(createCgaLump("TITLEPIC"));
+		wadFile.replaceLump(createCgaLump("WIMAP0"));
+	}
+
+	private Lump createCgaLump(String lumpname) {
+		Map<Integer, Integer> cga = Map.of( //
+				0xff000000, 0, //
+				0xff55ffff, 1, //
+				0xffff55ff, 2, //
+				0xffffffff, 3);
+
+		try {
+			BufferedImage image = ImageIO
+					.read(WadProcessor4Colors.class.getResourceAsStream('/' + lumpname + "_CGA.PNG"));
+			byte[] data = new byte[(image.getWidth() / 4) * image.getHeight()];
+			int i = 0;
+			for (int y = 0; y < image.getHeight(); y++) {
+				for (int x = 0; x < image.getWidth() / 4; x++) {
+					byte b = 0;
+					for (int p = 0; p < 4; p++) {
+						int rgb = image.getRGB(x * 4 + p, y);
+						b = NumberUtils.toByte((b << 2) | cga.get(rgb));
+					}
+					data[i] = b;
+					i++;
+				}
+			}
+			return new Lump(lumpname, data, ByteOrder.LITTLE_ENDIAN);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	private static List<Color> createCgaDitheredColors() {
@@ -125,16 +164,6 @@ class WadProcessor4Colors extends WadProcessor {
 
 	@Override
 	void changeColors() {
-		// Raw graphics
-		List<Lump> rawGraphics = new ArrayList<>(16);
-		rawGraphics.add(wadFile.getLumpByName("HELP2"));
-		rawGraphics.add(wadFile.getLumpByName("STBAR"));
-		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
-		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
-		// Finale background flat
-		rawGraphics.add(wadFile.getLumpByName("FLOOR4_8"));
-		rawGraphics.forEach(this::changePaletteRaw);
-
 		// Graphics in picture format
 		List<Lump> graphics = new ArrayList<>(256);
 		// Sprites
@@ -152,12 +181,6 @@ class WadProcessor4Colors extends WadProcessor {
 		// Walls
 		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
 		graphics.forEach(this::changePalettePicture);
-	}
-
-	private void changePaletteRaw(Lump lump) {
-		for (int i = 0; i < lump.length(); i++) {
-			lump.data()[i] = convert256to16dithered(lump.data()[i]);
-		}
 	}
 
 	private void changePalettePicture(Lump lump) {
@@ -288,32 +311,10 @@ class WadProcessor4Colors extends WadProcessor {
 
 	@Override
 	void shuffleColors() {
-		// Raw graphics
-		List<Lump> rawGraphics = new ArrayList<>(16);
-		rawGraphics.add(wadFile.getLumpByName("HELP2"));
-		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
-		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
-		// Flat
-		rawGraphics.add(wadFile.getLumpByName("FLOOR4_8"));
-		rawGraphics.forEach(this::shuffleColorsRaw);
-
-		// Graphics in picture format
-		List<Lump> graphics = new ArrayList<>(256);
-		// Status bar
-		graphics.addAll(wadFile.getLumpsByName("STK"));
-		graphics.addAll(wadFile.getLumpsByName("STY"));
-		// Walls
-		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-		graphics.forEach(this::shuffleColorPicture);
+		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::shuffleColorPicture);
 	}
 
-	protected void shuffleColorsRaw(Lump lump) {
-		for (int i = 0; i < lump.length(); i++) {
-			lump.data()[i] = shuffleColor(lump.data()[i]);
-		}
-	}
-
-	protected void shuffleColorPicture(Lump lump) {
+	private void shuffleColorPicture(Lump lump) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
 		dataByteBuffer.getShort(); // height
