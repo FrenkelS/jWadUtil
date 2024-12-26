@@ -26,13 +26,6 @@ class WadProcessor4Colors extends WadProcessor {
 
 	private final Random random = new Random(0x1d4a11);
 
-	private static final Map<Integer, Integer> CGA_4_COLORS = Map.of( //
-			0xff000000, 0, // black
-			0xff55ffff, 1, // light cyan
-			0xffff55ff, 2, // light magenta
-			0xffffffff, 3 // white
-	);
-
 	private static final List<Color> CGA_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black
 			new Color(0x55, 0xFF, 0xFF), // light cyan
@@ -130,6 +123,8 @@ class WadProcessor4Colors extends WadProcessor {
 	}
 
 	private Lump createCgaLump(String lumpname) {
+		List<Integer> rgbs = CGA_COLORS.stream().map(Color::getRGB).toList();
+
 		try {
 			BufferedImage image = ImageIO
 					.read(WadProcessor4Colors.class.getResourceAsStream("/CGA/" + lumpname + ".PNG"));
@@ -140,7 +135,7 @@ class WadProcessor4Colors extends WadProcessor {
 					byte b = 0;
 					for (int p = 0; p < 4; p++) {
 						int rgb = image.getRGB(x * 4 + p, y);
-						b = NumberUtils.toByte((b << 2) | CGA_4_COLORS.get(rgb));
+						b = NumberUtils.toByte((b << 2) | rgbs.indexOf(rgb));
 					}
 					data[i] = b;
 					i++;

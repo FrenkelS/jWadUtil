@@ -1,6 +1,11 @@
 package com.sfprod.jwadutil;
 
 public record Color(int r, int g, int b) {
+
+	int getRGB() {
+		return 0xff000000 | (r << 16) | (g << 8) | b;
+	}
+
 	double gray() {
 		return r * 0.299 + g * 0.587 + b * 0.114;
 	}
