@@ -27,27 +27,16 @@ class WadProcessor4Colors extends WadProcessor {
 	private final Random random = new Random(0x1d4a11);
 
 	private static final Map<Integer, Integer> CGA_4_COLORS = Map.of( //
-			0xff000000, 0, //
-			0xff55ffff, 1, //
-			0xffff55ff, 2, //
-			0xffffffff, 3);
+			0xff000000, 0, // black
+			0xff55ffff, 1, // light cyan
+			0xffff55ff, 2, // light magenta
+			0xffffffff, 3 // white
+	);
 
 	private static final List<Color> CGA_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black
-			new Color(0x00, 0x00, 0xAA), // blue
-			new Color(0x00, 0xAA, 0x00), // green
-			new Color(0x00, 0xAA, 0xAA), // cyan
-			new Color(0xAA, 0x00, 0x00), // red
-			new Color(0xAA, 0x00, 0xAA), // magenta
-			new Color(0xAA, 0x55, 0x00), // brown
-			new Color(0xAA, 0xAA, 0xAA), // light gray
-			new Color(0x55, 0x55, 0x55), // dark gray
-			new Color(0x55, 0x55, 0xFF), // light blue
-			new Color(0x55, 0xFF, 0x55), // light green
 			new Color(0x55, 0xFF, 0xFF), // light cyan
-			new Color(0xFF, 0x55, 0x55), // light red
 			new Color(0xFF, 0x55, 0xFF), // light magenta
-			new Color(0xFF, 0xFF, 0x55), // yellow
 			new Color(0xFF, 0xFF, 0xFF) // white
 	);
 
@@ -165,16 +154,25 @@ class WadProcessor4Colors extends WadProcessor {
 
 	private static List<Color> createCgaDitheredColors() {
 		List<Color> colors = new ArrayList<>();
-		for (int h = 0; h < 16; h++) {
-			for (int l = 0; l < 16; l++) {
-				Color ch = CGA_COLORS.get(h);
-				Color cl = CGA_COLORS.get(l);
+		for (int col0 = 0; col0 < 4; col0++) {
+			for (int col1 = 0; col1 < 4; col1++) {
+				for (int col2 = 0; col2 < 4; col2++) {
+					for (int col3 = 0; col3 < 4; col3++) {
+						Color c0 = CGA_COLORS.get(col0);
+						Color c1 = CGA_COLORS.get(col1);
+						Color c2 = CGA_COLORS.get(col2);
+						Color c3 = CGA_COLORS.get(col3);
 
-				int r = (int) Math.sqrt((ch.r() * ch.r() + cl.r() * cl.r()) / 2);
-				int g = (int) Math.sqrt((ch.g() * ch.g() + cl.g() * cl.g()) / 2);
-				int b = (int) Math.sqrt((ch.b() * ch.b() + cl.b() * cl.b()) / 2);
-				Color color = new Color(r, g, b);
-				colors.add(color);
+						int r = (int) Math
+								.sqrt((c0.r() * c0.r() + c1.r() * c1.r() + c2.r() * c2.r() + c3.r() * c3.r()) / 4);
+						int g = (int) Math
+								.sqrt((c0.g() * c0.g() + c1.g() * c1.g() + c2.g() * c2.g() + c3.g() * c3.g()) / 4);
+						int b = (int) Math
+								.sqrt((c0.b() * c0.b() + c1.b() * c1.b() + c2.b() * c2.b() + c3.b() * c3.b()) / 4);
+						Color color = new Color(r, g, b);
+						colors.add(color);
+					}
+				}
 			}
 		}
 		return colors;
