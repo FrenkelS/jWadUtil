@@ -347,10 +347,10 @@ class WadProcessor4Colors extends WadProcessor {
 		List<Double> grays = CGA_DITHERED_COLORS.stream().map(Color::gray).collect(Collectors.toSet()).stream()
 				.sorted(Comparator.reverseOrder()).toList();
 
-		List<Integer> grayscaleFromDarkToBright = List.of(0x00, 0x00, 0x08, 0x80, 0x88, 0x88, 0x07, 0x70, 0x78, 0x87,
-				0x77, 0x77, 0x0f, 0xf0, 0x8f, 0xf8, 0x7f, 0xf7, 0xff, 0xff, 0xff);
+		List<Integer> grayscaleFromDarkToBright = List.of(0x00, 0x03, 0x30, 0x0c, 0xc0, 0xc3, 0x3c, 0x33, 0xcc, 0x3f,
+				0xf3, 0xcf, 0xfc, 0xff);
 
-		return CGA_DITHERED_COLORS.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 6)
+		return CGA_DITHERED_COLORS.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 3)
 				.map(grayscaleFromDarkToBright::get).mapToObj(NumberUtils::toByte).toList();
 	}
 
