@@ -352,8 +352,6 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 	protected void removeUnusedLumps() {
 		super.removeUnusedLumps();
 
-		for (int gamma = 1; gamma <= 5; gamma++) {
-			wadFile.removeLump("PLAYPAL" + gamma);
-		}
+		wadFile.removeLumps("PLAYPAL");
 	}
 }

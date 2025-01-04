@@ -340,13 +340,10 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 	protected void removeUnusedLumps() {
 		super.removeUnusedLumps();
 
-		for (int gamma = 1; gamma <= 5; gamma++) {
-			wadFile.removeLump("PLAYPAL" + gamma);
-		}
+		wadFile.removeLumps("PLAYPAL");
 
 		// Menu graphics
-		List<Lump> mLumps = wadFile.getLumpsByName("M_");
-		mLumps.forEach(wadFile::removeLump);
+		wadFile.removeLumps("M_");
 
 		// Status bar graphics
 		List<Lump> stLumps = wadFile.getLumpsByName("ST");
