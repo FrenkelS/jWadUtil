@@ -109,6 +109,7 @@ public class WadProcessor {
 		case DOOM8088_2_COLOR_TEXT_MODE ->
 			new WadProcessor2ColorsTextMode(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_4_COLOR -> new WadProcessor4Colors(game.getTitle(), game.getByteOrder(), wadFile);
+		case ATARI_ST -> new WadProcessorAtariST(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_16_COLOR_DITHERED ->
 			new WadProcessor16ColorsDithered(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_16_COLOR_DITHERED_TEXT_MODE ->
