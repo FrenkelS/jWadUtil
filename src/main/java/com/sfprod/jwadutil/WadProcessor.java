@@ -366,13 +366,18 @@ public class WadProcessor {
 		ByteBuffer doom8088Data = newByteBuffer(byteOrder);
 		doom8088Data.putShort(length);
 
+		short[] divisors = getDivisors();
 		for (int i = 0; i < length; i++) {
 			byte b = vanillaData.get();
-			short d = DIVISORS[toInt(b)];
+			short d = divisors[toInt(b)];
 			doom8088Data.putShort(d);
 		}
 
 		return new Lump(vanillaLump.name(), 2 + length * 2, doom8088Data);
+	}
+
+	short[] getDivisors() {
+		return DIVISORS;
 	}
 
 	private void processSprites() {
