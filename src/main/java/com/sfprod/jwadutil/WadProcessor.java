@@ -27,7 +27,7 @@ public class WadProcessor {
 			SVN by Kippykip
 			Doom II status bar by Torus Games""".replace("\n", "\r\n");
 
-	private static final short DIVISORS[] = { //
+	static final short DIVISORS[] = { //
 			0, //
 			6818, 6628, 6449, 6279, 6087, 5906, 5736, 5575, //
 			5423, 5279, 5120, 4971, 4830, 4697, 4554, 4435, //
@@ -109,7 +109,9 @@ public class WadProcessor {
 		case DOOM8088_2_COLOR_TEXT_MODE ->
 			new WadProcessor2ColorsTextMode(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_4_COLOR -> new WadProcessor4Colors(game.getTitle(), game.getByteOrder(), wadFile);
-		case ATARI_ST -> new WadProcessorAtariST(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM8088_ATARI_ST_2_COLOR -> new WadProcessor2ColorsAtariST(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM8088_ATARI_ST_16_COLOR ->
+			new WadProcessor16ColorsDitheredAtariST(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_16_COLOR_DITHERED ->
 			new WadProcessor16ColorsDithered(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_16_COLOR_DITHERED_TEXT_MODE ->
@@ -143,6 +145,7 @@ public class WadProcessor {
 		compressPictures();
 
 		shuffleColors();
+		processRawGraphics();
 	}
 
 	void changeColors() {
@@ -152,6 +155,9 @@ public class WadProcessor {
 	}
 
 	void shuffleColors() {
+	}
+
+	void processRawGraphics() {
 	}
 
 	/**

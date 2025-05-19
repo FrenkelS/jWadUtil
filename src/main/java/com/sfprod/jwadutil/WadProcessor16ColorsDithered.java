@@ -126,7 +126,7 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 	@Override
 	void changeColors() {
 		// Raw graphics
-		List<Lump> rawGraphics = new ArrayList<>(16);
+		List<Lump> rawGraphics = new ArrayList<>();
 		rawGraphics.add(wadFile.getLumpByName("HELP2"));
 		rawGraphics.add(wadFile.getLumpByName("STBAR"));
 		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
@@ -289,8 +289,9 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 	@Override
 	void shuffleColors() {
 		// Raw graphics
-		List<Lump> rawGraphics = new ArrayList<>(16);
+		List<Lump> rawGraphics = new ArrayList<>();
 		rawGraphics.add(wadFile.getLumpByName("HELP2"));
+		// rawGraphics.add(wadFile.getLumpByName("STBAR"));
 		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
 		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
 		// Flat
