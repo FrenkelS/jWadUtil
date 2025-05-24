@@ -1,5 +1,8 @@
 package com.sfprod.jwadutil;
 
+import static com.sfprod.utils.NumberUtils.toByte;
+import static com.sfprod.utils.NumberUtils.toInt;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -19,6 +22,16 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 	@Override
 	short[] getDivisors() {
 		return divisors;
+	}
+
+	@Override
+	void changePaletteStatusBarMenuAndIntermission(Lump lump) {
+		changePalettePicture(lump, this::convert256to16);
+	}
+
+	private byte convert256to16(byte b) {
+		byte out = convert256to16dithered(b);
+		return toByte(toInt(out) & 0x0f);
 	}
 
 	@Override

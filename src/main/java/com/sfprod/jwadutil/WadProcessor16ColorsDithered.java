@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.sfprod.utils.ByteBufferUtils;
@@ -119,7 +120,7 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 		return shuffleMap;
 	}
 
-	private byte convert256to16dithered(byte b) {
+	byte convert256to16dithered(byte b) {
 		return VGA256_TO_DITHERED_LUT.get(toInt(b)).byteValue();
 	}
 
@@ -136,22 +137,29 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 		rawGraphics.forEach(this::changePaletteRaw);
 
 		// Graphics in picture format
-		List<Lump> graphics = new ArrayList<>(256);
+
+		List<Lump> spritesAndWallsGraphics = new ArrayList<>(256);
 		// Sprites
-		graphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
-		// Status bar
-		graphics.addAll(wadFile.getLumpsByName("STC"));
-		graphics.addAll(wadFile.getLumpsByName("STF"));
-		graphics.addAll(wadFile.getLumpsByName("STG"));
-		graphics.addAll(wadFile.getLumpsByName("STK"));
-		graphics.addAll(wadFile.getLumpsByName("STY"));
-		// Menu
-		graphics.addAll(wadFile.getLumpsByName("M_"));
-		// Intermission
-		graphics.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
 		// Walls
-		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-		graphics.forEach(this::changePalettePicture);
+		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
+
+		spritesAndWallsGraphics.forEach(this::changePaletteSpritesAndWalls);
+
+		List<Lump> statusBarMenuAndIntermissionGraphics = new ArrayList<>(256);
+		// Status bar
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STC"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STF"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STG"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STK"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STY"));
+		// Menu
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("M_"));
+		// Intermission
+		statusBarMenuAndIntermissionGraphics
+				.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+
+		statusBarMenuAndIntermissionGraphics.forEach(this::changePaletteStatusBarMenuAndIntermission);
 	}
 
 	private void changePaletteRaw(Lump lump) {
@@ -160,7 +168,15 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 		}
 	}
 
-	private void changePalettePicture(Lump lump) {
+	private void changePaletteSpritesAndWalls(Lump lump) {
+		changePalettePicture(lump, this::convert256to16dithered);
+	}
+
+	void changePaletteStatusBarMenuAndIntermission(Lump lump) {
+		changePalettePicture(lump, this::convert256to16dithered);
+	}
+
+	void changePalettePicture(Lump lump, Function<Byte, Byte> colorConvertFunction) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
 		dataByteBuffer.getShort(); // height
@@ -181,7 +197,7 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 				index++;
 				int length = toInt(lengthByte);
 				for (int i = 0; i < length + 2; i++) {
-					lump.data()[index] = convert256to16dithered(lump.data()[index]);
+					lump.data()[index] = colorConvertFunction.apply(lump.data()[index]);
 					index++;
 				}
 				topdelta = lump.data()[index];
@@ -299,13 +315,8 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 		rawGraphics.forEach(this::shuffleColorsRaw);
 
 		// Graphics in picture format
-		List<Lump> graphics = new ArrayList<>(256);
-		// Status bar
-		graphics.addAll(wadFile.getLumpsByName("STK"));
-		graphics.addAll(wadFile.getLumpsByName("STY"));
 		// Walls
-		graphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-		graphics.forEach(this::shuffleColorPicture);
+		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::shuffleColorPicture);
 	}
 
 	protected void shuffleColorsRaw(Lump lump) {
