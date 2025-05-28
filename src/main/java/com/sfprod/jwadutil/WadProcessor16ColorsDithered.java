@@ -91,12 +91,7 @@ class WadProcessor16ColorsDithered extends WadProcessor {
 			for (int l = 0; l < 16; l++) {
 				Color ch = CGA_COLORS.get(h);
 				Color cl = CGA_COLORS.get(l);
-
-				int r = (int) Math.sqrt((ch.r() * ch.r() + cl.r() * cl.r()) / 2);
-				int g = (int) Math.sqrt((ch.g() * ch.g() + cl.g() * cl.g()) / 2);
-				int b = (int) Math.sqrt((ch.b() * ch.b() + cl.b() * cl.b()) / 2);
-				Color color = new Color(r, g, b);
-				colors.add(color);
+				colors.add(ch.blendColors(cl));
 			}
 		}
 		return colors;
