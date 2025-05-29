@@ -48,7 +48,7 @@ public class WadProcessor {
 			213, 207, 201, 195, 190, 184, 179 //
 	};
 
-	private final ByteOrder byteOrder;
+	final ByteOrder byteOrder;
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 	final List<Color> vgaColors;

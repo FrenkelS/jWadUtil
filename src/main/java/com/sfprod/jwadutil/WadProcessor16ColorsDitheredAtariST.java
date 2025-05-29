@@ -2,6 +2,7 @@ package com.sfprod.jwadutil;
 
 import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
+import static com.sfprod.utils.NumberUtils.toShort;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -74,6 +75,24 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 	private byte convert256to16(byte b) {
 		byte out = convert256to16dithered(b);
 		return toByte(toInt(out) & 0x0f);
+	}
+
+	@Override
+	void processColormap() {
+		super.processColormap();
+
+		wadFile.removeLumps("COLORMP");
+
+		ByteBuffer bb = ByteBufferUtils.newByteBuffer(byteOrder, 16 * 2);
+		for (Color color : CUSTOM_ATARI_ST_COLORS) {
+			int r = color.r() / 32;
+			int g = color.g() / 32;
+			int b = color.b() / 32;
+			short p = toShort((r << 8) | (g << 4) | (b << 0));
+			bb.putShort(p);
+		}
+		Lump playpal = new Lump("PLAYPAL", bb.array(), byteOrder);
+		wadFile.addLump(playpal);
 	}
 
 	@Override
