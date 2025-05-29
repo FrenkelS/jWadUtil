@@ -12,7 +12,7 @@ class WadProcessor2ColorsAtariST extends WadProcessor4Colors {
 	}
 
 	@Override
-	short[] getDivisors() {
+	protected short[] getDivisors() {
 		return divisors;
 	}
 }

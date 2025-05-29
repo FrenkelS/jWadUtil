@@ -19,9 +19,9 @@ public record Color(int r, int g, int b) {
 	}
 
 	Color blendColors(Color that) {
-		int r = (int) Math.sqrt((this.r * this.r + that.r * that.r) / 2);
-		int g = (int) Math.sqrt((this.g * this.g + that.g * that.g) / 2);
-		int b = (int) Math.sqrt((this.b * this.b + that.b * that.b) / 2);
-		return new Color(r, g, b);
+		int rBlended = (int) Math.sqrt((this.r * this.r + that.r * that.r) / 2);
+		int gBlended = (int) Math.sqrt((this.g * this.g + that.g * that.g) / 2);
+		int bBlended = (int) Math.sqrt((this.b * this.b + that.b * that.b) / 2);
+		return new Color(rBlended, gBlended, bBlended);
 	}
 }

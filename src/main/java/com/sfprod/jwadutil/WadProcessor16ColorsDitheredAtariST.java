@@ -12,16 +12,60 @@ import com.sfprod.utils.ByteBufferUtils;
 
 public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDithered {
 
+	private static final List<Color> CUSTOM_ATARI_ST_COLORS = List.of( //
+			new Color(0, 0, 0), //
+			new Color(0, 0, 68), //
+			new Color(51, 68, 34), //
+			new Color(153, 136, 102), //
+			new Color(119, 17, 17), //
+			new Color(119, 68, 34), //
+			new Color(136, 102, 85), //
+			new Color(170, 170, 170), //
+			new Color(102, 102, 102), //
+			new Color(0, 0, 204), //
+			new Color(51, 136, 34), //
+			new Color(238, 170, 119), //
+			new Color(221, 85, 0), //
+			new Color(204, 0, 204), //
+			new Color(255, 238, 68), //
+			new Color(255, 255, 255) //
+	);
+
 	private final short[] divisors;
 
 	WadProcessor16ColorsDitheredAtariST(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile);
+		super(title, byteOrder, wadFile, CUSTOM_ATARI_ST_COLORS, 7);
 		this.divisors = AtariSTUtil.getDivisors();
 	}
 
 	@Override
-	short[] getDivisors() {
+	protected short[] getDivisors() {
 		return divisors;
+	}
+
+	@Override
+	protected List<Integer> createVga256ToDitheredLUT() {
+		List<Color> vgaColors = createVgaColors(wadFile);
+
+		List<Integer> indexes = new ArrayList<>();
+
+		for (Color vgaColor : vgaColors) {
+			int minClosestColor = Integer.MAX_VALUE;
+			int indexClosestColor = -1;
+
+			for (int c = 0; c < availableColors.size(); c++) {
+				Color atariStColor = availableColors.get(c);
+
+				int distanceToVga = atariStColor.calculateDistance(vgaColor);
+				if (distanceToVga < minClosestColor) {
+					minClosestColor = distanceToVga;
+					indexClosestColor = c;
+				}
+			}
+			indexes.add(indexClosestColor);
+		}
+
+		return indexes;
 	}
 
 	@Override

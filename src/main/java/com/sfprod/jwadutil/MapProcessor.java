@@ -12,6 +12,7 @@ import static com.sfprod.utils.StringUtils.toStringUpperCase;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +61,11 @@ public class MapProcessor {
 
 		this.vgaColors = createVgaColors(wadFile);
 
-		this.availableColors = availableColors;
+		this.availableColors = Collections.unmodifiableList(availableColors);
+	}
+
+	public List<Color> getAvailableColors() {
+		return availableColors;
 	}
 
 	public void processMaps() {

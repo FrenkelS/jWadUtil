@@ -50,6 +50,7 @@ public class WadProcessor {
 	private final ByteOrder byteOrder;
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
+	final List<Color> availableColors;
 
 	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile) {
 		this(title, byteOrder, wadFile, createVgaColors(wadFile));
@@ -63,6 +64,7 @@ public class WadProcessor {
 		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
 		this.mapProcessor = mapProcessor;
+		this.availableColors = mapProcessor.getAvailableColors();
 
 		wadFile.addLump(getLump("M_ARUN"));
 		wadFile.addLump(getLump("M_GAMMA"));
@@ -382,7 +384,7 @@ public class WadProcessor {
 		return new Lump(vanillaLump.name(), 2 + length * 2, doom8088Data);
 	}
 
-	short[] getDivisors() {
+	protected short[] getDivisors() {
 		return DIVISORS;
 	}
 
