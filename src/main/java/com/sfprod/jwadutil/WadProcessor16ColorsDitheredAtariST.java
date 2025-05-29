@@ -45,8 +45,6 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 
 	@Override
 	protected List<Integer> createVga256ToDitheredLUT() {
-		List<Color> vgaColors = createVgaColors(wadFile);
-
 		List<Integer> indexes = new ArrayList<>();
 
 		for (Color vgaColor : vgaColors) {

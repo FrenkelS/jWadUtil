@@ -9,6 +9,7 @@ import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ public class WadProcessor {
 	private final ByteOrder byteOrder;
 	final WadFile wadFile;
 	private final MapProcessor mapProcessor;
+	final List<Color> vgaColors;
 	final List<Color> availableColors;
 
 	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile) {
@@ -64,6 +66,7 @@ public class WadProcessor {
 		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
 		this.mapProcessor = mapProcessor;
+		this.vgaColors = createVgaColors(wadFile);
 		this.availableColors = mapProcessor.getAvailableColors();
 
 		wadFile.addLump(getLump("M_ARUN"));
@@ -103,7 +106,7 @@ public class WadProcessor {
 			int b = toInt(bb.get());
 			vgaColors.add(new Color(r, g, b));
 		}
-		return vgaColors;
+		return Collections.unmodifiableList(vgaColors);
 	}
 
 	public static WadProcessor getWadProcessor(Game game, WadFile wadFile) {

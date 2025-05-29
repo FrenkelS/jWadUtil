@@ -57,7 +57,6 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 		wadFile.replaceLump(new Lump("WIMAP0", getLump("WM80X25M").data(), ByteBufferUtils.DONT_CARE));
 		wadFile.replaceLump(new Lump("HELP2", getLump("HL80X25M").data(), ByteBufferUtils.DONT_CARE));
 
-		List<Color> vgaColors = createVgaColors(wadFile);
 		List<Double> grays = vgaColors.stream().map(Color::gray).toList();
 		List<Double> sortedGrays = grays.stream().sorted().toList();
 

@@ -24,14 +24,11 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 			"CBRA", "ELEC" //
 	);
 
-	private final List<Color> vgaColors;
 	private final List<List<Integer>> listsOfBits;
 
 	WadProcessorDoomtd3(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile);
 		wadFile.addLump(getLump("CACHE"));
-
-		this.vgaColors = createVgaColors(wadFile);
 
 		this.listsOfBits = new ArrayList<>();
 		for (int i = 0; i <= 8; i++) {
