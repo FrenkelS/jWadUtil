@@ -29,7 +29,7 @@ class WadProcessorTest {
 		int blockmapSizePre = blockmapPre.length();
 		Map<Integer, List<Short>> mapOfLinenosPre = getMapOfLinenos(blockmapPre);
 
-		WadProcessor wadProcessor = WadProcessor.getWadProcessor(Game.DOOM8088, wadFile);
+		WadProcessor wadProcessor = WadProcessorFactory.getWadProcessor(Game.DOOM8088, wadFile);
 		wadProcessor.processWad();
 
 		int e1m1LabelPost = wadFile.getLumpNumByName(mapName);

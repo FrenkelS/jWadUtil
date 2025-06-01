@@ -14,7 +14,7 @@ public class JWadUtil {
 
 		WadFile wadFile = new WadFile("/doom1.wad");
 
-		WadProcessor wadProcessor = WadProcessor.getWadProcessor(game, wadFile);
+		WadProcessor wadProcessor = WadProcessorFactory.getWadProcessor(game, wadFile);
 		wadProcessor.processWad();
 
 		wadFile.saveWadFile(game.getByteOrder(), game.getWadFile());
