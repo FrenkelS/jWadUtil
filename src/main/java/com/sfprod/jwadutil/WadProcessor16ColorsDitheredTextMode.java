@@ -3,7 +3,7 @@ package com.sfprod.jwadutil;
 import java.nio.ByteOrder;
 import java.util.List;
 
-class WadProcessor16ColorsDitheredTextMode extends WadProcessor16ColorsDithered {
+class WadProcessor16ColorsDitheredTextMode extends WadProcessor16ColorsDitheredPC {
 
 	WadProcessor16ColorsDitheredTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile);
