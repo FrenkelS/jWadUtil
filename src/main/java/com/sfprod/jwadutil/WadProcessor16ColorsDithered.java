@@ -67,8 +67,12 @@ abstract class WadProcessor16ColorsDithered extends WadProcessor {
 
 	protected abstract List<Integer> createVga256ToDitheredLUT();
 
-	byte convert256to16dithered(byte b) {
+	private byte convert256to16dithered(byte b) {
 		return vga256ToDitheredLUT.get(toInt(b)).byteValue();
+	}
+
+	byte convert256to16(byte b) {
+		return convert256to16dithered(b);
 	}
 
 	@Override
@@ -119,11 +123,11 @@ abstract class WadProcessor16ColorsDithered extends WadProcessor {
 		changePalettePicture(lump, this::convert256to16dithered);
 	}
 
-	void changePaletteStatusBarMenuAndIntermission(Lump lump) {
-		changePalettePicture(lump, this::convert256to16dithered);
+	private void changePaletteStatusBarMenuAndIntermission(Lump lump) {
+		changePalettePicture(lump, this::convert256to16);
 	}
 
-	void changePalettePicture(Lump lump, Function<Byte, Byte> colorConvertFunction) {
+	private void changePalettePicture(Lump lump, Function<Byte, Byte> colorConvertFunction) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
 		dataByteBuffer.getShort(); // height

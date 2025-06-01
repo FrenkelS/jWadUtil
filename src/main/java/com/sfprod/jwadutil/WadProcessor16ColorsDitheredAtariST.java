@@ -68,12 +68,8 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 	}
 
 	@Override
-	void changePaletteStatusBarMenuAndIntermission(Lump lump) {
-		changePalettePicture(lump, this::convert256to16);
-	}
-
-	private byte convert256to16(byte b) {
-		byte out = convert256to16dithered(b);
+	byte convert256to16(byte b) {
+		byte out = super.convert256to16(b);
 		return toByte(toInt(out) & 0x0f);
 	}
 
