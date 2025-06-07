@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
@@ -101,8 +99,11 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 			0x22 // cream-colored
 	);
 
+	private static final List<Integer> GRAYSCALE_FROM_DARK_TO_BRIGHT = List.of(0x00, 0x03, 0x30, 0x0c, 0xc0, 0xc3, 0x3c,
+			0x33, 0xcc, 0x3f, 0xf3, 0xcf, 0xfc, 0xff);
+
 	WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile);
+		super(title, byteOrder, wadFile, GRAYSCALE_FROM_DARK_TO_BRIGHT, 3);
 
 		List<Color> colors = new ArrayList<>();
 		for (int col0 = 0; col0 < 4; col0++) {
@@ -194,18 +195,6 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 
 	private void changePaletteSpritesAndWalls(Lump lump) {
 		changePalettePicture(lump, b -> toByte(VGA256_TO_DITHERED_LUT.get(toInt(b)).byteValue()));
-	}
-
-	@Override
-	protected List<Byte> createColormapInvulnerability() {
-		List<Double> grays = availableColors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
-				.sorted(Comparator.reverseOrder()).toList();
-
-		List<Integer> grayscaleFromDarkToBright = List.of(0x00, 0x03, 0x30, 0x0c, 0xc0, 0xc3, 0x3c, 0x33, 0xcc, 0x3f,
-				0xf3, 0xcf, 0xfc, 0xff);
-
-		return availableColors.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / 3)
-				.map(grayscaleFromDarkToBright::get).mapToObj(NumberUtils::toByte).toList();
 	}
 
 	@Override

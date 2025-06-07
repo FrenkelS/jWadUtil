@@ -6,19 +6,28 @@ import static com.sfprod.utils.NumberUtils.toInt;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.sfprod.utils.ByteBufferUtils;
+import com.sfprod.utils.NumberUtils;
 
 abstract class WadProcessorLimitedColors extends WadProcessor {
 
+	private final List<Integer> grayscaleFromDarkToBright;
+	private final int divisor;
+
 	private Map<Integer, List<Integer>> availableColorsShuffleMap;
 
-	WadProcessorLimitedColors(String title, ByteOrder byteOrder, WadFile wadFile) {
+	WadProcessorLimitedColors(String title, ByteOrder byteOrder, WadFile wadFile,
+			List<Integer> grayscaleFromDarkToBright, int divisor) {
 		super(title, byteOrder, wadFile);
+		this.grayscaleFromDarkToBright = grayscaleFromDarkToBright;
+		this.divisor = divisor;
 	}
 
 	protected void fillAvailableColorsShuffleMap(List<Color> colors) {
@@ -111,7 +120,13 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 		}
 	}
 
-	protected abstract List<Byte> createColormapInvulnerability();
+	private List<Byte> createColormapInvulnerability() {
+		List<Double> grays = availableColors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
+				.sorted(Comparator.reverseOrder()).toList();
+
+		return availableColors.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / divisor)
+				.map(grayscaleFromDarkToBright::get).mapToObj(NumberUtils::toByte).toList();
+	}
 
 	private List<Byte> createColormap(int colormap) {
 		List<Byte> result = new ArrayList<>();

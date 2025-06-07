@@ -4,21 +4,18 @@ import static com.sfprod.utils.NumberUtils.toInt;
 
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import com.sfprod.utils.NumberUtils;
 
 abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedColors {
 
-	private final List<Integer> vga256ToDitheredLUT;
+	private static final List<Integer> GRAYSCALE_FROM_DARK_TO_BRIGHT = List.of(0x00, 0x00, 0x08, 0x80, 0x88, 0x88, 0x07,
+			0x70, 0x78, 0x87, 0x77, 0x77, 0x0f, 0xf0, 0x8f, 0xf8, 0x7f, 0xf7, 0xff, 0xff, 0xff);
 
-	private final int divisor;
+	private final List<Integer> vga256ToDitheredLUT;
 
 	WadProcessor16ColorsDithered(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> sixteenColors,
 			int divisor) {
-		super(title, byteOrder, wadFile);
+		super(title, byteOrder, wadFile, GRAYSCALE_FROM_DARK_TO_BRIGHT, divisor);
 
 		List<Color> colors = new ArrayList<>();
 		for (int h = 0; h < 16; h++) {
@@ -30,7 +27,6 @@ abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedColors {
 		}
 		fillAvailableColorsShuffleMap(colors);
 
-		this.divisor = divisor;
 		this.vga256ToDitheredLUT = createVga256ToDitheredLUT();
 	}
 
@@ -94,18 +90,6 @@ abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedColors {
 
 	private void changePaletteStatusBarMenuAndIntermission(Lump lump) {
 		changePalettePicture(lump, this::convert256to16);
-	}
-
-	@Override
-	protected List<Byte> createColormapInvulnerability() {
-		List<Double> grays = availableColors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
-				.sorted(Comparator.reverseOrder()).toList();
-
-		List<Integer> grayscaleFromDarkToBright = List.of(0x00, 0x00, 0x08, 0x80, 0x88, 0x88, 0x07, 0x70, 0x78, 0x87,
-				0x77, 0x77, 0x0f, 0xf0, 0x8f, 0xf8, 0x7f, 0xf7, 0xff, 0xff, 0xff);
-
-		return availableColors.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / divisor)
-				.map(grayscaleFromDarkToBright::get).mapToObj(NumberUtils::toByte).toList();
 	}
 
 	@Override
