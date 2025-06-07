@@ -51,7 +51,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 	private final List<Byte> lookupTableSprites;
 
 	WadProcessor2ColorsTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile, new MapProcessor2ColorsTextMode(byteOrder, wadFile));
+		super(title, byteOrder, wadFile, new MapProcessor2ColorsTextMode(byteOrder, wadFile), Collections.emptyList());
 
 		wadFile.replaceLump(new Lump("TITLEPIC", getLump("TP80X25M").data(), ByteBufferUtils.DONT_CARE));
 		wadFile.replaceLump(new Lump("WIMAP0", getLump("WM80X25M").data(), ByteBufferUtils.DONT_CARE));

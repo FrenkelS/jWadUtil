@@ -59,15 +59,16 @@ public class WadProcessor {
 	}
 
 	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
-		this(title, byteOrder, wadFile, new MapProcessor(byteOrder, wadFile, availableColors));
+		this(title, byteOrder, wadFile, new MapProcessor(byteOrder, wadFile), availableColors);
 	}
 
-	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, MapProcessor mapProcessor) {
+	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, MapProcessor mapProcessor,
+			List<Color> availableColors) {
 		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
 		this.mapProcessor = mapProcessor;
 		this.vgaColors = createVgaColors(wadFile);
-		this.availableColors = mapProcessor.getAvailableColors();
+		this.availableColors = availableColors;
 
 		wadFile.addLump(getLump("M_ARUN"));
 		wadFile.addLump(getLump("M_GAMMA"));
@@ -121,7 +122,7 @@ public class WadProcessor {
 	public void processWad() {
 		processTexture1();
 		processPNames();
-		mapProcessor.processMaps();
+		mapProcessor.processMaps(availableColors);
 		changeColors();
 		processColormap();
 		processPlayerSprites();

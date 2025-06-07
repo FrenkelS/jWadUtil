@@ -12,7 +12,6 @@ import static com.sfprod.utils.StringUtils.toStringUpperCase;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,23 +51,19 @@ public class MapProcessor {
 	protected final List<Color> vgaColors;
 
 	private final Map<String, Short> flatToColor = new HashMap<>();
-	private final List<Color> availableColors;
+	private List<Color> availableColors;
 	private final Map<Short, Color> availableColorsMap = new HashMap<>();
 
-	public MapProcessor(ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
+	public MapProcessor(ByteOrder byteOrder, WadFile wadFile) {
 		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
 
 		this.vgaColors = createVgaColors(wadFile);
-
-		this.availableColors = Collections.unmodifiableList(availableColors);
 	}
 
-	public List<Color> getAvailableColors() {
-		return availableColors;
-	}
+	public void processMaps(List<Color> availableColors) {
+		this.availableColors = availableColors;
 
-	public void processMaps() {
 		for (int map = 1; map <= 9; map++) {
 			String mapName = "E1M" + map;
 			int lumpNum = wadFile.getLumpNumByName(mapName);

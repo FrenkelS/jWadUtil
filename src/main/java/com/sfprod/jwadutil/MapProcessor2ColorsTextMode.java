@@ -20,7 +20,7 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 	private final List<Short> availableColors;
 
 	public MapProcessor2ColorsTextMode(ByteOrder byteOrder, WadFile wadFile) {
-		super(byteOrder, wadFile, Collections.emptyList());
+		super(byteOrder, wadFile);
 
 		List<Double> grays = vgaColors.stream().map(Color::gray).toList();
 		this.sortedGrays = grays.stream().sorted().toList();
