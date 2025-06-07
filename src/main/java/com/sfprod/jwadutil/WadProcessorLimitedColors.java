@@ -158,6 +158,36 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 		return toByte(closestColor);
 	}
 
+	protected void shuffleColorPicture(Lump lump) {
+		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
+		short width = dataByteBuffer.getShort();
+		dataByteBuffer.getShort(); // height
+		dataByteBuffer.getShort(); // leftoffset
+		dataByteBuffer.getShort(); // topoffset
+
+		List<Integer> columnofs = new ArrayList<>();
+		for (int columnof = 0; columnof < width; columnof++) {
+			columnofs.add(dataByteBuffer.getInt());
+		}
+
+		for (int columnof = 0; columnof < width; columnof++) {
+			int index = columnofs.get(columnof);
+			byte topdelta = lump.data()[index];
+			index++;
+			while (topdelta != -1) {
+				byte lengthByte = lump.data()[index];
+				index++;
+				int length = toInt(lengthByte);
+				for (int i = 0; i < length + 2; i++) {
+					lump.data()[index] = shuffleColor(lump.data()[index]);
+					index++;
+				}
+				topdelta = lump.data()[index];
+				index++;
+			}
+		}
+	}
+
 	protected byte shuffleColor(byte b) {
 		List<Integer> list = availableColorsShuffleMap.get(toInt(b));
 		return list.get(random.nextInt(list.size())).byteValue();

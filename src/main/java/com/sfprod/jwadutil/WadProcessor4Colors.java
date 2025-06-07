@@ -6,7 +6,6 @@ import static com.sfprod.utils.NumberUtils.toInt;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -164,32 +163,36 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 	@Override
 	void changeColors() {
 		// Graphics in picture format
-		List<Lump> graphics = new ArrayList<>(256);
-		// Status bar
-		graphics.addAll(wadFile.getLumpsByName("STC"));
-		graphics.addAll(wadFile.getLumpsByName("STF"));
-		graphics.addAll(wadFile.getLumpsByName("STG"));
-		graphics.addAll(wadFile.getLumpsByName("STK"));
-		graphics.addAll(wadFile.getLumpsByName("STY"));
-		// Menu
-		graphics.addAll(wadFile.getLumpsByName("M_"));
-		// Intermission
-		graphics.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
-		graphics.forEach(this::changePalettePictureGraphics);
 
-		List<Lump> spritesAndWalls = new ArrayList<>(256);
+		List<Lump> spritesAndWallsGraphics = new ArrayList<>(256);
 		// Sprites
-		spritesAndWalls.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
+		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
 		// Walls
-		spritesAndWalls.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-		spritesAndWalls.forEach(this::changePalettePictureSpritesAndWalls);
+		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
+
+		spritesAndWallsGraphics.forEach(this::changePaletteSpritesAndWalls);
+
+		List<Lump> statusBarMenuAndIntermissionGraphics = new ArrayList<>(256);
+		// Status bar
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STC"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STF"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STG"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STK"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STY"));
+		// Menu
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("M_"));
+		// Intermission
+		statusBarMenuAndIntermissionGraphics
+				.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+
+		statusBarMenuAndIntermissionGraphics.forEach(this::changePaletteStatusBarMenuAndIntermission);
 	}
 
-	private void changePalettePictureGraphics(Lump lump) {
+	private void changePaletteStatusBarMenuAndIntermission(Lump lump) {
 		changePalettePicture(lump, b -> toByte(VGA256_TO_4_LUT.get(toInt(b)).byteValue() << 6));
 	}
 
-	private void changePalettePictureSpritesAndWalls(Lump lump) {
+	private void changePaletteSpritesAndWalls(Lump lump) {
 		changePalettePicture(lump, b -> toByte(VGA256_TO_DITHERED_LUT.get(toInt(b)).byteValue()));
 	}
 
@@ -208,36 +211,6 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 	@Override
 	void shuffleColors() {
 		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::shuffleColorPicture);
-	}
-
-	private void shuffleColorPicture(Lump lump) {
-		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
-		short width = dataByteBuffer.getShort();
-		dataByteBuffer.getShort(); // height
-		dataByteBuffer.getShort(); // leftoffset
-		dataByteBuffer.getShort(); // topoffset
-
-		List<Integer> columnofs = new ArrayList<>();
-		for (int columnof = 0; columnof < width; columnof++) {
-			columnofs.add(dataByteBuffer.getInt());
-		}
-
-		for (int columnof = 0; columnof < width; columnof++) {
-			int index = columnofs.get(columnof);
-			byte topdelta = lump.data()[index];
-			index++;
-			while (topdelta != -1) {
-				byte lengthByte = lump.data()[index];
-				index++;
-				int length = toInt(lengthByte);
-				for (int i = 0; i < length + 2; i++) {
-					lump.data()[index] = shuffleColor(lump.data()[index]);
-					index++;
-				}
-				topdelta = lump.data()[index];
-				index++;
-			}
-		}
 	}
 
 	@Override

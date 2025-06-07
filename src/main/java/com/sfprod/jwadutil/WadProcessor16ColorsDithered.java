@@ -2,7 +2,6 @@ package com.sfprod.jwadutil;
 
 import static com.sfprod.utils.NumberUtils.toInt;
 
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -129,36 +128,6 @@ abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedColors {
 	private void shuffleColorsRaw(Lump lump) {
 		for (int i = 0; i < lump.length(); i++) {
 			lump.data()[i] = shuffleColor(lump.data()[i]);
-		}
-	}
-
-	private void shuffleColorPicture(Lump lump) {
-		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
-		short width = dataByteBuffer.getShort();
-		dataByteBuffer.getShort(); // height
-		dataByteBuffer.getShort(); // leftoffset
-		dataByteBuffer.getShort(); // topoffset
-
-		List<Integer> columnofs = new ArrayList<>();
-		for (int columnof = 0; columnof < width; columnof++) {
-			columnofs.add(dataByteBuffer.getInt());
-		}
-
-		for (int columnof = 0; columnof < width; columnof++) {
-			int index = columnofs.get(columnof);
-			byte topdelta = lump.data()[index];
-			index++;
-			while (topdelta != -1) {
-				byte lengthByte = lump.data()[index];
-				index++;
-				int length = toInt(lengthByte);
-				for (int i = 0; i < length + 2; i++) {
-					lump.data()[index] = shuffleColor(lump.data()[index]);
-					index++;
-				}
-				topdelta = lump.data()[index];
-				index++;
-			}
 		}
 	}
 
