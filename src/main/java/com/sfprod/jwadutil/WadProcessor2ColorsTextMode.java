@@ -10,13 +10,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import com.sfprod.utils.ByteBufferUtils;
 
 class WadProcessor2ColorsTextMode extends WadProcessor {
-
-	private final Random random = new Random(0x1d4a11);
 
 	private static final List<Integer> MDA_FONT_BIT_COUNTS = List.of( //
 			0, 34, 60, 41, 25, 36, 42, 12, 100, 20, 92, 33, 32, 32, 48, 34, //

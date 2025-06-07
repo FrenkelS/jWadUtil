@@ -5,11 +5,8 @@ import static com.sfprod.utils.NumberUtils.toByte;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class WadProcessorDoomtd3 extends WadProcessor {
-
-	private final Random random = new Random(0x1d4a11);
 
 	private static final List<String> SPRNAMES = List.of( //
 			"TROO", "SHTG", "PISG", "PISF", "SHTF", //
