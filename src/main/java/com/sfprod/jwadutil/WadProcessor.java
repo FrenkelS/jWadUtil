@@ -59,11 +59,11 @@ public class WadProcessor {
 	}
 
 	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors) {
-		this(title, byteOrder, wadFile, new MapProcessor(byteOrder, wadFile), availableColors);
+		this(title, byteOrder, wadFile, availableColors, new MapProcessor(byteOrder, wadFile));
 	}
 
-	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, MapProcessor mapProcessor,
-			List<Color> availableColors) {
+	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> availableColors,
+			MapProcessor mapProcessor) {
 		this.byteOrder = byteOrder;
 		this.wadFile = wadFile;
 		this.mapProcessor = mapProcessor;
