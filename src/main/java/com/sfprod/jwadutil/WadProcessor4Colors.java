@@ -33,8 +33,6 @@ class WadProcessor4Colors extends WadProcessor {
 			new Color(0xFF, 0xFF, 0xFF) // white
 	);
 
-	private final Map<Integer, List<Integer>> cgaDitheredColorsShuffleMap;
-
 	private static final List<Integer> VGA256_TO_4_LUT = List.of( //
 			0, 0, 0, // black
 			1, // grey
@@ -111,8 +109,35 @@ class WadProcessor4Colors extends WadProcessor {
 			0x22 // cream-colored
 	);
 
+	private final List<Color> availableColors;
+	private final Map<Integer, List<Integer>> cgaDitheredColorsShuffleMap;
+
 	WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile);
+
+		List<Color> colors = new ArrayList<>();
+		for (int col0 = 0; col0 < 4; col0++) {
+			for (int col1 = 0; col1 < 4; col1++) {
+				for (int col2 = 0; col2 < 4; col2++) {
+					for (int col3 = 0; col3 < 4; col3++) {
+						Color c0 = CGA_COLORS.get(col0);
+						Color c1 = CGA_COLORS.get(col1);
+						Color c2 = CGA_COLORS.get(col2);
+						Color c3 = CGA_COLORS.get(col3);
+
+						int r = (int) Math
+								.sqrt((c0.r() * c0.r() + c1.r() * c1.r() + c2.r() * c2.r() + c3.r() * c3.r()) / 4);
+						int g = (int) Math
+								.sqrt((c0.g() * c0.g() + c1.g() * c1.g() + c2.g() * c2.g() + c3.g() * c3.g()) / 4);
+						int b = (int) Math
+								.sqrt((c0.b() * c0.b() + c1.b() * c1.b() + c2.b() * c2.b() + c3.b() * c3.b()) / 4);
+						Color color = new Color(r, g, b);
+						colors.add(color);
+					}
+				}
+			}
+		}
+		this.availableColors = colors;
 
 		this.cgaDitheredColorsShuffleMap = createCgaDitheredColorsShuffleMap();
 
@@ -125,7 +150,7 @@ class WadProcessor4Colors extends WadProcessor {
 
 	@Override
 	protected List<Color> getAvailableColors() {
-		return createCgaDitheredColors();
+		return availableColors;
 	}
 
 	private Lump createCgaLump(String lumpname) {
@@ -153,35 +178,7 @@ class WadProcessor4Colors extends WadProcessor {
 		}
 	}
 
-	private static List<Color> createCgaDitheredColors() {
-		List<Color> colors = new ArrayList<>();
-		for (int col0 = 0; col0 < 4; col0++) {
-			for (int col1 = 0; col1 < 4; col1++) {
-				for (int col2 = 0; col2 < 4; col2++) {
-					for (int col3 = 0; col3 < 4; col3++) {
-						Color c0 = CGA_COLORS.get(col0);
-						Color c1 = CGA_COLORS.get(col1);
-						Color c2 = CGA_COLORS.get(col2);
-						Color c3 = CGA_COLORS.get(col3);
-
-						int r = (int) Math
-								.sqrt((c0.r() * c0.r() + c1.r() * c1.r() + c2.r() * c2.r() + c3.r() * c3.r()) / 4);
-						int g = (int) Math
-								.sqrt((c0.g() * c0.g() + c1.g() * c1.g() + c2.g() * c2.g() + c3.g() * c3.g()) / 4);
-						int b = (int) Math
-								.sqrt((c0.b() * c0.b() + c1.b() * c1.b() + c2.b() * c2.b() + c3.b() * c3.b()) / 4);
-						Color color = new Color(r, g, b);
-						colors.add(color);
-					}
-				}
-			}
-		}
-		return colors;
-	}
-
 	private Map<Integer, List<Integer>> createCgaDitheredColorsShuffleMap() {
-		List<Color> availableColors = getAvailableColors();
-
 		Map<Integer, List<Integer>> shuffleMap = new HashMap<>();
 		for (int i = 0; i < 256; i++) {
 			List<Integer> sameColorList = new ArrayList<>();
@@ -311,8 +308,6 @@ class WadProcessor4Colors extends WadProcessor {
 		} else {
 			int c = 32 - colormap;
 
-			List<Color> availableColors = getAvailableColors();
-
 			for (Color color : availableColors) {
 				int r = Math.clamp((long) Math.sqrt(color.r() * color.r() * c / 32), 0, 255);
 				int g = Math.clamp((long) Math.sqrt(color.g() * color.g() * c / 32), 0, 255);
@@ -330,8 +325,6 @@ class WadProcessor4Colors extends WadProcessor {
 	private byte calculateClosestColor(Color c) {
 		int closestColor = -1;
 		int closestDist = Integer.MAX_VALUE;
-
-		List<Color> availableColors = getAvailableColors();
 
 		for (int i = 0; i < 256; i++) {
 			int dist = c.calculateDistance(availableColors.get(i));
@@ -351,8 +344,6 @@ class WadProcessor4Colors extends WadProcessor {
 	}
 
 	private List<Byte> createColormapInvulnerability() {
-		List<Color> availableColors = getAvailableColors();
-
 		List<Double> grays = availableColors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
 				.sorted(Comparator.reverseOrder()).toList();
 
