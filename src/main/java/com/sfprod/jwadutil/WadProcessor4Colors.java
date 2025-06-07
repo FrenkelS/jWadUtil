@@ -212,11 +212,4 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 	void shuffleColors() {
 		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::shuffleColorPicture);
 	}
-
-	@Override
-	protected void removeUnusedLumps() {
-		super.removeUnusedLumps();
-
-		wadFile.removeLumps("PLAYPAL");
-	}
 }

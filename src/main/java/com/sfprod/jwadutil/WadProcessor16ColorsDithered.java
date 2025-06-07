@@ -130,16 +130,4 @@ abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedColors {
 			lump.data()[i] = shuffleColor(lump.data()[i]);
 		}
 	}
-
-	@Override
-	protected void removeUnusedLumps() {
-		super.removeUnusedLumps();
-
-		wadFile.removeLump("PLAYPAL");
-		wadFile.removeLump("PLAYPAL1");
-		wadFile.removeLump("PLAYPAL2");
-		wadFile.removeLump("PLAYPAL3");
-		wadFile.removeLump("PLAYPAL4");
-		wadFile.removeLump("PLAYPAL5");
-	}
 }
