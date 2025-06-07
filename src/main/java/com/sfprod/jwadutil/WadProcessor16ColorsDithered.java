@@ -25,14 +25,21 @@ abstract class WadProcessor16ColorsDithered extends WadProcessor {
 
 	private final List<Integer> vga256ToDitheredLUT;
 
+	private final List<Color> sixteenColors;
 	private final int divisor;
 
 	WadProcessor16ColorsDithered(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> sixteenColors,
 			int divisor) {
-		super(title, byteOrder, wadFile, createCgaDitheredColors(sixteenColors));
+		super(title, byteOrder, wadFile);
+		this.sixteenColors = sixteenColors;
+		this.divisor = divisor;
 		this.cgaDitheredColorsShuffleMap = createCgaDitheredColorsShuffleMap();
 		this.vga256ToDitheredLUT = createVga256ToDitheredLUT();
-		this.divisor = divisor;
+	}
+
+	@Override
+	protected List<Color> getAvailableColors() {
+		return createCgaDitheredColors(sixteenColors);
 	}
 
 	private static List<Color> createCgaDitheredColors(List<Color> sixteenColors) {
@@ -48,6 +55,8 @@ abstract class WadProcessor16ColorsDithered extends WadProcessor {
 	}
 
 	private Map<Integer, List<Integer>> createCgaDitheredColorsShuffleMap() {
+		List<Color> availableColors = getAvailableColors();
+
 		Map<Integer, List<Integer>> shuffleMap = new HashMap<>();
 		for (int i = 0; i < 256; i++) {
 			List<Integer> sameColorList = new ArrayList<>();
@@ -207,6 +216,8 @@ abstract class WadProcessor16ColorsDithered extends WadProcessor {
 		} else {
 			int c = 32 - colormap;
 
+			List<Color> availableColors = getAvailableColors();
+
 			for (Color color : availableColors) {
 				int r = Math.clamp((long) Math.sqrt(color.r() * color.r() * c / 32), 0, 255);
 				int g = Math.clamp((long) Math.sqrt(color.g() * color.g() * c / 32), 0, 255);
@@ -224,6 +235,8 @@ abstract class WadProcessor16ColorsDithered extends WadProcessor {
 	private byte calculateClosestColor(Color c) {
 		int closestColor = -1;
 		int closestDist = Integer.MAX_VALUE;
+
+		List<Color> availableColors = getAvailableColors();
 
 		for (int i = 0; i < 256; i++) {
 			int dist = c.calculateDistance(availableColors.get(i));
@@ -243,6 +256,8 @@ abstract class WadProcessor16ColorsDithered extends WadProcessor {
 	}
 
 	private List<Byte> createColormapInvulnerability() {
+		List<Color> availableColors = getAvailableColors();
+
 		List<Double> grays = availableColors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
 				.sorted(Comparator.reverseOrder()).toList();
 

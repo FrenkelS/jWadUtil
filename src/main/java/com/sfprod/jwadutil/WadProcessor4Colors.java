@@ -112,7 +112,7 @@ class WadProcessor4Colors extends WadProcessor {
 	);
 
 	WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile, createCgaDitheredColors());
+		super(title, byteOrder, wadFile);
 
 		this.cgaDitheredColorsShuffleMap = createCgaDitheredColorsShuffleMap();
 
@@ -121,6 +121,11 @@ class WadProcessor4Colors extends WadProcessor {
 		wadFile.replaceLump(createCgaLump("TITLEPIC"));
 		wadFile.replaceLump(createCgaLump("WIMAP0"));
 		wadFile.replaceLump(createCgaLump("FLOOR4_8"));
+	}
+
+	@Override
+	protected List<Color> getAvailableColors() {
+		return createCgaDitheredColors();
 	}
 
 	private Lump createCgaLump(String lumpname) {
@@ -175,6 +180,8 @@ class WadProcessor4Colors extends WadProcessor {
 	}
 
 	private Map<Integer, List<Integer>> createCgaDitheredColorsShuffleMap() {
+		List<Color> availableColors = getAvailableColors();
+
 		Map<Integer, List<Integer>> shuffleMap = new HashMap<>();
 		for (int i = 0; i < 256; i++) {
 			List<Integer> sameColorList = new ArrayList<>();
@@ -304,6 +311,8 @@ class WadProcessor4Colors extends WadProcessor {
 		} else {
 			int c = 32 - colormap;
 
+			List<Color> availableColors = getAvailableColors();
+
 			for (Color color : availableColors) {
 				int r = Math.clamp((long) Math.sqrt(color.r() * color.r() * c / 32), 0, 255);
 				int g = Math.clamp((long) Math.sqrt(color.g() * color.g() * c / 32), 0, 255);
@@ -321,6 +330,8 @@ class WadProcessor4Colors extends WadProcessor {
 	private byte calculateClosestColor(Color c) {
 		int closestColor = -1;
 		int closestDist = Integer.MAX_VALUE;
+
+		List<Color> availableColors = getAvailableColors();
 
 		for (int i = 0; i < 256; i++) {
 			int dist = c.calculateDistance(availableColors.get(i));
@@ -340,6 +351,8 @@ class WadProcessor4Colors extends WadProcessor {
 	}
 
 	private List<Byte> createColormapInvulnerability() {
+		List<Color> availableColors = getAvailableColors();
+
 		List<Double> grays = availableColors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
 				.sorted(Comparator.reverseOrder()).toList();
 
