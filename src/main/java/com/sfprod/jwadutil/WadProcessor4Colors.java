@@ -102,8 +102,6 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 			0x22 // cream-colored
 	);
 
-	private final List<Color> availableColors;
-
 	WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile);
 
@@ -129,20 +127,13 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 				}
 			}
 		}
-		this.availableColors = colors;
-
-		fillAvailableColorsShuffleMap(availableColors);
+		fillAvailableColorsShuffleMap(colors);
 
 		wadFile.replaceLump(createCgaLump("HELP2"));
 		wadFile.replaceLump(createCgaLump("STBAR"));
 		wadFile.replaceLump(createCgaLump("TITLEPIC"));
 		wadFile.replaceLump(createCgaLump("WIMAP0"));
 		wadFile.replaceLump(createCgaLump("FLOOR4_8"));
-	}
-
-	@Override
-	protected List<Color> getAvailableColors() {
-		return availableColors;
 	}
 
 	private Lump createCgaLump(String lumpname) {

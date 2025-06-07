@@ -15,7 +15,6 @@ abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedColors {
 
 	private final List<Integer> vga256ToDitheredLUT;
 
-	private final List<Color> availableColors;
 	private final int divisor;
 
 	WadProcessor16ColorsDithered(String title, ByteOrder byteOrder, WadFile wadFile, List<Color> sixteenColors,
@@ -30,16 +29,10 @@ abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedColors {
 				colors.add(ch.blendColors(cl));
 			}
 		}
-		this.availableColors = colors;
+		fillAvailableColorsShuffleMap(colors);
 
 		this.divisor = divisor;
-		fillAvailableColorsShuffleMap(availableColors);
 		this.vga256ToDitheredLUT = createVga256ToDitheredLUT();
-	}
-
-	@Override
-	protected List<Color> getAvailableColors() {
-		return availableColors;
 	}
 
 	protected abstract List<Integer> createVga256ToDitheredLUT();

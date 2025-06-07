@@ -48,8 +48,6 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 	protected List<Integer> createVga256ToDitheredLUT() {
 		List<Integer> indexes = new ArrayList<>();
 
-		List<Color> availableColors = getAvailableColors();
-
 		for (Color vgaColor : vgaColors) {
 			int minClosestColor = Integer.MAX_VALUE;
 			int indexClosestColor = -1;

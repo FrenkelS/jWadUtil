@@ -21,7 +21,9 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 		super(title, byteOrder, wadFile);
 	}
 
-	protected void fillAvailableColorsShuffleMap(List<Color> availableColors) {
+	protected void fillAvailableColorsShuffleMap(List<Color> colors) {
+		setAvailableColors(colors);
+
 		Map<Integer, List<Integer>> shuffleMap = new HashMap<>();
 		for (int i = 0; i < 256; i++) {
 			List<Integer> sameColorList = new ArrayList<>();
@@ -121,8 +123,6 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 		} else {
 			int c = 32 - colormap;
 
-			List<Color> availableColors = getAvailableColors();
-
 			for (Color color : availableColors) {
 				int r = Math.clamp((long) Math.sqrt(color.r() * color.r() * c / 32), 0, 255);
 				int g = Math.clamp((long) Math.sqrt(color.g() * color.g() * c / 32), 0, 255);
@@ -140,8 +140,6 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 	private byte calculateClosestColor(Color c) {
 		int closestColor = -1;
 		int closestDist = Integer.MAX_VALUE;
-
-		List<Color> availableColors = getAvailableColors();
 
 		for (int i = 0; i < 256; i++) {
 			int dist = c.calculateDistance(availableColors.get(i));
