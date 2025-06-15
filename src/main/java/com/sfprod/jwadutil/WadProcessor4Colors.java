@@ -171,9 +171,4 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 	protected byte convert256to16(byte b) {
 		return toByte(VGA256_TO_4_LUT.get(toInt(b)) << 6);
 	}
-
-	@Override
-	void shuffleColors() {
-		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::shuffleColorPicture);
-	}
 }

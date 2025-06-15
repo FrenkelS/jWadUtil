@@ -48,9 +48,7 @@ abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedColors {
 		rawGraphics.add(wadFile.getLumpByName("FLOOR4_8"));
 		rawGraphics.forEach(this::shuffleColorsRaw);
 
-		// Graphics in picture format
-		// Walls
-		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::shuffleColorPicture);
+		super.shuffleColors();
 	}
 
 	private void shuffleColorsRaw(Lump lump) {

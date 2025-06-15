@@ -233,7 +233,14 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 		return toByte(closestColor);
 	}
 
-	protected void shuffleColorPicture(Lump lump) {
+	@Override
+	void shuffleColors() {
+		// Graphics in picture format
+		// Walls
+		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::shuffleColorPicture);
+	}
+
+	private void shuffleColorPicture(Lump lump) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
 		dataByteBuffer.getShort(); // height
