@@ -23,11 +23,19 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 
 	private Map<Integer, List<Integer>> availableColorsShuffleMap;
 
+	private List<Integer> vga256ToDitheredLUT;
+
 	WadProcessorLimitedColors(String title, ByteOrder byteOrder, WadFile wadFile,
 			List<Integer> grayscaleFromDarkToBright, int divisor) {
 		super(title, byteOrder, wadFile);
 		this.grayscaleFromDarkToBright = grayscaleFromDarkToBright;
 		this.divisor = divisor;
+	}
+
+	protected abstract List<Integer> createVga256ToDitheredLUT();
+
+	protected byte convert256to16dithered(byte b) {
+		return toByte(vga256ToDitheredLUT.get(toInt(b)));
 	}
 
 	protected void fillAvailableColorsShuffleMap(List<Color> colors) {
@@ -48,6 +56,8 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 		}
 
 		this.availableColorsShuffleMap = shuffleMap;
+
+		this.vga256ToDitheredLUT = createVga256ToDitheredLUT();
 	}
 
 	@Override
@@ -89,8 +99,6 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 	}
 
 	protected abstract void changePaletteRaw(Lump lump);
-
-	protected abstract byte convert256to16dithered(byte b);
 
 	protected abstract byte convert256to16(byte b);
 
