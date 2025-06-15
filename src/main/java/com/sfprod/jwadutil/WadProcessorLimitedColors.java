@@ -257,7 +257,7 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 
 	protected byte shuffleColor(byte b) {
 		List<Integer> list = availableColorsShuffleMap.get(toInt(b));
-		return list.get(random.nextInt(list.size())).byteValue();
+		return toByte(list.get(random.nextInt(list.size())));
 	}
 
 	@Override

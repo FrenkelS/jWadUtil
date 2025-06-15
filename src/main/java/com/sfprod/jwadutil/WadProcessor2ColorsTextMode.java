@@ -282,7 +282,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 
 	private byte shuffleColor(byte b) {
 		List<Integer> list = COLORS_SHUFFLE_MAP.get(toInt(b));
-		return list.get(random.nextInt(list.size())).byteValue();
+		return toByte(list.get(random.nextInt(list.size())));
 	}
 
 	@Override

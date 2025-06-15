@@ -1,5 +1,6 @@
 package com.sfprod.jwadutil;
 
+import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
 
 import java.nio.ByteOrder;
@@ -34,7 +35,7 @@ abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedColors {
 
 	@Override
 	protected byte convert256to16dithered(byte b) {
-		return vga256ToDitheredLUT.get(toInt(b)).byteValue();
+		return toByte(vga256ToDitheredLUT.get(toInt(b)));
 	}
 
 	@Override

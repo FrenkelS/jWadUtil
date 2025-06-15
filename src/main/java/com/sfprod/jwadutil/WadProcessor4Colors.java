@@ -164,12 +164,12 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 
 	@Override
 	protected byte convert256to16dithered(byte b) {
-		return toByte(VGA256_TO_DITHERED_LUT.get(toInt(b)).byteValue());
+		return toByte(VGA256_TO_DITHERED_LUT.get(toInt(b)));
 	}
 
 	@Override
 	protected byte convert256to16(byte b) {
-		return toByte(VGA256_TO_4_LUT.get(toInt(b)).byteValue() << 6);
+		return toByte(VGA256_TO_4_LUT.get(toInt(b)) << 6);
 	}
 
 	@Override
