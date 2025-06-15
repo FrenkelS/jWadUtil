@@ -67,7 +67,7 @@ class WadProcessor16ColorsDitheredPC extends WadProcessor16ColorsDithered {
 	}
 
 	@Override
-	protected List<Integer> createVga256ToDitheredLUT() {
+	protected List<Integer> createVga256ToDitheredLUT(List<Color> vgaCols, List<Color> availableCols) {
 		return VGA256_TO_DITHERED_LUT;
 	}
 

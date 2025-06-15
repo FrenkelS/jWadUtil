@@ -132,6 +132,16 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 		wadFile.replaceLump(createCgaLump("FLOOR4_8"));
 	}
 
+	@Override
+	protected List<Integer> createVga256ToDitheredLUT(List<Color> vgaCols, List<Color> availableCols) {
+		return VGA256_TO_DITHERED_LUT;
+	}
+
+	@Override
+	protected void changePaletteRaw(Lump lump) {
+		wadFile.replaceLump(createCgaLump(lump.nameAsString()));
+	}
+
 	private Lump createCgaLump(String lumpname) {
 		List<Integer> rgbs = CGA_COLORS.stream().map(Color::getRGB).toList();
 
@@ -155,16 +165,6 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
-	}
-
-	@Override
-	protected void changePaletteRaw(Lump lump) {
-		wadFile.replaceLump(createCgaLump(lump.nameAsString()));
-	}
-
-	@Override
-	protected List<Integer> createVga256ToDitheredLUT() {
-		return VGA256_TO_DITHERED_LUT;
 	}
 
 	@Override
