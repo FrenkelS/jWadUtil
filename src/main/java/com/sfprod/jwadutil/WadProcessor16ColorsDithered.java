@@ -32,64 +32,21 @@ abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedColors {
 
 	protected abstract List<Integer> createVga256ToDitheredLUT();
 
-	private byte convert256to16dithered(byte b) {
+	@Override
+	protected byte convert256to16dithered(byte b) {
 		return vga256ToDitheredLUT.get(toInt(b)).byteValue();
 	}
 
-	byte convert256to16(byte b) {
+	@Override
+	protected byte convert256to16(byte b) {
 		return convert256to16dithered(b);
 	}
 
 	@Override
-	void changeColors() {
-		// Raw graphics
-		List<Lump> rawGraphics = new ArrayList<>();
-		rawGraphics.add(wadFile.getLumpByName("HELP2"));
-		rawGraphics.add(wadFile.getLumpByName("STBAR"));
-		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
-		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
-		// Finale background flat
-		rawGraphics.add(wadFile.getLumpByName("FLOOR4_8"));
-		rawGraphics.forEach(this::changePaletteRaw);
-
-		// Graphics in picture format
-
-		List<Lump> spritesAndWallsGraphics = new ArrayList<>(256);
-		// Sprites
-		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
-		// Walls
-		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-
-		spritesAndWallsGraphics.forEach(this::changePaletteSpritesAndWalls);
-
-		List<Lump> statusBarMenuAndIntermissionGraphics = new ArrayList<>(256);
-		// Status bar
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STC"));
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STF"));
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STG"));
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STK"));
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STY"));
-		// Menu
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("M_"));
-		// Intermission
-		statusBarMenuAndIntermissionGraphics
-				.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
-
-		statusBarMenuAndIntermissionGraphics.forEach(this::changePaletteStatusBarMenuAndIntermission);
-	}
-
-	private void changePaletteRaw(Lump lump) {
+	protected void changePaletteRaw(Lump lump) {
 		for (int i = 0; i < lump.length(); i++) {
 			lump.data()[i] = convert256to16dithered(lump.data()[i]);
 		}
-	}
-
-	private void changePaletteSpritesAndWalls(Lump lump) {
-		changePalettePicture(lump, this::convert256to16dithered);
-	}
-
-	private void changePaletteStatusBarMenuAndIntermission(Lump lump) {
-		changePalettePicture(lump, this::convert256to16);
 	}
 
 	@Override

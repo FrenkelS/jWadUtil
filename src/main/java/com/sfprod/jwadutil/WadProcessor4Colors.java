@@ -129,10 +129,6 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 		}
 		fillAvailableColorsShuffleMap(colors);
 
-		wadFile.replaceLump(createCgaLump("HELP2"));
-		wadFile.replaceLump(createCgaLump("STBAR"));
-		wadFile.replaceLump(createCgaLump("TITLEPIC"));
-		wadFile.replaceLump(createCgaLump("WIMAP0"));
 		wadFile.replaceLump(createCgaLump("FLOOR4_8"));
 	}
 
@@ -162,39 +158,18 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	void changeColors() {
-		// Graphics in picture format
-
-		List<Lump> spritesAndWallsGraphics = new ArrayList<>(256);
-		// Sprites
-		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
-		// Walls
-		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
-
-		spritesAndWallsGraphics.forEach(this::changePaletteSpritesAndWalls);
-
-		List<Lump> statusBarMenuAndIntermissionGraphics = new ArrayList<>(256);
-		// Status bar
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STC"));
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STF"));
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STG"));
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STK"));
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STY"));
-		// Menu
-		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("M_"));
-		// Intermission
-		statusBarMenuAndIntermissionGraphics
-				.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
-
-		statusBarMenuAndIntermissionGraphics.forEach(this::changePaletteStatusBarMenuAndIntermission);
+	protected void changePaletteRaw(Lump lump) {
+		wadFile.replaceLump(createCgaLump(lump.nameAsString()));
 	}
 
-	private void changePaletteStatusBarMenuAndIntermission(Lump lump) {
-		changePalettePicture(lump, b -> toByte(VGA256_TO_4_LUT.get(toInt(b)).byteValue() << 6));
+	@Override
+	protected byte convert256to16dithered(byte b) {
+		return toByte(VGA256_TO_DITHERED_LUT.get(toInt(b)).byteValue());
 	}
 
-	private void changePaletteSpritesAndWalls(Lump lump) {
-		changePalettePicture(lump, b -> toByte(VGA256_TO_DITHERED_LUT.get(toInt(b)).byteValue()));
+	@Override
+	protected byte convert256to16(byte b) {
+		return toByte(VGA256_TO_4_LUT.get(toInt(b)).byteValue() << 6);
 	}
 
 	@Override

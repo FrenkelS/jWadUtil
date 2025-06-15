@@ -68,7 +68,7 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 	}
 
 	@Override
-	byte convert256to16(byte b) {
+	protected byte convert256to16(byte b) {
 		byte out = super.convert256to16(b);
 		return toByte(toInt(out) & 0x0f);
 	}

@@ -50,6 +50,58 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 		this.availableColorsShuffleMap = shuffleMap;
 	}
 
+	@Override
+	void changeColors() {
+		// Raw graphics
+		List<Lump> rawGraphics = new ArrayList<>();
+		rawGraphics.add(wadFile.getLumpByName("HELP2"));
+		rawGraphics.add(wadFile.getLumpByName("STBAR"));
+		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
+		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
+		// Finale background flat
+		rawGraphics.add(wadFile.getLumpByName("FLOOR4_8"));
+		rawGraphics.forEach(this::changePaletteRaw);
+
+		// Graphics in picture format
+
+		List<Lump> spritesAndWallsGraphics = new ArrayList<>(256);
+		// Sprites
+		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
+		// Walls
+		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
+
+		spritesAndWallsGraphics.forEach(this::changePaletteSpritesAndWalls);
+
+		List<Lump> statusBarMenuAndIntermissionGraphics = new ArrayList<>(256);
+		// Status bar
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STC"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STF"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STG"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STK"));
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("STY"));
+		// Menu
+		statusBarMenuAndIntermissionGraphics.addAll(wadFile.getLumpsByName("M_"));
+		// Intermission
+		statusBarMenuAndIntermissionGraphics
+				.addAll(wadFile.getLumpsByName("WI").stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).toList());
+
+		statusBarMenuAndIntermissionGraphics.forEach(this::changePaletteStatusBarMenuAndIntermission);
+	}
+
+	protected abstract void changePaletteRaw(Lump lump);
+
+	protected abstract byte convert256to16dithered(byte b);
+
+	protected abstract byte convert256to16(byte b);
+
+	private void changePaletteSpritesAndWalls(Lump lump) {
+		changePalettePicture(lump, this::convert256to16dithered);
+	}
+
+	private void changePaletteStatusBarMenuAndIntermission(Lump lump) {
+		changePalettePicture(lump, this::convert256to16);
+	}
+
 	protected void changePalettePicture(Lump lump, Function<Byte, Byte> colorConvertFunction) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
