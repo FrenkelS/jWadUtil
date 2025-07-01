@@ -14,22 +14,22 @@ import com.sfprod.utils.ByteBufferUtils;
 public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithered {
 
 	private static final List<Color> CUSTOM_AMIGA_COLORS = List.of( //
-			new Color(0, 0, 0), //
+			new Color(0, 0, 0), // black
 			new Color(0, 0, 68), //
 			new Color(51, 68, 34), //
 			new Color(153, 136, 102), //
 			new Color(119, 17, 17), //
 			new Color(119, 68, 34), //
 			new Color(136, 102, 85), //
-			new Color(170, 170, 170), //
-			new Color(102, 102, 102), //
+			new Color(170, 170, 170), // light gray
+			new Color(102, 102, 102), // dark gray
 			new Color(0, 0, 204), //
 			new Color(51, 136, 34), //
 			new Color(238, 170, 119), //
 			new Color(221, 85, 0), //
 			new Color(204, 0, 204), //
 			new Color(255, 238, 68), //
-			new Color(255, 255, 255) //
+			new Color(255, 255, 255) // white
 	);
 
 	WadProcessor16ColorsDitheredAmiga(String title, ByteOrder byteOrder, WadFile wadFile) {
