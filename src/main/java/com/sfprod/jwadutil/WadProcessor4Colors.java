@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import com.sfprod.utils.ByteBufferUtils;
 import com.sfprod.utils.NumberUtils;
 
 class WadProcessor4Colors extends WadProcessorLimitedColors {
@@ -161,7 +162,7 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 					i++;
 				}
 			}
-			return new Lump(lumpname, data, ByteOrder.LITTLE_ENDIAN);
+			return new Lump(lumpname, data, ByteBufferUtils.DONT_CARE);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
