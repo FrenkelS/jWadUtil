@@ -2,6 +2,12 @@ package com.sfprod.utils;
 
 public interface NumberUtils {
 
+	static byte reverse(byte b) {
+		int i = toInt(b);
+		int r = Integer.reverse(i) >>> 24;
+		return toByte(r);
+	}
+
 	static byte toByte(int i) {
 		if (!(0 <= i && i < 256)) {
 			throw new IllegalArgumentException(i + " doesn't fit in a byte");
