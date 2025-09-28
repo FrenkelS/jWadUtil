@@ -13,7 +13,6 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import com.sfprod.utils.ByteBufferUtils;
-import com.sfprod.utils.NumberUtils;
 
 class WadProcessor4Colors extends WadProcessorLimitedColors {
 
@@ -156,7 +155,9 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 					byte b = 0;
 					for (int p = 0; p < 4; p++) {
 						int rgb = image.getRGB(x * 4 + p, y);
-						b = NumberUtils.toByte((b << 2) | rgbs.indexOf(rgb));
+						int rgbIndex = rgbs.indexOf(rgb);
+						assert 0 <= rgbIndex && rgbIndex < 4;
+						b = toByte((b << 2) | rgbIndex);
 					}
 					data[i] = b;
 					i++;

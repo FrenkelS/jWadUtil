@@ -14,6 +14,10 @@ public interface WadProcessorFactory {
 		case DOOM8088_ATARI_ST_2_COLOR -> new WadProcessor2ColorsAtariST(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_ATARI_ST_16_COLOR ->
 			new WadProcessor16ColorsDitheredAtariST(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM8088_SINCLAIR_QL_2_COLOR ->
+			new WadProcessor2ColorsSinclairQL(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM8088_SINCLAIR_QL_8_COLOR ->
+			new WadProcessor8ColorsSinclairQL(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_16_COLOR_DITHERED ->
 			new WadProcessor16ColorsDitheredPC(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_16_COLOR_DITHERED_TEXT_MODE ->

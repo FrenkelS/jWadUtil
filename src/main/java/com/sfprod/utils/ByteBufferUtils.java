@@ -2,7 +2,9 @@ package com.sfprod.utils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public interface ByteBufferUtils {
 
@@ -20,6 +22,14 @@ public interface ByteBufferUtils {
 
 	static byte[] toArray(ByteBuffer byteBuffer, int newLength) {
 		return Arrays.copyOf(byteBuffer.array(), newLength);
+	}
+
+	static List<Byte> toByteList(ByteBuffer byteBuffer) {
+		List<Byte> byteList = new ArrayList<>();
+		for (byte b : byteBuffer.array()) {
+			byteList.add(b);
+		}
+		return byteList;
 	}
 
 }

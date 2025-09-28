@@ -354,7 +354,7 @@ public class WadProcessor {
 		lumps.stream().map(this::processPcSpeakerSoundEffect).forEach(wadFile::replaceLump);
 	}
 
-	private Lump processPcSpeakerSoundEffect(Lump vanillaLump) {
+	protected Lump processPcSpeakerSoundEffect(Lump vanillaLump) {
 		ByteBuffer vanillaData = vanillaLump.dataAsByteBuffer();
 		vanillaData.getShort(); // type, 0 = PC Speaker
 		short length = vanillaData.getShort();

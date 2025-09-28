@@ -19,9 +19,21 @@ public record Color(int r, int g, int b) {
 	}
 
 	Color blendColors(Color that) {
-		int rBlended = (int) Math.sqrt((this.r * this.r + that.r * that.r) / 2);
-		int gBlended = (int) Math.sqrt((this.g * this.g + that.g * that.g) / 2);
-		int bBlended = (int) Math.sqrt((this.b * this.b + that.b * that.b) / 2);
+		return blendColors(this, that);
+	}
+
+	static Color blendColors(Color... colors) {
+		int rSum = 0;
+		int gSum = 0;
+		int bSum = 0;
+		for (Color color : colors) {
+			rSum += color.r * color.r;
+			gSum += color.g * color.g;
+			bSum += color.b * color.b;
+		}
+		int rBlended = (int) Math.sqrt(rSum / colors.length);
+		int gBlended = (int) Math.sqrt(gSum / colors.length);
+		int bBlended = (int) Math.sqrt(bSum / colors.length);
 		return new Color(rBlended, gBlended, bBlended);
 	}
 }

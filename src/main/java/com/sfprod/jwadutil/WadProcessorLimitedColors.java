@@ -180,7 +180,7 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 		}
 	}
 
-	private List<Byte> createColormapInvulnerability() {
+	List<Byte> createColormapInvulnerability() {
 		List<Double> grays = availableColors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
 				.sorted(Comparator.reverseOrder()).toList();
 
@@ -188,7 +188,7 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 				.map(grayscaleFromDarkToBright::get).mapToObj(NumberUtils::toByte).toList();
 	}
 
-	private List<Byte> createColormap(int colormap) {
+	List<Byte> createColormap(int colormap) {
 		List<Byte> result = new ArrayList<>();
 
 		if (colormap == 0) {
