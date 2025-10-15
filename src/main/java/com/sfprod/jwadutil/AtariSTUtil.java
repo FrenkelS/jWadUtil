@@ -1,6 +1,6 @@
 package com.sfprod.jwadutil;
 
-public interface AtariSTUtil {
+interface AtariSTUtil {
 
 	static short[] getDivisors() {
 		short[] newDivs = new short[128];
