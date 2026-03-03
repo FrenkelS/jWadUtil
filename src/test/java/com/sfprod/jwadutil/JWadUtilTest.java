@@ -17,21 +17,21 @@ import org.junit.jupiter.params.provider.EnumSource;
 class JWadUtilTest {
 
 	private static final Map<Game, String> EXPECTED_CHECKSUMS = new EnumMap<>(Map.ofEntries( //
-			Map.entry(Game.DOOM8088, "E580A8BC"), //
-			Map.entry(Game.DOOM8088_2_COLOR_TEXT_MODE, "248B4FC0"), //
-			Map.entry(Game.DOOM8088_4_COLOR, "6A64EE74"), //
-			Map.entry(Game.DOOM8088_16_COLOR_DITHERED, "BD42FF1E"), //
-			Map.entry(Game.DOOM8088_16_COLOR_DITHERED_TEXT_MODE, "29FAF676"), //
-			Map.entry(Game.DOOM8088_AMIGA_2_COLOR, "120C7A2D"), //
-			Map.entry(Game.DOOM8088_AMIGA_16_COLOR, "C1F3DB97"), //
-			Map.entry(Game.DOOM8088_AT_T_UNIX_PC_2_COLOR, "8F102891"), //
-			Map.entry(Game.DOOM8088_ATARI_ST_2_COLOR, "F1DF5901"), //
-			Map.entry(Game.DOOM8088_ATARI_ST_16_COLOR, "3744D23E"), //
-			Map.entry(Game.DOOM8088_SINCLAIR_QL_2_COLOR, "FD95FEBE"), //
-			Map.entry(Game.DOOM8088_SINCLAIR_QL_8_COLOR, "3256BD65"), //
-			Map.entry(Game.DOOMTD3_BIG_ENDIAN, "D8F76736"), //
-			Map.entry(Game.DOOMTD3_LITTLE_ENDIAN, "B215BC27"), //
-			Map.entry(Game.ELKSDOOM, "45744F3") //
+			Map.entry(Game.DOOM8088, "A81E3AE3"), //
+			Map.entry(Game.DOOM8088_2_COLOR_TEXT_MODE, "513E6BED"), //
+			Map.entry(Game.DOOM8088_4_COLOR, "1EFBB6B2"), //
+			Map.entry(Game.DOOM8088_16_COLOR_DITHERED, "E1E66288"), //
+			Map.entry(Game.DOOM8088_16_COLOR_DITHERED_TEXT_MODE, "BC6C39A"), //
+			Map.entry(Game.DOOM8088_AMIGA_2_COLOR, "330C006E"), //
+			Map.entry(Game.DOOM8088_AMIGA_16_COLOR, "E1FFE9AB"), //
+			Map.entry(Game.DOOM8088_AT_T_UNIX_PC_2_COLOR, "87107D26"), //
+			Map.entry(Game.DOOM8088_ATARI_ST_2_COLOR, "A4EF339A"), //
+			Map.entry(Game.DOOM8088_ATARI_ST_16_COLOR, "211D0AF0"), //
+			Map.entry(Game.DOOM8088_SINCLAIR_QL_2_COLOR, "402EDCCE"), //
+			Map.entry(Game.DOOM8088_SINCLAIR_QL_8_COLOR, "6AE87F91"), //
+			Map.entry(Game.DOOMTD3_BIG_ENDIAN, "ADCB190D"), //
+			Map.entry(Game.DOOMTD3_LITTLE_ENDIAN, "71B86687"), //
+			Map.entry(Game.ELKSDOOM, "49C9D6AC") //
 	));
 
 	@ParameterizedTest

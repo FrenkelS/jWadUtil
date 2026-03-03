@@ -7,6 +7,7 @@ import static com.sfprod.utils.StringUtils.toByteArray;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
@@ -16,10 +17,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class WadFile {
 
-	private static final List<String> FILE_SIGNATURES = List.of("IWAD", "PWAD");
+	private static final Set<String> FILE_SIGNATURES = Set.of("IWAD", "PWAD");
 
 	private final List<Lump> lumps = new ArrayList<>();
 
@@ -27,14 +29,7 @@ public class WadFile {
 	}
 
 	public WadFile(String wadPath) {
-		ByteBuffer byteBuffer;
-
-		try {
-			byteBuffer = ByteBuffer.wrap(WadFile.class.getResourceAsStream(wadPath).readAllBytes());
-			byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
+		ByteBuffer byteBuffer = preprocessWad(wadPath);
 
 		byte[] identification = new byte[4];
 		byteBuffer.get(identification);
@@ -64,6 +59,55 @@ public class WadFile {
 			byteBuffer.position(filelump.filepos());
 			byteBuffer.get(data);
 			lumps.add(new Lump(filelump.name(), data, ByteOrder.LITTLE_ENDIAN));
+		}
+	}
+
+	private ByteBuffer preprocessWad(String wadPath) {
+		String os = System.getProperty("os.name");
+		if (!os.startsWith("Windows")) {
+			throw new IllegalStateException("Unsupported operating system: " + os);
+		}
+
+		Path tempWadFile;
+		try {
+			tempWadFile = Files.createTempFile("doom", null);
+			tempWadFile.toFile().deleteOnExit();
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+
+		try {
+			Path wad = Path.of(WadFile.class.getResource(wadPath).toURI());
+			Path wadptr = Path.of(WadFile.class.getResource("/wadptr-3.8-win64/wadptr.exe").toURI());
+			Path zennode = Path.of(WadFile.class.getResource("/ZenNode-1.2.1/win32/ZenNode.exe").toURI());
+
+			ProcessBuilder wadptrProcessBuilder = new ProcessBuilder(wadptr.toString(), "-c", "-q", "-o",
+					tempWadFile.toString(), wad.toString());
+			Process wadptrProcess = wadptrProcessBuilder.start();
+			int wadptrExitCode = wadptrProcess.waitFor();
+			if (wadptrExitCode != 0) {
+				throw new IllegalStateException(
+						"wadptr command: " + wadptrProcessBuilder.command() + ", exit code: " + wadptrExitCode);
+			}
+
+			ProcessBuilder zennodeProcessBuilder = new ProcessBuilder(zennode.toString(), tempWadFile.toString(), "-o",
+					tempWadFile.toString());
+			Process zennodeProcess = zennodeProcessBuilder.start();
+			int zennodeExitCode = zennodeProcess.waitFor();
+			if (zennodeExitCode != 0) {
+				throw new IllegalStateException(
+						"ZenNode command: " + zennodeProcessBuilder.command() + ", exit code: " + zennodeExitCode);
+			}
+		} catch (IOException | InterruptedException | URISyntaxException e) {
+			throw new IllegalStateException(e);
+		}
+
+		try {
+			ByteBuffer byteBuffer = ByteBuffer.wrap(Files.readAllBytes(tempWadFile));
+			byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+			return byteBuffer;
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
 		}
 	}
 

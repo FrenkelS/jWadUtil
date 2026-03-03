@@ -4,12 +4,12 @@ It writes a new WAD file.
 
 This is required to reduce the memory footprint of some of the data structures in Doom to get it to fit in 64 kB.
 
-We will pre-calculate more fields so that the lumps stored in the WAD can be used directly from the WAD rather than having to load and convert them in memory.
+We will pre-calculate more fields so that the lumps stored in the WAD can be used directly from the WAD rather than having to load and convert them in memory at runtime.
 
 For example:
 
 By storing vertexes in LINEDEFS and SEGS the VERTEXES lump can be removed.
 
-Build: `mvn verify`
+Usage: `mvn clean verify`
 
-Usage: `java -jar target/jwadutil-1.0-SNAPSHOT.jar`
+This tool requires Windows and Java, and uses [wadptr](https://soulsphere.org/projects/wadptr) and [ZenNode](https://www.mrousseau.org/programs/ZenNode).
