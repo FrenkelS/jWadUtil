@@ -12,4 +12,4 @@ By storing vertexes in LINEDEFS and SEGS the VERTEXES lump can be removed.
 
 Usage: `mvn clean verify`
 
-This tool requires Windows and Java, and uses [wadptr](https://soulsphere.org/projects/wadptr) and [ZenNode](https://www.mrousseau.org/programs/ZenNode).
+This tool requires Windows, Java and Maven, and uses [ZenNode](https://www.mrousseau.org/programs/ZenNode).

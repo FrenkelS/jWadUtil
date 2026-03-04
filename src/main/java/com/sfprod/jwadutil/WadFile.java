@@ -78,19 +78,9 @@ public class WadFile {
 
 		try {
 			Path wad = Path.of(WadFile.class.getResource(wadPath).toURI());
-			Path wadptr = Path.of(WadFile.class.getResource("/wadptr-3.8-win64/wadptr.exe").toURI());
 			Path zennode = Path.of(WadFile.class.getResource("/ZenNode-1.2.1/win32/ZenNode.exe").toURI());
 
-			ProcessBuilder wadptrProcessBuilder = new ProcessBuilder(wadptr.toString(), "-c", "-q", "-o",
-					tempWadFile.toString(), wad.toString());
-			Process wadptrProcess = wadptrProcessBuilder.start();
-			int wadptrExitCode = wadptrProcess.waitFor();
-			if (wadptrExitCode != 0) {
-				throw new IllegalStateException(
-						"wadptr command: " + wadptrProcessBuilder.command() + ", exit code: " + wadptrExitCode);
-			}
-
-			ProcessBuilder zennodeProcessBuilder = new ProcessBuilder(zennode.toString(), tempWadFile.toString(), "-o",
+			ProcessBuilder zennodeProcessBuilder = new ProcessBuilder(zennode.toString(), wad.toString(), "-o",
 					tempWadFile.toString());
 			Process zennodeProcess = zennodeProcessBuilder.start();
 			int zennodeExitCode = zennodeProcess.waitFor();
