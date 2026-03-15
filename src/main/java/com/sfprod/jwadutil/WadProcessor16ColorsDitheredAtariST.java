@@ -4,10 +4,16 @@ import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
 import static com.sfprod.utils.NumberUtils.toShort;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
+
+import javax.imageio.ImageIO;
 
 import com.sfprod.utils.ByteBufferUtils;
 
@@ -93,15 +99,11 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 
 	@Override
 	void processRawGraphics() {
-		// Raw graphics
-		List<Lump> rawGraphics = new ArrayList<>();
-		rawGraphics.add(wadFile.getLumpByName("HELP2"));
-		rawGraphics.add(wadFile.getLumpByName("STBAR"));
-		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
-		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
-		// Finale background flat
-		rawGraphics.add(wadFile.getLumpByName("FLOOR4_8"));
-		rawGraphics.forEach(this::processRawGraphic);
+		processRawGraphic(wadFile.getLumpByName("STBAR")); // Status bar
+
+		Stream.of("HELP2", "TITLEPIC", "WIMAP0", // Raw graphics
+				"FLOOR4_8") // Finale background flat
+				.map(this::createAtariStLump).forEach(this::processRawGraphic);
 	}
 
 	private void processRawGraphic(Lump lump) {
@@ -140,5 +142,28 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 			}
 		}
 		wadFile.replaceLump(new Lump(lump.name(), newbb));
+	}
+
+	private Lump createAtariStLump(String lumpname) {
+		List<Integer> rgbs = CUSTOM_ATARI_ST_COLORS.stream().map(Color::getRGB).toList();
+
+		try {
+			BufferedImage image = ImageIO.read(
+					WadProcessor16ColorsDitheredAtariST.class.getResourceAsStream("/AtariST/" + lumpname + ".PNG"));
+			byte[] data = new byte[image.getWidth() * image.getHeight()];
+			int i = 0;
+			for (int y = 0; y < image.getHeight(); y++) {
+				for (int x = 0; x < image.getWidth(); x++) {
+					int rgb = image.getRGB(x, y);
+					int rgbIndex = rgbs.indexOf(rgb);
+					assert 0 <= rgbIndex && rgbIndex < 16;
+					data[i] = toByte(rgbIndex);
+					i++;
+				}
+			}
+			return new Lump(lumpname, data, ByteBufferUtils.DONT_CARE);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 }
