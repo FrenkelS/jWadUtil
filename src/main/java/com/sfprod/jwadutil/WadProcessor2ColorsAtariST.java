@@ -7,7 +7,7 @@ class WadProcessor2ColorsAtariST extends WadProcessor4Colors {
 	private final short[] divisors;
 
 	WadProcessor2ColorsAtariST(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile);
+		super(title, byteOrder, wadFile, false);
 		this.divisors = AtariSTUtil.getDivisors();
 	}
 

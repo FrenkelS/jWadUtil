@@ -6,7 +6,7 @@ public interface WadProcessorFactory {
 		return switch (game) {
 		case DOOM8088_2_COLOR_TEXT_MODE ->
 			new WadProcessor2ColorsTextMode(game.getTitle(), game.getByteOrder(), wadFile);
-		case DOOM8088_4_COLOR -> new WadProcessor4Colors(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM8088_4_COLOR -> new WadProcessor4Colors(game.getTitle(), game.getByteOrder(), wadFile, false);
 		case DOOM8088_AMIGA_2_COLOR -> new WadProcessor2ColorsAmiga(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_AMIGA_16_COLOR ->
 			new WadProcessor16ColorsDitheredAmiga(game.getTitle(), game.getByteOrder(), wadFile);
@@ -15,6 +15,8 @@ public interface WadProcessorFactory {
 		case DOOM8088_ATARI_ST_2_COLOR -> new WadProcessor2ColorsAtariST(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_ATARI_ST_16_COLOR ->
 			new WadProcessor16ColorsDitheredAtariST(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM8088_MACINTOSH_2_COLOR ->
+			new WadProcessor2ColorsMacintosh(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_SINCLAIR_QL_2_COLOR ->
 			new WadProcessor2ColorsSinclairQL(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_SINCLAIR_QL_8_COLOR ->

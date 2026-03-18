@@ -9,7 +9,7 @@ import java.nio.ByteOrder;
 class WadProcessor2ColorsAttUnixPC extends WadProcessor4Colors {
 
 	WadProcessor2ColorsAttUnixPC(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile);
+		super(title, byteOrder, wadFile, false);
 	}
 
 	@Override

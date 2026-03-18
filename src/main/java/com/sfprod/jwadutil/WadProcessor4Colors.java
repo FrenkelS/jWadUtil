@@ -22,6 +22,12 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 			new Color(0xFF, 0x55, 0xFF), // light magenta
 			new Color(0xFF, 0xFF, 0xFF) // white
 	);
+	private static final List<Color> CGA_COLORS_INVERTED = List.of( //
+			new Color(0xFF, 0xFF, 0xFF), // black
+			new Color(0xAA, 0x00, 0x00), // light cyan
+			new Color(0x00, 0xAA, 0x00), // light magenta
+			new Color(0x00, 0x00, 0x00) // white
+	);
 
 	private static final List<Integer> VGA256_TO_4_LUT = List.of( //
 			0, 0, 0, // black
@@ -102,18 +108,23 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 	private static final List<Integer> GRAYSCALE_FROM_DARK_TO_BRIGHT = List.of(0x00, 0x03, 0x30, 0x0c, 0xc0, 0xc3, 0x3c,
 			0x33, 0xcc, 0x3f, 0xf3, 0xcf, 0xfc, 0xff);
 
-	WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile, GRAYSCALE_FROM_DARK_TO_BRIGHT, 3);
+	private final boolean invert;
+
+	WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile, boolean invert) {
+		super(title, byteOrder, wadFile,
+				invert ? GRAYSCALE_FROM_DARK_TO_BRIGHT.reversed() : GRAYSCALE_FROM_DARK_TO_BRIGHT, 3);
+		this.invert = invert;
 
 		List<Color> colors = new ArrayList<>();
 		for (int col0 = 0; col0 < 4; col0++) {
 			for (int col1 = 0; col1 < 4; col1++) {
 				for (int col2 = 0; col2 < 4; col2++) {
 					for (int col3 = 0; col3 < 4; col3++) {
-						Color c0 = CGA_COLORS.get(col0);
-						Color c1 = CGA_COLORS.get(col1);
-						Color c2 = CGA_COLORS.get(col2);
-						Color c3 = CGA_COLORS.get(col3);
+						List<Color> cgaColors = invert ? CGA_COLORS_INVERTED : CGA_COLORS;
+						Color c0 = cgaColors.get(col0);
+						Color c1 = cgaColors.get(col1);
+						Color c2 = cgaColors.get(col2);
+						Color c3 = cgaColors.get(col3);
 
 						int r = (int) Math
 								.sqrt((c0.r() * c0.r() + c1.r() * c1.r() + c2.r() * c2.r() + c3.r() * c3.r()) / 4);
@@ -132,9 +143,17 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 		wadFile.replaceLump(createCgaLump("FLOOR4_8"));
 	}
 
+	private byte invert(byte b) {
+		return toByte(~b & 0xff);
+	}
+
+	private Integer invert(Integer i) {
+		return toInt(invert(toByte(i)));
+	}
+
 	@Override
 	protected List<Integer> createVga256ToDitheredLUT(List<Color> vgaCols, List<Color> availableCols) {
-		return VGA256_TO_DITHERED_LUT;
+		return invert ? VGA256_TO_DITHERED_LUT.stream().map(this::invert).toList() : VGA256_TO_DITHERED_LUT;
 	}
 
 	@Override
@@ -159,7 +178,7 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 						assert 0 <= rgbIndex && rgbIndex < 4;
 						b = toByte((b << 2) | rgbIndex);
 					}
-					data[i] = b;
+					data[i] = invert ? invert(b) : b;
 					i++;
 				}
 			}
@@ -171,6 +190,7 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 
 	@Override
 	protected byte convert256to16(byte b) {
-		return toByte(VGA256_TO_4_LUT.get(toInt(b)) << 6);
+		byte r = toByte(VGA256_TO_4_LUT.get(toInt(b)) << 6);
+		return invert ? invert(r) : r;
 	}
 }

@@ -5,7 +5,7 @@ import java.nio.ByteOrder;
 class WadProcessor2ColorsSinclairQL extends WadProcessor4Colors {
 
 	WadProcessor2ColorsSinclairQL(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile);
+		super(title, byteOrder, wadFile, false);
 	}
 
 	@Override
