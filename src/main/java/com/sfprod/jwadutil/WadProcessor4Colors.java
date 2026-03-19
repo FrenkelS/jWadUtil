@@ -190,7 +190,10 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 
 	@Override
 	protected byte convert256to16(byte b) {
-		byte r = toByte(VGA256_TO_4_LUT.get(toInt(b)) << 6);
-		return invert ? invert(r) : r;
+		int i = VGA256_TO_4_LUT.get(toInt(b));
+		if (invert) {
+			i = 3 - i;
+		}
+		return toByte(i << 6);
 	}
 }
