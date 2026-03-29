@@ -12,12 +12,21 @@ import java.util.List;
 interface AtariSTUtil {
 
 	static void processSoundEffects(WadFile wadFile) {
-		List<Lump> dpLumps = wadFile.getLumpsByName("DP");
-		dpLumps.stream().map(AtariSTUtil::processPcSpeakerSoundEffect).forEach(wadFile::replaceLump);
+		List<Lump> oldDpLumps = wadFile.getLumpsByName("DP");
+		List<Lump> newDpLumps = oldDpLumps.stream().map(AtariSTUtil::processPcSpeakerSoundEffect).toList();
 
-		wadFile.removeLumps("DS");
-		// List<Lump> dsLumps = wadFile.getLumpsByName("DS");
-		// dsLumps.stream().map(AtariSTUtil::processSoundEffect).forEach(wadFile::replaceLump);
+		List<Lump> oldDsLumps = wadFile.getLumpsByName("DS");
+		List<Lump> newDsLumps = oldDsLumps.stream().map(AtariSTUtil::processDigitalSoundEffect).toList();
+
+		int lumpnum = wadFile.getLumpNumByName(newDpLumps.getFirst().nameAsString());
+		for (Lump lump : newDpLumps) {
+			wadFile.replaceLump(lumpnum, lump);
+			lumpnum++;
+		}
+		for (Lump lump : newDsLumps) {
+			wadFile.replaceLump(lumpnum, lump);
+			lumpnum++;
+		}
 	}
 
 	private static Lump processPcSpeakerSoundEffect(Lump vanillaLump) {
@@ -50,7 +59,7 @@ interface AtariSTUtil {
 		return newDivs;
 	}
 
-	private static Lump processSoundEffect(Lump vanillaDigitalSoundlump) {
+	private static Lump processDigitalSoundEffect(Lump vanillaDigitalSoundlump) {
 		ByteBuffer vanillaData = vanillaDigitalSoundlump.dataAsByteBuffer();
 		vanillaData.getShort(); // Format number (must be 3)
 		vanillaData.getShort(); // Sample rate (usually, but not necessarily, 11025)
