@@ -6,7 +6,6 @@ import static com.sfprod.utils.NumberUtils.toShort;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
-import java.util.stream.Stream;
 
 class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
 
@@ -16,11 +15,7 @@ class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
 
 	@Override
 	protected void processSoundEffects() {
-		Stream.of( //
-				"DSBD", // Blazing door sound effects
-				"DSITMBK", // Item respawn sound effect in multiplayer mode
-				"DP" // PC speaker sound effects
-		).forEach(prefix -> wadFile.removeLumps(prefix));
+		wadFile.removeLumps("DP"); // PC speaker sound effects
 
 		List<Lump> lumps = wadFile.getLumpsByName("DS");
 		lumps.stream().map(this::processSoundEffect).forEach(wadFile::replaceLump);

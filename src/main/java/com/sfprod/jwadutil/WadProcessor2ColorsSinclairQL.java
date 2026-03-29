@@ -2,7 +2,6 @@ package com.sfprod.jwadutil;
 
 import java.nio.ByteOrder;
 import java.util.List;
-import java.util.stream.Stream;
 
 class WadProcessor2ColorsSinclairQL extends WadProcessor4Colors {
 
@@ -12,11 +11,7 @@ class WadProcessor2ColorsSinclairQL extends WadProcessor4Colors {
 
 	@Override
 	protected void processSoundEffects() {
-		Stream.of( //
-				"DPBD", // Blazing door sound effects
-				"DPITMBK", // Item respawn sound effect in multiplayer mode
-				"DS" // Sound Blaster sound effects
-		).forEach(prefix -> wadFile.removeLumps(prefix));
+		wadFile.removeLumps("DS"); // Sound Blaster sound effects
 
 		List<Lump> lumps = wadFile.getLumpsByName("DP");
 		lumps.stream().map(SinclairQLUtil::processSoundEffect).forEach(wadFile::replaceLump);

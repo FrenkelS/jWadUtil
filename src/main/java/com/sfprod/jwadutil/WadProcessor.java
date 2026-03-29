@@ -293,6 +293,10 @@ public class WadProcessor {
 				"D_", // MUS music
 				"DEMO1", // Demo 1
 				"DEMO2", // Demo 2
+				"DPBD", // Blazing door sound effects
+				"DPITMBK", // Item respawn sound effect in multiplayer mode
+				"DSBD", // Blazing door sound effects
+				"DSITMBK", // Item respawn sound effect in multiplayer mode
 				"DMXGUS", // Gravis UltraSound instrument data
 				"GENMIDI", // OPL instrument data
 				"HELP1", // Help screen
@@ -347,11 +351,7 @@ public class WadProcessor {
 	}
 
 	protected void processSoundEffects() {
-		Stream.of( //
-				"DPBD", // Blazing door sound effects
-				"DPITMBK", // Item respawn sound effect in multiplayer mode
-				"DS" // Sound Blaster sound effects
-		).forEach(prefix -> wadFile.removeLumps(prefix));
+		wadFile.removeLumps("DS"); // Sound Blaster sound effects
 
 		List<Lump> lumps = wadFile.getLumpsByName("DP");
 		lumps.stream().map(this::processSoundEffect).forEach(wadFile::replaceLump);

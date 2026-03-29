@@ -44,11 +44,7 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 
 	@Override
 	protected void processSoundEffects() {
-		Stream.of( //
-				"DSBD", // Blazing door sound effects
-				"DSITMBK", // Item respawn sound effect in multiplayer mode
-				"DP" // PC speaker sound effects
-		).forEach(prefix -> wadFile.removeLumps(prefix));
+		wadFile.removeLumps("DP"); // PC speaker sound effects
 
 		List<Lump> lumps = wadFile.getLumpsByName("DS");
 		lumps.stream().map(AmigaUtil::processSoundEffect).forEach(wadFile::replaceLump);

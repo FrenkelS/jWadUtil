@@ -17,7 +17,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
@@ -177,11 +176,7 @@ class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 
 	@Override
 	protected void processSoundEffects() {
-		Stream.of( //
-				"DPBD", // Blazing door sound effects
-				"DPITMBK", // Item respawn sound effect in multiplayer mode
-				"DS" // Sound Blaster sound effects
-		).forEach(prefix -> wadFile.removeLumps(prefix));
+		wadFile.removeLumps("DS"); // Sound Blaster sound effects
 
 		List<Lump> lumps = wadFile.getLumpsByName("DP");
 		lumps.stream().map(SinclairQLUtil::processSoundEffect).forEach(wadFile::replaceLump);
