@@ -51,11 +51,7 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 		).forEach(prefix -> wadFile.removeLumps(prefix));
 
 		List<Lump> lumps = wadFile.getLumpsByName("DS");
-		for (Lump oldLump : lumps) {
-			int lumpnum = wadFile.getLumpNumByName(oldLump.nameAsString());
-			Lump newLump = AmigaUtil.processSoundEffect(oldLump);
-			wadFile.replaceLump(lumpnum, newLump);
-		}
+		lumps.stream().map(AmigaUtil::processSoundEffect).forEach(wadFile::replaceLump);
 	}
 
 	@Override

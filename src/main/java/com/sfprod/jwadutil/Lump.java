@@ -21,10 +21,6 @@ public record Lump(byte[] name, byte[] data, ByteOrder byteOrder) {
 		this(name, toArray(byteBuffer, size), byteBuffer.order());
 	}
 
-	public Lump(String name, int size, ByteBuffer byteBuffer) {
-		this(toByteArray(name, 8), toArray(byteBuffer, size), byteBuffer.order());
-	}
-
 	public int length() {
 		return data.length;
 	}

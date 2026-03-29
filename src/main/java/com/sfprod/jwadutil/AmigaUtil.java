@@ -31,6 +31,6 @@ interface AmigaUtil {
 			doom8088Data.put(toByte(x));
 		}
 
-		return new Lump("DP" + vanillaDigitalSoundlump.nameAsString().substring(2), 2 + length, doom8088Data);
+		return new Lump(vanillaDigitalSoundlump.name(), 2 + length, doom8088Data);
 	}
 }

@@ -23,12 +23,7 @@ class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
 		).forEach(prefix -> wadFile.removeLumps(prefix));
 
 		List<Lump> lumps = wadFile.getLumpsByName("DS");
-		for (Lump oldLump : lumps) {
-			int lumpnum = wadFile.getLumpNumByName(oldLump.nameAsString());
-			Lump newLump = processSoundEffect(oldLump);
-
-			wadFile.replaceLump(lumpnum, newLump);
-		}
+		lumps.stream().map(this::processSoundEffect).forEach(wadFile::replaceLump);
 	}
 
 	private Lump processSoundEffect(Lump vanillaDigitalSoundlump) {
@@ -47,6 +42,6 @@ class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
 		vanillaData.get(buffer);
 		doom8088Data.put(buffer);
 
-		return new Lump("DP" + vanillaDigitalSoundlump.nameAsString().substring(2), 2 + length, doom8088Data);
+		return new Lump(vanillaDigitalSoundlump.name(), 2 + length, doom8088Data);
 	}
 }
