@@ -38,16 +38,13 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 			new Color(255, 255, 255) // white
 	);
 
-	private final short[] divisors;
-
 	WadProcessor16ColorsDitheredAtariST(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, CUSTOM_ATARI_ST_COLORS, 7);
-		this.divisors = AtariSTUtil.getDivisors();
 	}
 
 	@Override
-	protected short[] getDivisors() {
-		return divisors;
+	protected void processSoundEffects() {
+		AtariSTUtil.processSoundEffects(wadFile);
 	}
 
 	@Override
