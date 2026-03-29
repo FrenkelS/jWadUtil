@@ -24,6 +24,14 @@ public interface NumberUtils {
 		return (byte) s;
 	}
 
+	static byte toByte(double d) {
+		if (!(-128 <= d && d < 256)) {
+			throw new IllegalArgumentException(d + " doesn't fit in a byte");
+		}
+
+		return (byte) d;
+	}
+
 	/**
 	 * Convert signed byte to an unsigned int.
 	 *

@@ -19,12 +19,12 @@ interface AtariSTUtil {
 		List<Lump> newDsLumps = oldDsLumps.stream().map(AtariSTUtil::processDigitalSoundEffect).toList();
 
 		int lumpnum = wadFile.getLumpNumByName(newDpLumps.getFirst().nameAsString());
-		for (Lump lump : newDpLumps) {
-			wadFile.replaceLump(lumpnum, lump);
+		for (Lump newDpLump : newDpLumps) {
+			wadFile.replaceLump(lumpnum, newDpLump);
 			lumpnum++;
 		}
-		for (Lump lump : newDsLumps) {
-			wadFile.replaceLump(lumpnum, lump);
+		for (Lump newDsLump : newDsLumps) {
+			wadFile.replaceLump(lumpnum, newDsLump);
 			lumpnum++;
 		}
 	}
@@ -68,18 +68,42 @@ interface AtariSTUtil {
 		byte[] tmpBuffer = new byte[16];
 		vanillaData.get(tmpBuffer);
 
-		ByteBuffer doom8088Data = newByteBuffer(ByteOrder.BIG_ENDIAN);
-		doom8088Data.putShort(toShort(length));
-
+		// from unsigned 8-bit to signed 8-bit
+		byte[] signedBytes = new byte[length];
 		for (int i = 0; i < length; i++) {
 			byte b = vanillaData.get();
 			int x = toInt(b) - 128;
 			if (x < 0) {
 				x = 0;
 			}
-			doom8088Data.put(toByte(x));
+			signedBytes[i] = toByte(x);
 		}
 
-		return new Lump(vanillaDigitalSoundlump.name(), 2 + length, doom8088Data);
+		// from 11025 Hz to 12157 Hz
+		byte[] resampledBytes = resample(signedBytes);
+
+		ByteBuffer doom8088Data = newByteBuffer(ByteOrder.BIG_ENDIAN);
+		doom8088Data.putShort(toShort(resampledBytes.length));
+		doom8088Data.put(resampledBytes);
+		return new Lump(vanillaDigitalSoundlump.name(), 2 + resampledBytes.length, doom8088Data);
+	}
+
+	private static byte[] resample(byte[] input) {
+		int newLength = (int) (input.length * 12157.0 / 11025.0);
+		byte[] output = new byte[newLength];
+
+		for (int i = 0; i < newLength; i++) {
+			double srcIndex = i * 11025.0 / 12157.0;
+			int index = (int) srcIndex;
+			double frac = srcIndex - index;
+
+			int sample1 = input[Math.min(index, input.length - 1)];
+			int sample2 = input[Math.min(index + 1, input.length - 1)];
+
+			double sample = (1 - frac) * sample1 + frac * sample2;
+			output[i] = toByte(sample);
+		}
+
+		return output;
 	}
 }
