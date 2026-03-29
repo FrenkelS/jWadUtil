@@ -129,7 +129,7 @@ public class WadProcessor {
 		processColormap();
 		processPlayerSprites();
 		removeUnusedLumps();
-		processPcSpeakerSoundEffects();
+		processSoundEffects();
 		processSprites();
 		processWalls();
 		compressPictures();
@@ -293,9 +293,6 @@ public class WadProcessor {
 				"D_", // MUS music
 				"DEMO1", // Demo 1
 				"DEMO2", // Demo 2
-				"DPBD", // Blazing door sound effects
-				"DPITMBK", // Item respawn sound effect in multiplayer mode
-				"DS", // Sound Blaster sound effects
 				"DMXGUS", // Gravis UltraSound instrument data
 				"GENMIDI", // OPL instrument data
 				"HELP1", // Help screen
@@ -349,12 +346,18 @@ public class WadProcessor {
 		}
 	}
 
-	private void processPcSpeakerSoundEffects() {
+	protected void processSoundEffects() {
+		Stream.of( //
+				"DPBD", // Blazing door sound effects
+				"DPITMBK", // Item respawn sound effect in multiplayer mode
+				"DS" // Sound Blaster sound effects
+		).forEach(prefix -> wadFile.removeLumps(prefix));
+
 		List<Lump> lumps = wadFile.getLumpsByName("DP");
-		lumps.stream().map(this::processPcSpeakerSoundEffect).forEach(wadFile::replaceLump);
+		lumps.stream().map(this::processSoundEffect).forEach(wadFile::replaceLump);
 	}
 
-	protected Lump processPcSpeakerSoundEffect(Lump vanillaLump) {
+	private Lump processSoundEffect(Lump vanillaLump) {
 		ByteBuffer vanillaData = vanillaLump.dataAsByteBuffer();
 		vanillaData.getShort(); // type, 0 = PC Speaker
 		short length = vanillaData.getShort();

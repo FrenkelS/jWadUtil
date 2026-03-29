@@ -7,28 +7,19 @@ import static com.sfprod.utils.NumberUtils.toShort;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.List;
 
 interface AmigaUtil {
 
-	static Lump processPcSpeakerSoundEffect(List<Lump> vanillaDigitalSoundEffects, ByteOrder byteOrder,
-			Lump vanillaLump) {
-		String pcName = vanillaLump.nameAsString();
-		String dsName = "DS" + pcName.substring(2);
-
-		Lump vanillaDigitalSoundlump = vanillaDigitalSoundEffects.stream().filter(l -> l.nameAsString().equals(dsName))
-				.findAny().orElseThrow();
-
+	static Lump processSoundEffect(Lump vanillaDigitalSoundlump) {
 		ByteBuffer vanillaData = vanillaDigitalSoundlump.dataAsByteBuffer();
 		vanillaData.getShort(); // Format number (must be 3)
 		vanillaData.getShort(); // Sample rate (usually, but not necessarily, 11025)
 		int length = vanillaData.getInt() - 32; // Number of samples + 32 pad bytes
 
-		for (int i = 0; i < 16; i++) {
-			vanillaData.get();
-		}
+		byte[] tmpBuffer = new byte[16];
+		vanillaData.get(tmpBuffer);
 
-		ByteBuffer doom8088Data = newByteBuffer(byteOrder);
+		ByteBuffer doom8088Data = newByteBuffer(ByteOrder.BIG_ENDIAN);
 		doom8088Data.putShort(toShort(length));
 
 		for (int i = 0; i < length; i++) {
@@ -40,6 +31,6 @@ interface AmigaUtil {
 			doom8088Data.put(toByte(x));
 		}
 
-		return new Lump(vanillaLump.name(), 2 + length, doom8088Data);
+		return new Lump("DP" + vanillaDigitalSoundlump.nameAsString().substring(2), 2 + length, doom8088Data);
 	}
 }

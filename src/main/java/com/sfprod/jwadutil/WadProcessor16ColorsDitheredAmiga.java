@@ -38,16 +38,24 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 			new Color(255, 255, 255) // white
 	);
 
-	private final List<Lump> vanillaDigitalSoundEffects;
-
 	WadProcessor16ColorsDitheredAmiga(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, CUSTOM_AMIGA_COLORS, 7);
-		this.vanillaDigitalSoundEffects = wadFile.getLumpsByName("DS");
 	}
 
 	@Override
-	protected Lump processPcSpeakerSoundEffect(Lump vanillaLump) {
-		return AmigaUtil.processPcSpeakerSoundEffect(vanillaDigitalSoundEffects, byteOrder, vanillaLump);
+	protected void processSoundEffects() {
+		Stream.of( //
+				"DSBD", // Blazing door sound effects
+				"DSITMBK", // Item respawn sound effect in multiplayer mode
+				"DP" // PC speaker sound effects
+		).forEach(prefix -> wadFile.removeLumps(prefix));
+
+		List<Lump> lumps = wadFile.getLumpsByName("DS");
+		for (Lump oldLump : lumps) {
+			int lumpnum = wadFile.getLumpNumByName(oldLump.nameAsString());
+			Lump newLump = AmigaUtil.processSoundEffect(oldLump);
+			wadFile.replaceLump(lumpnum, newLump);
+		}
 	}
 
 	@Override

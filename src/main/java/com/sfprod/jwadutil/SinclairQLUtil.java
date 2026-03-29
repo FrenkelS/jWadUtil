@@ -35,7 +35,7 @@ public interface SinclairQLUtil {
 		return toByte(r);
 	}
 
-	static Lump processPcSpeakerSoundEffect(Lump vanillaLump, ByteOrder byteOrder) {
+	static Lump processSoundEffect(Lump vanillaLump) {
 		ByteBuffer vanillaData = vanillaLump.dataAsByteBuffer();
 		vanillaData.getShort(); // type, 0 = PC Speaker
 		short length = vanillaData.getShort();
@@ -52,7 +52,7 @@ public interface SinclairQLUtil {
 
 		int frequencyAverage = frequencySum / frequencyLength;
 
-		ByteBuffer doom8088Data = newByteBuffer(byteOrder);
+		ByteBuffer doom8088Data = newByteBuffer(ByteOrder.BIG_ENDIAN);
 		doom8088Data.putShort(toShort(length * 128)); // dur
 		doom8088Data.put(find(frequencyAverage)); // pitch
 		doom8088Data.put(toByte(0)); // pitch2

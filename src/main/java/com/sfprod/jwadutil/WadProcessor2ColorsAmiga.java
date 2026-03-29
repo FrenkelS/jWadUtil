@@ -2,18 +2,27 @@ package com.sfprod.jwadutil;
 
 import java.nio.ByteOrder;
 import java.util.List;
+import java.util.stream.Stream;
 
 class WadProcessor2ColorsAmiga extends WadProcessor4Colors {
 
-	private final List<Lump> vanillaDigitalSoundEffects;
-
 	WadProcessor2ColorsAmiga(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, false);
-		this.vanillaDigitalSoundEffects = wadFile.getLumpsByName("DS");
 	}
 
 	@Override
-	protected Lump processPcSpeakerSoundEffect(Lump vanillaLump) {
-		return AmigaUtil.processPcSpeakerSoundEffect(vanillaDigitalSoundEffects, byteOrder, vanillaLump);
+	protected void processSoundEffects() {
+		Stream.of( //
+				"DSBD", // Blazing door sound effects
+				"DSITMBK", // Item respawn sound effect in multiplayer mode
+				"DP" // PC speaker sound effects
+		).forEach(prefix -> wadFile.removeLumps(prefix));
+
+		List<Lump> lumps = wadFile.getLumpsByName("DS");
+		for (Lump oldLump : lumps) {
+			int lumpnum = wadFile.getLumpNumByName(oldLump.nameAsString());
+			Lump newLump = AmigaUtil.processSoundEffect(oldLump);
+			wadFile.replaceLump(lumpnum, newLump);
+		}
 	}
 }

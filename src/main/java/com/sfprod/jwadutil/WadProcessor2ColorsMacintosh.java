@@ -6,24 +6,32 @@ import static com.sfprod.utils.NumberUtils.toShort;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
+import java.util.stream.Stream;
 
 class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
 
-	private final List<Lump> vanillaDigitalSoundEffects;
-
 	WadProcessor2ColorsMacintosh(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, true);
-		this.vanillaDigitalSoundEffects = wadFile.getLumpsByName("DS");
 	}
 
 	@Override
-	protected Lump processPcSpeakerSoundEffect(Lump vanillaLump) {
-		String pcName = vanillaLump.nameAsString();
-		String dsName = "DS" + pcName.substring(2);
+	protected void processSoundEffects() {
+		Stream.of( //
+				"DSBD", // Blazing door sound effects
+				"DSITMBK", // Item respawn sound effect in multiplayer mode
+				"DP" // PC speaker sound effects
+		).forEach(prefix -> wadFile.removeLumps(prefix));
 
-		Lump vanillaDigitalSoundlump = vanillaDigitalSoundEffects.stream().filter(l -> l.nameAsString().equals(dsName))
-				.findAny().orElseThrow();
+		List<Lump> lumps = wadFile.getLumpsByName("DS");
+		for (Lump oldLump : lumps) {
+			int lumpnum = wadFile.getLumpNumByName(oldLump.nameAsString());
+			Lump newLump = processSoundEffect(oldLump);
 
+			wadFile.replaceLump(lumpnum, newLump);
+		}
+	}
+
+	private Lump processSoundEffect(Lump vanillaDigitalSoundlump) {
 		ByteBuffer vanillaData = vanillaDigitalSoundlump.dataAsByteBuffer();
 		vanillaData.getShort(); // Format number (must be 3)
 		vanillaData.getShort(); // Sample rate (usually, but not necessarily, 11025)
@@ -39,6 +47,6 @@ class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
 		vanillaData.get(buffer);
 		doom8088Data.put(buffer);
 
-		return new Lump(vanillaLump.name(), 2 + length, doom8088Data);
+		return new Lump("DP" + vanillaDigitalSoundlump.nameAsString().substring(2), 2 + length, doom8088Data);
 	}
 }
