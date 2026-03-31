@@ -3,11 +3,12 @@ package com.sfprod.jwadutil;
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
-import static com.sfprod.utils.NumberUtils.toShort;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
+
+import com.sfprod.utils.ByteBufferUtils;
 
 interface AtariSTUtil {
 
@@ -81,11 +82,7 @@ interface AtariSTUtil {
 
 		// from 11025 Hz to 12157 Hz
 		byte[] resampledBytes = resample(signedBytes);
-
-		ByteBuffer doom8088Data = newByteBuffer(ByteOrder.BIG_ENDIAN);
-		doom8088Data.putShort(toShort(resampledBytes.length));
-		doom8088Data.put(resampledBytes);
-		return new Lump(vanillaDigitalSoundlump.name(), 2 + resampledBytes.length, doom8088Data);
+		return new Lump(vanillaDigitalSoundlump.name(), resampledBytes, ByteBufferUtils.DONT_CARE);
 	}
 
 	private static byte[] resample(byte[] input) {

@@ -1,11 +1,10 @@
 package com.sfprod.jwadutil;
 
-import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
-import static com.sfprod.utils.NumberUtils.toShort;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
+
+import com.sfprod.utils.ByteBufferUtils;
 
 class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
 
@@ -30,13 +29,9 @@ class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
 		byte[] tmpBuffer = new byte[16];
 		vanillaData.get(tmpBuffer);
 
-		ByteBuffer doom8088Data = newByteBuffer(byteOrder);
-		doom8088Data.putShort(toShort(length));
-
 		byte[] buffer = new byte[length];
 		vanillaData.get(buffer);
-		doom8088Data.put(buffer);
 
-		return new Lump(vanillaDigitalSoundlump.name(), 2 + length, doom8088Data);
+		return new Lump(vanillaDigitalSoundlump.name(), buffer, ByteBufferUtils.DONT_CARE);
 	}
 }
