@@ -26,7 +26,7 @@ class WadProcessor16ColorsDitheredPC extends WadProcessor16ColorsDithered {
 
 	private static final List<Integer> VGA256_TO_DITHERED_LUT = List.of( //
 			0x00, 0x06, 0x00, // black
-			0x88, // grey
+			0x88, // gray
 			0xff, // white
 			0x08, 0x08, 0x00, 0x00, // black
 			0x00, 0x00, 0x00, 0x00, // dark green

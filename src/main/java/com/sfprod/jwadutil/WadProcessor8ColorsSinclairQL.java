@@ -48,7 +48,7 @@ class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 
 	private static final List<Integer> VGA256_TO_8_LUT = List.of( //
 			0, 0, 0, // black
-			5, // grey
+			5, // gray
 			7, // white
 			0, 0, 0, 0, // black
 			4, 4, 4, -1, // dark green
@@ -86,7 +86,7 @@ class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 
 	private static final List<Integer> VGA256_TO_DITHERED_LUT = List.of( //
 			0, 0, 0, // black
-			34, // grey
+			34, // gray
 			124, // white
 			0, 0, 0, 0, // black
 			14, 14, 14, 14, // dark green

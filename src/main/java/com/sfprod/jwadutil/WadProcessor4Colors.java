@@ -31,7 +31,7 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 
 	private static final List<Integer> VGA256_TO_4_LUT = List.of( //
 			0, 0, 0, // black
-			1, // grey
+			1, // gray
 			3, // white
 			0, 0, 0, 0, // black
 			0, 0, 0, -1, // dark green
@@ -69,7 +69,7 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 
 	private static final List<Integer> VGA256_TO_DITHERED_LUT = List.of( //
 			0x00, 0x00, 0x00, // black
-			0x33, // grey
+			0x33, // gray
 			0xff, // white
 			0x33, 0x33, 0x00, 0x00, // black
 			0x00, 0x00, 0x00, 0x00, // dark green
