@@ -10,6 +10,10 @@ public record Color(int r, int g, int b) {
 		return r * 0.299 + g * 0.587 + b * 0.114;
 	}
 
+	boolean isGrayish() {
+		return r == g && g == b;
+	}
+
 	int calculateDistance(Color that) {
 		int distr = this.r - that.r;
 		int distg = this.g - that.g;
