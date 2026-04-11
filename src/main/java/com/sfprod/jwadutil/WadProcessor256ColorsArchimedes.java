@@ -5,6 +5,7 @@ import static com.sfprod.utils.NumberUtils.toShort;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.sfprod.utils.ByteBufferUtils;
@@ -20,17 +21,44 @@ class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 	WadProcessor256ColorsArchimedes(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, GRAYSCALE_FROM_DARK_TO_BRIGHT, 16);
 
-		// @see
-		// https://www.onirom.fr/wiki/blog/30-04-2022_Archimedes-ARM2-Graphics-Programming/#Aside_:_Default_256_colors_palette_generator
-		List<Color> colors = new ArrayList<>();
-		for (int i = 0; i <= 255; i++) {
-			int r = 17 * ((i & 7) | ((i & 16) >> 1));
-			int g = 17 * ((i & 3) | ((i & 96) >> 3));
-			int b = 17 * ((i & 3) | ((i & 8) >> 1) | ((i & 128) >> 4));
-			Color color = new Color(r, g, b);
-			colors.add(color);
+		Color[] colors = new Color[256];
+		// base colors;
+		colors[0] = createArchimedesColor(0, 0, 0);
+		colors[1] = createArchimedesColor(1, 1, 1);
+		colors[2] = createArchimedesColor(2, 2, 2);
+		colors[3] = createArchimedesColor(3, 3, 3);
+		colors[4] = createArchimedesColor(4, 0, 0);
+		colors[5] = createArchimedesColor(5, 1, 1);
+		colors[6] = createArchimedesColor(6, 2, 2);
+		colors[7] = createArchimedesColor(7, 3, 3);
+		colors[8] = createArchimedesColor(0, 0, 4);
+		colors[9] = createArchimedesColor(1, 1, 5);
+		colors[10] = createArchimedesColor(2, 2, 6);
+		colors[11] = createArchimedesColor(3, 3, 7);
+		colors[12] = createArchimedesColor(4, 0, 4);
+		colors[13] = createArchimedesColor(5, 1, 5);
+		colors[14] = createArchimedesColor(6, 2, 6);
+		colors[15] = createArchimedesColor(7, 3, 7);
+
+		for (int x = 0; x < 16; x++) {
+			Color baseColor = colors[x];
+			for (int y = 1; y < 16; y++) {
+				int r = baseColor.r() + 0x88 * (y & 1);
+				int g = baseColor.g() + 0x44 * ((y & 7) >> 1);
+				int b = baseColor.b() + 0x88 * ((y & 8) >> 3);
+				Color color = new Color(r, g, b);
+				colors[y * 16 + x] = color;
+			}
 		}
-		fillAvailableColorsShuffleMap(colors);
+
+		fillAvailableColorsShuffleMap(Arrays.asList(colors));
+	}
+
+	private static Color createArchimedesColor(int r, int g, int b) {
+		assert 0 <= r && r < 8;
+		assert 0 <= g && g < 4;
+		assert 0 <= b && b < 8;
+		return new Color(r * 0x11, g * 0x11, b * 0x11);
 	}
 
 	@Override
@@ -75,10 +103,12 @@ class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 			for (int c = 0; c < availableCols.size(); c++) {
 				Color archimedesColor = availableCols.get(c);
 
-				int distanceToVga = archimedesColor.calculateDistance(vgaColor);
-				if (distanceToVga < minClosestColor && vgaColor.isGrayish() == archimedesColor.isGrayish()) {
-					minClosestColor = distanceToVga;
-					indexClosestColor = c;
+				if (vgaColor.isGrayish() == archimedesColor.isGrayish()) {
+					int distanceToVga = archimedesColor.calculateDistance(vgaColor);
+					if (distanceToVga < minClosestColor) {
+						minClosestColor = distanceToVga;
+						indexClosestColor = c;
+					}
 				}
 			}
 			indexes.add(indexClosestColor);
