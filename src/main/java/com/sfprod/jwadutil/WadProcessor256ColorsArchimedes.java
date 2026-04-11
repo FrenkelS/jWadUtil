@@ -1,8 +1,13 @@
 package com.sfprod.jwadutil;
 
+import static com.sfprod.utils.NumberUtils.toShort;
+
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.sfprod.utils.ByteBufferUtils;
 
 class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 
@@ -31,6 +36,25 @@ class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 	@Override
 	protected byte convert256to16(byte b) {
 		return convert256to16dithered(b);
+	}
+
+	@Override
+	void processColormap() {
+		super.processColormap();
+
+		wadFile.removeLumps("COLORMP");
+
+		ByteBuffer bb = ByteBufferUtils.newByteBuffer(byteOrder, 16 * 2);
+		for (int i = 0; i < 16; i++) {
+			Color color = availableColors.get(i);
+			int r = color.r() / 16;
+			int g = color.g() / 16;
+			int b = color.b() / 16;
+			short p = toShort((r << 8) | (g << 4) | (b << 0));
+			bb.putShort(p);
+		}
+		Lump playpal = new Lump("PLAYPAL", bb.array(), byteOrder);
+		wadFile.addLump(playpal);
 	}
 
 	@Override
