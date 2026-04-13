@@ -14,9 +14,9 @@ class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 
 	private static final List<Integer> GRAYSCALE_FROM_DARK_TO_BRIGHT = List.of(//
 			0x00, 0x01, 0x02, 0x03, //
-			0x2c, 0x2d, 0x2e, 0x2f, //
+			0x25, 0x28, 0x2a, 0x2f, //
 			0xd0, 0xd1, 0xd2, 0xd3, //
-			0xfc, 0xfd, 0xfe, 0xff);
+			0xf5, 0xf8, 0xfa, 0xff);
 
 	WadProcessor256ColorsArchimedes(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, GRAYSCALE_FROM_DARK_TO_BRIGHT, 16);
@@ -28,16 +28,16 @@ class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 		colors[2] = createArchimedesColor(2, 2, 2);
 		colors[3] = createArchimedesColor(3, 3, 3);
 		colors[4] = createArchimedesColor(4, 0, 0);
-		colors[5] = createArchimedesColor(5, 1, 1);
-		colors[6] = createArchimedesColor(6, 2, 2);
-		colors[7] = createArchimedesColor(7, 3, 3);
-		colors[8] = createArchimedesColor(0, 0, 4);
-		colors[9] = createArchimedesColor(1, 1, 5);
-		colors[10] = createArchimedesColor(2, 2, 6);
-		colors[11] = createArchimedesColor(3, 3, 7);
-		colors[12] = createArchimedesColor(4, 0, 4);
-		colors[13] = createArchimedesColor(5, 1, 5);
-		colors[14] = createArchimedesColor(6, 2, 6);
+		colors[5] = createArchimedesColor(4, 0, 4);
+		colors[6] = createArchimedesColor(4, 3, 2);
+		colors[7] = createArchimedesColor(5, 0, 0);
+		colors[8] = createArchimedesColor(5, 1, 5);
+		colors[9] = createArchimedesColor(6, 0, 0);
+		colors[10] = createArchimedesColor(6, 2, 6);
+		colors[11] = createArchimedesColor(7, 1, 4);
+		colors[12] = createArchimedesColor(7, 2, 5);
+		colors[13] = createArchimedesColor(7, 3, 0);
+		colors[14] = createArchimedesColor(7, 3, 3);
 		colors[15] = createArchimedesColor(7, 3, 7);
 
 		for (int x = 0; x < 16; x++) {
