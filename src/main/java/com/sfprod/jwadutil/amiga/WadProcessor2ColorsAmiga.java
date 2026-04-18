@@ -5,9 +5,9 @@ import java.util.List;
 
 import com.sfprod.jwadutil.Lump;
 import com.sfprod.jwadutil.WadFile;
-import com.sfprod.jwadutil.WadProcessor4Colors;
+import com.sfprod.jwadutil.WadProcessor2Colors;
 
-public class WadProcessor2ColorsAmiga extends WadProcessor4Colors {
+public class WadProcessor2ColorsAmiga extends WadProcessor2Colors {
 
 	public WadProcessor2ColorsAmiga(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, false);

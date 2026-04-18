@@ -6,10 +6,10 @@ import java.util.List;
 
 import com.sfprod.jwadutil.Lump;
 import com.sfprod.jwadutil.WadFile;
-import com.sfprod.jwadutil.WadProcessor4Colors;
+import com.sfprod.jwadutil.WadProcessor2Colors;
 import com.sfprod.utils.ByteBufferUtils;
 
-public class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
+public class WadProcessor2ColorsMacintosh extends WadProcessor2Colors {
 
 	public WadProcessor2ColorsMacintosh(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, true);

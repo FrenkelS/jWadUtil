@@ -2,6 +2,12 @@ package com.sfprod.jwadutil;
 
 public record Color(int r, int g, int b) {
 
+	public Color {
+		assert 0x00 <= r && r <= 0xff;
+		assert 0x00 <= g && g <= 0xff;
+		assert 0x00 <= b && b <= 0xff;
+	}
+
 	public int getRGB() {
 		return 0xff000000 | (r << 16) | (g << 8) | b;
 	}
@@ -12,6 +18,10 @@ public record Color(int r, int g, int b) {
 
 	public boolean isGrayish() {
 		return r == g && g == b;
+	}
+
+	public Color invert() {
+		return new Color(0xff - r, 0xff - g, 0xff - b);
 	}
 
 	public int calculateDistance(Color that) {
@@ -27,6 +37,8 @@ public record Color(int r, int g, int b) {
 	}
 
 	public static Color blendColors(Color... colors) {
+		assert colors.length != 0;
+
 		int rSum = 0;
 		int gSum = 0;
 		int bSum = 0;
