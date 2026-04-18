@@ -11,7 +11,7 @@ import com.sfprod.jwadutil.macintosh.WadProcessor2ColorsMacintosh;
 import com.sfprod.jwadutil.pc.WadProcessor16ColorsDitheredPC;
 import com.sfprod.jwadutil.pc.WadProcessor16ColorsDitheredTextMode;
 import com.sfprod.jwadutil.pc.WadProcessor2ColorsTextMode;
-import com.sfprod.jwadutil.pc.WadProcessor4Colors;
+import com.sfprod.jwadutil.pc.WadProcessor4ColorsPC;
 import com.sfprod.jwadutil.sinclairql.WadProcessor2ColorsSinclairQL;
 import com.sfprod.jwadutil.sinclairql.WadProcessor8ColorsSinclairQL;
 
@@ -21,7 +21,7 @@ public interface WadProcessorFactory {
 		return switch (game) {
 		case DOOM8088_2_COLOR_TEXT_MODE ->
 			new WadProcessor2ColorsTextMode(game.getTitle(), game.getByteOrder(), wadFile);
-		case DOOM8088_4_COLOR -> new WadProcessor4Colors(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM8088_4_COLOR -> new WadProcessor4ColorsPC(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_ARCHIMEDES_2_COLOR ->
 			new WadProcessor2ColorsArchimedes(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_ARCHIMEDES_256_COLOR ->

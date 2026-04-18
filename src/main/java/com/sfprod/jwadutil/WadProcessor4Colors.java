@@ -14,7 +14,10 @@ import javax.imageio.ImageIO;
 
 import com.sfprod.utils.ByteBufferUtils;
 
-public abstract class WadProcessor2Colors extends WadProcessorLimitedColors {
+/**
+ * Four Shades of Gray
+ */
+public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 
 	private static final List<Color> CGA_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black
@@ -104,7 +107,7 @@ public abstract class WadProcessor2Colors extends WadProcessorLimitedColors {
 
 	private final boolean invert;
 
-	protected WadProcessor2Colors(String title, ByteOrder byteOrder, WadFile wadFile, boolean invert) {
+	protected WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile, boolean invert) {
 		super(title, byteOrder, wadFile,
 				invert ? GRAYSCALE_FROM_DARK_TO_BRIGHT.reversed() : GRAYSCALE_FROM_DARK_TO_BRIGHT, 3);
 		this.invert = invert;
@@ -148,7 +151,7 @@ public abstract class WadProcessor2Colors extends WadProcessorLimitedColors {
 
 		try {
 			BufferedImage image = ImageIO
-					.read(WadProcessor2Colors.class.getResourceAsStream("/CGA/" + lumpname + ".PNG"));
+					.read(WadProcessor4Colors.class.getResourceAsStream("/CGA/" + lumpname + ".PNG"));
 			byte[] data = new byte[(image.getWidth() / 4) * image.getHeight()];
 			int i = 0;
 			for (int y = 0; y < image.getHeight(); y++) {
