@@ -1,5 +1,6 @@
 package com.sfprod.jwadutil;
 
+import static com.sfprod.utils.NumberUtils.reverse;
 import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
 
@@ -150,7 +151,15 @@ public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 
 	@Override
 	protected void changePaletteRaw(Lump lump) {
-		wadFile.replaceLump(createCgaLump(lump.nameAsString()));
+		Lump cgaLump = createCgaLump(lump.nameAsString());
+		wadFile.replaceLump(cgaLump);
+
+		if (!mostSignificantBitFirst) {
+			for (int i = 0; i < cgaLump.length(); i++) {
+				byte b = cgaLump.data()[i];
+				cgaLump.data()[i] = reverse(b);
+			}
+		}
 	}
 
 	private Lump createCgaLump(String lumpname) {

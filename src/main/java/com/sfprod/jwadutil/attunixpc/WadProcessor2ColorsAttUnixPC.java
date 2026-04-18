@@ -1,7 +1,5 @@
 package com.sfprod.jwadutil.attunixpc;
 
-import static com.sfprod.utils.NumberUtils.reverse;
-
 import java.nio.ByteOrder;
 
 import com.sfprod.jwadutil.Lump;
@@ -22,8 +20,8 @@ public class WadProcessor2ColorsAttUnixPC extends WadProcessor4Colors {
 		for (int i = 0; i < lump.length() / 2; i++) {
 			byte e = lump.data()[i * 2 + 0];
 			byte o = lump.data()[i * 2 + 1];
-			lump.data()[i * 2 + 1] = reverse(e);
-			lump.data()[i * 2 + 0] = reverse(o);
+			lump.data()[i * 2 + 1] = e;
+			lump.data()[i * 2 + 0] = o;
 		}
 	}
 }
