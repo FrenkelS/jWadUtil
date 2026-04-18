@@ -6,7 +6,7 @@ public record Color(int r, int g, int b) {
 		return 0xff000000 | (r << 16) | (g << 8) | b;
 	}
 
-	double gray() {
+	public double gray() {
 		return r * 0.299 + g * 0.587 + b * 0.114;
 	}
 
@@ -26,7 +26,7 @@ public record Color(int r, int g, int b) {
 		return blendColors(this, that);
 	}
 
-	static Color blendColors(Color... colors) {
+	public static Color blendColors(Color... colors) {
 		int rSum = 0;
 		int gSum = 0;
 		int bSum = 0;

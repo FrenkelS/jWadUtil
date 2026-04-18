@@ -180,7 +180,7 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 		}
 	}
 
-	List<Byte> createColormapInvulnerability() {
+	protected List<Byte> createColormapInvulnerability() {
 		List<Double> grays = availableColors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
 				.sorted(Comparator.reverseOrder()).toList();
 
@@ -188,7 +188,7 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 				.map(grayscaleFromDarkToBright::get).mapToObj(NumberUtils::toByte).toList();
 	}
 
-	List<Byte> createColormap(int colormap) {
+	protected List<Byte> createColormap(int colormap) {
 		List<Byte> result = new ArrayList<>();
 
 		if (colormap == 0) {
@@ -234,7 +234,7 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 	}
 
 	@Override
-	void shuffleColors() {
+	protected void shuffleColors() {
 		// Graphics in picture format
 		// Walls
 		wadFile.getLumpsBetween("P1_START", "P1_END").forEach(this::shuffleColorPicture);

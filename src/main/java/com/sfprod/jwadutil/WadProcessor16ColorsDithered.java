@@ -37,7 +37,7 @@ public abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedCo
 	}
 
 	@Override
-	void shuffleColors() {
+	protected void shuffleColors() {
 		// Raw graphics
 		List<Lump> rawGraphics = new ArrayList<>();
 		rawGraphics.add(wadFile.getLumpByName("HELP2"));

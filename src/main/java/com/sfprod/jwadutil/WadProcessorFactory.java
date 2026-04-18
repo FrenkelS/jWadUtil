@@ -7,6 +7,8 @@ import com.sfprod.jwadutil.archimedes.WadProcessor2ColorsArchimedes;
 import com.sfprod.jwadutil.atarist.WadProcessor16ColorsDitheredAtariST;
 import com.sfprod.jwadutil.atarist.WadProcessor2ColorsAtariST;
 import com.sfprod.jwadutil.attunixpc.WadProcessor2ColorsAttUnixPC;
+import com.sfprod.jwadutil.sinclairql.WadProcessor2ColorsSinclairQL;
+import com.sfprod.jwadutil.sinclairql.WadProcessor8ColorsSinclairQL;
 
 public interface WadProcessorFactory {
 

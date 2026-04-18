@@ -1,11 +1,15 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.sinclairql;
 
 import java.nio.ByteOrder;
 import java.util.List;
 
-class WadProcessor2ColorsSinclairQL extends WadProcessor4Colors {
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessor4Colors;
 
-	WadProcessor2ColorsSinclairQL(String title, ByteOrder byteOrder, WadFile wadFile) {
+public class WadProcessor2ColorsSinclairQL extends WadProcessor4Colors {
+
+	public WadProcessor2ColorsSinclairQL(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, false);
 	}
 

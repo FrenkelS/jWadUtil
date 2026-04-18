@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.sinclairql;
 
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.NumberUtils.toByte;
@@ -8,7 +8,10 @@ import static com.sfprod.utils.NumberUtils.toShort;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public interface SinclairQLUtil {
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadProcessor;
+
+interface SinclairQLUtil {
 
 	static private byte find(int frequencyAverage) {
 		final int[] FREQUENCIES = { 1313, 1177, 1066, 974, 897, 831, 775, 725, 682, 643, 608, 577, 549, 524, 501, 480,

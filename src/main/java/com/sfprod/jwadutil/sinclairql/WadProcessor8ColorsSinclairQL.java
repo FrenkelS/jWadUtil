@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.sinclairql;
 
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.ByteBufferUtils.toByteList;
@@ -20,9 +20,13 @@ import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 
+import com.sfprod.jwadutil.Color;
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessorLimitedColors;
 import com.sfprod.utils.ByteBufferUtils;
 
-class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
+public class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 
 	private static final List<Color> SINCLAIR_QL_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black
@@ -140,7 +144,7 @@ class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 		return sinclairQLPalette;
 	}
 
-	WadProcessor8ColorsSinclairQL(String title, ByteOrder byteOrder, WadFile wadFile) {
+	public WadProcessor8ColorsSinclairQL(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, Collections.emptyList(), 0);
 
 		List<Color> availColors = new ArrayList<>();
@@ -234,7 +238,7 @@ class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	List<Byte> createColormapInvulnerability() {
+	protected List<Byte> createColormapInvulnerability() {
 		ByteBuffer bb = newByteBuffer(byteOrder, 256);
 
 		// [0, 25)
@@ -299,7 +303,7 @@ class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	List<Byte> createColormap(int colormap) {
+	protected List<Byte> createColormap(int colormap) {
 		ByteBuffer bb = newByteBuffer(byteOrder, 256);
 
 		if (colormap == 0) {
@@ -349,8 +353,7 @@ class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	void shuffleColors() {
-
+	protected void shuffleColors() {
 	}
 
 }

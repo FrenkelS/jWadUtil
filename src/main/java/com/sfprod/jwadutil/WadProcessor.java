@@ -49,7 +49,7 @@ public class WadProcessor {
 			213, 207, 201, 195, 190, 184, 179 //
 	};
 
-	final Random random = new Random(0x1d4a11);
+	protected final Random random = new Random(0x1d4a11);
 
 	protected final ByteOrder byteOrder;
 	protected final WadFile wadFile;
