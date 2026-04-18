@@ -101,6 +101,10 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 		statusBarMenuAndIntermissionGraphics.forEach(this::changePaletteStatusBarMenuAndIntermission);
 	}
 
+	@Override
+	protected void processRawGraphics() {
+	}
+
 	protected abstract void changePaletteRaw(Lump lump);
 
 	protected abstract byte convert256to16(byte b);
