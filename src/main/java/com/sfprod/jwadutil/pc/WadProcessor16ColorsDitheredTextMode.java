@@ -1,11 +1,14 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.pc;
 
 import java.nio.ByteOrder;
 import java.util.List;
 
-class WadProcessor16ColorsDitheredTextMode extends WadProcessor16ColorsDitheredPC {
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
 
-	WadProcessor16ColorsDitheredTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
+public class WadProcessor16ColorsDitheredTextMode extends WadProcessor16ColorsDitheredPC {
+
+	public WadProcessor16ColorsDitheredTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile);
 	}
 

@@ -1,6 +1,6 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.pc;
 
-import static com.sfprod.jwadutil.WadProcessor2ColorsTextMode.COLORS_FLOORS;
+import static com.sfprod.jwadutil.pc.WadProcessor2ColorsTextMode.COLORS_FLOORS;
 import static com.sfprod.utils.NumberUtils.toInt;
 import static com.sfprod.utils.NumberUtils.toShort;
 
@@ -11,6 +11,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import com.sfprod.jwadutil.Color;
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.MapProcessor;
+import com.sfprod.jwadutil.WadFile;
 
 public class MapProcessor2ColorsTextMode extends MapProcessor {
 

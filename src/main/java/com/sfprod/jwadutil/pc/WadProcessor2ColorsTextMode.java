@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.pc;
 
 import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
@@ -11,9 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.sfprod.jwadutil.Color;
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessor;
 import com.sfprod.utils.ByteBufferUtils;
 
-class WadProcessor2ColorsTextMode extends WadProcessor {
+public class WadProcessor2ColorsTextMode extends WadProcessor {
 
 	private static final List<Integer> MDA_FONT_BIT_COUNTS = List.of( //
 			0, 34, 60, 41, 25, 36, 42, 12, 100, 20, 92, 33, 32, 32, 48, 34, //
@@ -47,7 +51,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 	private final List<Byte> lookupTableWalls;
 	private final List<Byte> lookupTableSprites;
 
-	WadProcessor2ColorsTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
+	public WadProcessor2ColorsTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, new MapProcessor2ColorsTextMode(byteOrder, wadFile));
 
 		wadFile.replaceLump(new Lump("TITLEPIC", getLump("TP80X25M").data(), ByteBufferUtils.DONT_CARE));
@@ -119,7 +123,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 	}
 
 	@Override
-	void changeColors() {
+	protected void changeColors() {
 		// Raw graphics
 		// Finale background flat
 		changePaletteRaw(wadFile.getLumpByName("FLOOR4_8"));
@@ -186,7 +190,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 	}
 
 	@Override
-	void processColormap() {
+	protected void processColormap() {
 		List<Byte> colormapInvulnerability = createColormapInvulnerability();
 
 		for (int gamma = 0; gamma < 6; gamma++) {
@@ -286,7 +290,7 @@ class WadProcessor2ColorsTextMode extends WadProcessor {
 	}
 
 	@Override
-	void shuffleColors() {
+	protected void shuffleColors() {
 		// Raw graphics
 		// Flat
 		shuffleColorsRaw(wadFile.getLumpByName("FLOOR4_8"));

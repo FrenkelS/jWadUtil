@@ -61,7 +61,7 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 	}
 
 	@Override
-	void changeColors() {
+	protected void changeColors() {
 		// Raw graphics
 		List<Lump> rawGraphics = new ArrayList<>();
 		rawGraphics.add(wadFile.getLumpByName("HELP2"));

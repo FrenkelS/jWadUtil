@@ -1,9 +1,13 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.pc;
 
 import java.nio.ByteOrder;
 import java.util.List;
 
-class WadProcessor16ColorsDitheredPC extends WadProcessor16ColorsDithered {
+import com.sfprod.jwadutil.Color;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessor16ColorsDithered;
+
+public class WadProcessor16ColorsDitheredPC extends WadProcessor16ColorsDithered {
 
 	private static final List<Color> CGA_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black
@@ -62,7 +66,7 @@ class WadProcessor16ColorsDitheredPC extends WadProcessor16ColorsDithered {
 			0x47 // cream-colored
 	);
 
-	WadProcessor16ColorsDitheredPC(String title, ByteOrder byteOrder, WadFile wadFile) {
+	public WadProcessor16ColorsDitheredPC(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, CGA_COLORS, 6);
 	}
 

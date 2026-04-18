@@ -54,7 +54,7 @@ public class WadProcessor {
 	protected final ByteOrder byteOrder;
 	protected final WadFile wadFile;
 	private final MapProcessor mapProcessor;
-	final List<Color> vgaColors;
+	protected final List<Color> vgaColors;
 	protected List<Color> availableColors;
 
 	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile) {
@@ -138,13 +138,13 @@ public class WadProcessor {
 		processRawGraphics();
 	}
 
-	void changeColors() {
+	protected void changeColors() {
 	}
 
-	void processColormap() {
+	protected void processColormap() {
 	}
 
-	void shuffleColors() {
+	protected void shuffleColors() {
 	}
 
 	protected void processRawGraphics() {
