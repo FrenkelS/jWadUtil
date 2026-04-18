@@ -1,11 +1,15 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.amiga;
 
 import java.nio.ByteOrder;
 import java.util.List;
 
-class WadProcessor2ColorsAmiga extends WadProcessor4Colors {
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessor4Colors;
 
-	WadProcessor2ColorsAmiga(String title, ByteOrder byteOrder, WadFile wadFile) {
+public class WadProcessor2ColorsAmiga extends WadProcessor4Colors {
+
+	public WadProcessor2ColorsAmiga(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, false);
 	}
 

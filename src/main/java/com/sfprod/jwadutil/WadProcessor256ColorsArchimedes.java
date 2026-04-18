@@ -67,7 +67,7 @@ class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	void processColormap() {
+	protected void processColormap() {
 		super.processColormap();
 
 		wadFile.removeLumps("COLORMP");

@@ -51,8 +51,8 @@ public class WadProcessor {
 
 	final Random random = new Random(0x1d4a11);
 
-	final ByteOrder byteOrder;
-	final WadFile wadFile;
+	protected final ByteOrder byteOrder;
+	protected final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 	final List<Color> vgaColors;
 	List<Color> availableColors;
@@ -147,7 +147,7 @@ public class WadProcessor {
 	void shuffleColors() {
 	}
 
-	void processRawGraphics() {
+	protected void processRawGraphics() {
 	}
 
 	/**

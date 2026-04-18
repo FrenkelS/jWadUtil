@@ -141,7 +141,7 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 	}
 
 	@Override
-	void processColormap() {
+	protected void processColormap() {
 		List<Byte> colormapInvulnerability = createColormapInvulnerability();
 
 		for (int gamma = 0; gamma < 6; gamma++) {

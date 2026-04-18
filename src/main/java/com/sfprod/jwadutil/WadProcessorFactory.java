@@ -1,5 +1,8 @@
 package com.sfprod.jwadutil;
 
+import com.sfprod.jwadutil.amiga.WadProcessor16ColorsDitheredAmiga;
+import com.sfprod.jwadutil.amiga.WadProcessor2ColorsAmiga;
+
 public interface WadProcessorFactory {
 
 	static WadProcessor getWadProcessor(Game game, WadFile wadFile) {

@@ -14,7 +14,7 @@ import javax.imageio.ImageIO;
 
 import com.sfprod.utils.ByteBufferUtils;
 
-class WadProcessor4Colors extends WadProcessorLimitedColors {
+public class WadProcessor4Colors extends WadProcessorLimitedColors {
 
 	private static final List<Color> CGA_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black
@@ -110,7 +110,7 @@ class WadProcessor4Colors extends WadProcessorLimitedColors {
 
 	private final boolean invert;
 
-	WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile, boolean invert) {
+	protected WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile, boolean invert) {
 		super(title, byteOrder, wadFile,
 				invert ? GRAYSCALE_FROM_DARK_TO_BRIGHT.reversed() : GRAYSCALE_FROM_DARK_TO_BRIGHT, 3);
 		this.invert = invert;

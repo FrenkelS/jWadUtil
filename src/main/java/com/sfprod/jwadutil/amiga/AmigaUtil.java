@@ -1,10 +1,11 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.amiga;
 
 import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
 
 import java.nio.ByteBuffer;
 
+import com.sfprod.jwadutil.Lump;
 import com.sfprod.utils.ByteBufferUtils;
 
 interface AmigaUtil {

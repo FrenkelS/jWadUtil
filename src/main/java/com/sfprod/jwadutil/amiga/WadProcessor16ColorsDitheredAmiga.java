@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.amiga;
 
 import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
@@ -15,6 +15,10 @@ import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
+import com.sfprod.jwadutil.Color;
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessor16ColorsDithered;
 import com.sfprod.utils.ByteBufferUtils;
 
 public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithered {
@@ -38,7 +42,7 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 			new Color(255, 255, 255) // white
 	);
 
-	WadProcessor16ColorsDitheredAmiga(String title, ByteOrder byteOrder, WadFile wadFile) {
+	public WadProcessor16ColorsDitheredAmiga(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, CUSTOM_AMIGA_COLORS, 7);
 	}
 
@@ -80,7 +84,7 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 	}
 
 	@Override
-	void processColormap() {
+	protected void processColormap() {
 		super.processColormap();
 
 		wadFile.removeLumps("COLORMP");
@@ -98,7 +102,7 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 	}
 
 	@Override
-	void processRawGraphics() {
+	protected void processRawGraphics() {
 		processRawGraphic(wadFile.getLumpByName("STBAR")); // Status bar
 
 		Stream.of("HELP2", "TITLEPIC", "WIMAP0", // Raw graphics

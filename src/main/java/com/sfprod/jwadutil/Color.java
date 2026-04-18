@@ -2,7 +2,7 @@ package com.sfprod.jwadutil;
 
 public record Color(int r, int g, int b) {
 
-	int getRGB() {
+	public int getRGB() {
 		return 0xff000000 | (r << 16) | (g << 8) | b;
 	}
 
@@ -14,7 +14,7 @@ public record Color(int r, int g, int b) {
 		return r == g && g == b;
 	}
 
-	int calculateDistance(Color that) {
+	public int calculateDistance(Color that) {
 		int distr = this.r - that.r;
 		int distg = this.g - that.g;
 		int distb = this.b - that.b;

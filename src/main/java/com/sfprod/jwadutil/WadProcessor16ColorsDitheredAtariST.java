@@ -77,7 +77,7 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 	}
 
 	@Override
-	void processColormap() {
+	protected void processColormap() {
 		super.processColormap();
 
 		wadFile.removeLumps("COLORMP");
@@ -95,7 +95,7 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 	}
 
 	@Override
-	void processRawGraphics() {
+	protected void processRawGraphics() {
 		processRawGraphic(wadFile.getLumpByName("STBAR")); // Status bar
 
 		Stream.of("HELP2", "TITLEPIC", "WIMAP0", // Raw graphics
