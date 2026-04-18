@@ -29,7 +29,7 @@ public class WadProcessor {
 			SVN by Kippykip
 			Doom II status bar by Torus Games""".replace("\n", "\r\n");
 
-	static final short DIVISORS[] = { //
+	public static final short DIVISORS[] = { //
 			0, //
 			6818, 6628, 6449, 6279, 6087, 5906, 5736, 5575, //
 			5423, 5279, 5120, 4971, 4830, 4697, 4554, 4435, //

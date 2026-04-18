@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.atarist;
 
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.NumberUtils.toByte;
@@ -8,6 +8,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
 
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessor;
 import com.sfprod.utils.ByteBufferUtils;
 
 interface AtariSTUtil {

@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.atarist;
 
 import static com.sfprod.utils.NumberUtils.toByte;
 import static com.sfprod.utils.NumberUtils.toInt;
@@ -15,6 +15,10 @@ import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
+import com.sfprod.jwadutil.Color;
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessor16ColorsDithered;
 import com.sfprod.utils.ByteBufferUtils;
 
 public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDithered {
@@ -38,7 +42,7 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 			new Color(255, 255, 255) // white
 	);
 
-	WadProcessor16ColorsDitheredAtariST(String title, ByteOrder byteOrder, WadFile wadFile) {
+	public WadProcessor16ColorsDitheredAtariST(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, CUSTOM_ATARI_ST_COLORS, 7);
 	}
 
