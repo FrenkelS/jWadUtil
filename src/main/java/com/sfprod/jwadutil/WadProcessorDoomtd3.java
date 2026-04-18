@@ -5,6 +5,7 @@ import static com.sfprod.utils.NumberUtils.toByte;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class WadProcessorDoomtd3 extends WadProcessor {
 
@@ -20,6 +21,8 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 			"LAUN", "SHOT", "COLU", "POL5", //
 			"CBRA", "ELEC" //
 	);
+
+	private final Random random = new Random(0x1d4a11);
 
 	private final List<List<Integer>> listsOfBits;
 

@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,8 @@ import com.sfprod.utils.ByteBufferUtils;
 import com.sfprod.utils.NumberUtils;
 
 public abstract class WadProcessorLimitedColors extends WadProcessor {
+
+	protected final Random random = new Random(0x1d4a11);
 
 	private final List<Integer> grayscaleFromDarkToBright;
 	private final int divisor;

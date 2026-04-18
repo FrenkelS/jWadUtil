@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import com.sfprod.jwadutil.Color;
 import com.sfprod.jwadutil.Lump;
@@ -47,6 +48,8 @@ public class WadProcessor2ColorsTextMode extends WadProcessor {
 			35, 21, 220, 223);
 
 	private static final Map<Integer, List<Integer>> COLORS_SHUFFLE_MAP = createColorsShuffleMap();
+
+	private final Random random = new Random(0x1d4a11);
 
 	private final List<Byte> lookupTableWalls;
 	private final List<Byte> lookupTableSprites;

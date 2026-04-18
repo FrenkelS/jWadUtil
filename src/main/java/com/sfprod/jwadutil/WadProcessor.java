@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Stream;
 
 import com.sfprod.utils.ByteBufferUtils;
@@ -48,8 +47,6 @@ public abstract class WadProcessor {
 			269, 261, 253, 246, 239, 232, 226, 219, //
 			213, 207, 201, 195, 190, 184, 179 //
 	};
-
-	protected final Random random = new Random(0x1d4a11);
 
 	protected final ByteOrder byteOrder;
 	protected final WadFile wadFile;
