@@ -10,7 +10,7 @@ import com.sfprod.jwadutil.WadProcessor4Colors;
 public class WadProcessor2ColorsSinclairQL extends WadProcessor4Colors {
 
 	public WadProcessor2ColorsSinclairQL(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile, false);
+		super(title, byteOrder, wadFile, false, true);
 	}
 
 	@Override

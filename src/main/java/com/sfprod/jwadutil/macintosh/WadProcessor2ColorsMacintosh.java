@@ -12,7 +12,7 @@ import com.sfprod.utils.ByteBufferUtils;
 public class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
 
 	public WadProcessor2ColorsMacintosh(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile, true);
+		super(title, byteOrder, wadFile, true, true);
 	}
 
 	@Override

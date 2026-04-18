@@ -8,7 +8,7 @@ import com.sfprod.jwadutil.WadProcessor4Colors;
 public class WadProcessor2ColorsAtariST extends WadProcessor4Colors {
 
 	public WadProcessor2ColorsAtariST(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile, false);
+		super(title, byteOrder, wadFile, false, true);
 	}
 
 	@Override

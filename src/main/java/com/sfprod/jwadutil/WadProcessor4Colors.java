@@ -106,11 +106,14 @@ public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 			0x33, 0xcc, 0x3f, 0xf3, 0xcf, 0xfc, 0xff);
 
 	private final boolean invert;
+	private final boolean mostSignificantBitFirst;
 
-	protected WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile, boolean invert) {
+	protected WadProcessor4Colors(String title, ByteOrder byteOrder, WadFile wadFile, boolean invert,
+			boolean mostSignificantBitFirst) {
 		super(title, byteOrder, wadFile,
 				invert ? GRAYSCALE_FROM_DARK_TO_BRIGHT.reversed() : GRAYSCALE_FROM_DARK_TO_BRIGHT, 3);
 		this.invert = invert;
+		this.mostSignificantBitFirst = mostSignificantBitFirst;
 
 		List<Color> cgaColors = invert ? CGA_COLORS.stream().map(Color::invert).toList() : CGA_COLORS;
 		List<Color> colors = new ArrayList<>();
@@ -179,7 +182,12 @@ public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 		if (invert) {
 			i = 3 - i;
 		}
-		return toByte(i << 6);
+
+		if (mostSignificantBitFirst) {
+			return toByte(i << 6);
+		} else {
+			return toByte(i);
+		}
 	}
 
 }

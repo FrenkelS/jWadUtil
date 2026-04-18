@@ -1,8 +1,6 @@
 package com.sfprod.jwadutil.attunixpc;
 
 import static com.sfprod.utils.NumberUtils.reverse;
-import static com.sfprod.utils.NumberUtils.toByte;
-import static com.sfprod.utils.NumberUtils.toInt;
 
 import java.nio.ByteOrder;
 
@@ -13,7 +11,7 @@ import com.sfprod.jwadutil.WadProcessor4Colors;
 public class WadProcessor2ColorsAttUnixPC extends WadProcessor4Colors {
 
 	public WadProcessor2ColorsAttUnixPC(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile, false);
+		super(title, byteOrder, wadFile, false, false);
 	}
 
 	@Override
@@ -27,11 +25,5 @@ public class WadProcessor2ColorsAttUnixPC extends WadProcessor4Colors {
 			lump.data()[i * 2 + 1] = reverse(e);
 			lump.data()[i * 2 + 0] = reverse(o);
 		}
-	}
-
-	@Override
-	protected byte convert256to16(byte b) {
-		byte temp = super.convert256to16(b);
-		return toByte(toInt(temp) >> 6);
 	}
 }
