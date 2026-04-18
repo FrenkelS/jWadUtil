@@ -55,7 +55,7 @@ public class WadProcessor {
 	protected final WadFile wadFile;
 	private final MapProcessor mapProcessor;
 	final List<Color> vgaColors;
-	List<Color> availableColors;
+	protected List<Color> availableColors;
 
 	protected WadProcessor(String title, ByteOrder byteOrder, WadFile wadFile) {
 		this(title, byteOrder, wadFile, new MapProcessor(byteOrder, wadFile));

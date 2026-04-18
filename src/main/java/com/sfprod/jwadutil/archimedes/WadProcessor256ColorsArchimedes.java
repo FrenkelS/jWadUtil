@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.archimedes;
 
 import static com.sfprod.utils.NumberUtils.toShort;
 
@@ -8,9 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.sfprod.jwadutil.Color;
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessorLimitedColors;
 import com.sfprod.utils.ByteBufferUtils;
 
-class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
+public class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 
 	private static final List<Integer> GRAYSCALE_FROM_DARK_TO_BRIGHT = List.of(//
 			0x00, 0x01, 0x02, 0x03, //
@@ -18,7 +22,7 @@ class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 			0xd0, 0xd1, 0xd2, 0xd3, //
 			0xf5, 0xf8, 0xfa, 0xff);
 
-	WadProcessor256ColorsArchimedes(String title, ByteOrder byteOrder, WadFile wadFile) {
+	public WadProcessor256ColorsArchimedes(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, GRAYSCALE_FROM_DARK_TO_BRIGHT, 16);
 
 		Color[] colors = new Color[256];

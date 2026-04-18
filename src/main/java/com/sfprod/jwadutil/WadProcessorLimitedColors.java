@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import com.sfprod.utils.ByteBufferUtils;
 import com.sfprod.utils.NumberUtils;
 
-abstract class WadProcessorLimitedColors extends WadProcessor {
+public abstract class WadProcessorLimitedColors extends WadProcessor {
 
 	private final List<Integer> grayscaleFromDarkToBright;
 	private final int divisor;
@@ -25,7 +25,7 @@ abstract class WadProcessorLimitedColors extends WadProcessor {
 
 	private List<Integer> vga256ToDitheredLUT;
 
-	WadProcessorLimitedColors(String title, ByteOrder byteOrder, WadFile wadFile,
+	protected WadProcessorLimitedColors(String title, ByteOrder byteOrder, WadFile wadFile,
 			List<Integer> grayscaleFromDarkToBright, int divisor) {
 		super(title, byteOrder, wadFile);
 		this.grayscaleFromDarkToBright = grayscaleFromDarkToBright;

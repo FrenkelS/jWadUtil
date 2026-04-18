@@ -1,4 +1,4 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.archimedes;
 
 import static com.sfprod.utils.NumberUtils.reverse;
 import static com.sfprod.utils.NumberUtils.toByte;
@@ -6,9 +6,13 @@ import static com.sfprod.utils.NumberUtils.toInt;
 
 import java.nio.ByteOrder;
 
-class WadProcessor2ColorsArchimedes extends WadProcessor4Colors {
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessor4Colors;
 
-	WadProcessor2ColorsArchimedes(String title, ByteOrder byteOrder, WadFile wadFile) {
+public class WadProcessor2ColorsArchimedes extends WadProcessor4Colors {
+
+	public WadProcessor2ColorsArchimedes(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, false);
 	}
 
