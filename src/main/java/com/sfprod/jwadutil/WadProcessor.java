@@ -110,7 +110,7 @@ public class WadProcessor {
 
 	protected Lump getLump(String lumpname) {
 		try {
-			byte[] data = JWadUtil.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
+			byte[] data = WadProcessor.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
 			return new Lump(lumpname, data, ByteOrder.LITTLE_ENDIAN);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
