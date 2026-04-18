@@ -4,6 +4,7 @@ import com.sfprod.jwadutil.amiga.WadProcessor16ColorsDitheredAmiga;
 import com.sfprod.jwadutil.amiga.WadProcessor2ColorsAmiga;
 import com.sfprod.jwadutil.atarist.WadProcessor16ColorsDitheredAtariST;
 import com.sfprod.jwadutil.atarist.WadProcessor2ColorsAtariST;
+import com.sfprod.jwadutil.attunixpc.WadProcessor2ColorsAttUnixPC;
 
 public interface WadProcessorFactory {
 
