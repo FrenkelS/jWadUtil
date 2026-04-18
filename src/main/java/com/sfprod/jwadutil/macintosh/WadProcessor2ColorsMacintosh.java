@@ -1,14 +1,17 @@
-package com.sfprod.jwadutil;
+package com.sfprod.jwadutil.macintosh;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
 
+import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.WadFile;
+import com.sfprod.jwadutil.WadProcessor4Colors;
 import com.sfprod.utils.ByteBufferUtils;
 
-class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
+public class WadProcessor2ColorsMacintosh extends WadProcessor4Colors {
 
-	WadProcessor2ColorsMacintosh(String title, ByteOrder byteOrder, WadFile wadFile) {
+	public WadProcessor2ColorsMacintosh(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, true);
 	}
 
