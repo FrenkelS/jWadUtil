@@ -65,7 +65,7 @@ public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 			-1 // cream-colored
 	);
 
-	private static final List<Integer> VGA256_TO_DITHERED_LUT = List.of( //
+	private static final List<Integer> VGA256_TO_BYTE_LUT = List.of( //
 			0x00, 0x00, 0x00, // black
 			0x33, // gray
 			0xff, // white
@@ -141,8 +141,8 @@ public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	protected List<Integer> createVga256ToDitheredLUT(List<Color> vgaCols, List<Color> availableCols) {
-		return invert ? VGA256_TO_DITHERED_LUT.stream().map(this::invert).toList() : VGA256_TO_DITHERED_LUT;
+	protected List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols) {
+		return invert ? VGA256_TO_BYTE_LUT.stream().map(this::invert).toList() : VGA256_TO_BYTE_LUT;
 	}
 
 	@Override
@@ -186,7 +186,7 @@ public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	protected byte convert256to16(byte b) {
+	protected byte convertVga256toSingleColor(byte b) {
 		int i = VGA256_TO_4_LUT.get(toInt(b));
 		if (invert) {
 			i = 3 - i;

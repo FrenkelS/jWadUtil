@@ -52,7 +52,7 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 	}
 
 	@Override
-	protected List<Integer> createVga256ToDitheredLUT(List<Color> vgaCols, List<Color> availableCols) {
+	protected List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols) {
 		List<Integer> indexes = new ArrayList<>();
 
 		for (Color vgaColor : vgaCols) {
@@ -75,8 +75,8 @@ public class WadProcessor16ColorsDitheredAtariST extends WadProcessor16ColorsDit
 	}
 
 	@Override
-	protected byte convert256to16(byte b) {
-		byte out = super.convert256to16(b);
+	protected byte convertVga256toSingleColor(byte b) {
+		byte out = convertVga256toByte(b);
 		return toByte(toInt(out) & 0x0f);
 	}
 

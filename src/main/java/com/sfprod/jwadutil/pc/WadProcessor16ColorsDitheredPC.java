@@ -28,7 +28,7 @@ public class WadProcessor16ColorsDitheredPC extends WadProcessor16ColorsDithered
 			new Color(0xFF, 0xFF, 0xFF) // white
 	);
 
-	private static final List<Integer> VGA256_TO_DITHERED_LUT = List.of( //
+	private static final List<Integer> VGA256_TO_BYTE_LUT = List.of( //
 			0x00, 0x06, 0x00, // black
 			0x88, // gray
 			0xff, // white
@@ -71,8 +71,13 @@ public class WadProcessor16ColorsDitheredPC extends WadProcessor16ColorsDithered
 	}
 
 	@Override
-	protected List<Integer> createVga256ToDitheredLUT(List<Color> vgaCols, List<Color> availableCols) {
-		return VGA256_TO_DITHERED_LUT;
+	protected List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols) {
+		return VGA256_TO_BYTE_LUT;
+	}
+
+	@Override
+	protected byte convertVga256toSingleColor(byte b) {
+		return convertVga256toByte(b);
 	}
 
 }

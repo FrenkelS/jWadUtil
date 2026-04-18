@@ -26,7 +26,7 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 
 	private Map<Integer, List<Integer>> availableColorsShuffleMap;
 
-	private List<Integer> vga256ToDitheredLUT;
+	private List<Integer> vga256toByteLUT;
 
 	protected WadProcessorLimitedColors(String title, ByteOrder byteOrder, WadFile wadFile,
 			List<Integer> grayscaleFromDarkToBright, int divisor) {
@@ -54,13 +54,13 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 
 		this.availableColorsShuffleMap = shuffleMap;
 
-		this.vga256ToDitheredLUT = createVga256ToDitheredLUT(vgaColors, availableColors);
+		this.vga256toByteLUT = createVga256toByteLUT(vgaColors, availableColors);
 	}
 
-	protected abstract List<Integer> createVga256ToDitheredLUT(List<Color> vgaCols, List<Color> availableCols);
+	protected abstract List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols);
 
-	protected byte convert256to16dithered(byte b) {
-		return toByte(vga256ToDitheredLUT.get(toInt(b)));
+	protected byte convertVga256toByte(byte b) {
+		return toByte(vga256toByteLUT.get(toInt(b)));
 	}
 
 	@Override
@@ -107,14 +107,14 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 
 	protected abstract void changePaletteRaw(Lump lump);
 
-	protected abstract byte convert256to16(byte b);
+	protected abstract byte convertVga256toSingleColor(byte b);
 
 	private void changePaletteSpritesAndWalls(Lump lump) {
-		changePalettePicture(lump, this::convert256to16dithered);
+		changePalettePicture(lump, this::convertVga256toByte);
 	}
 
 	private void changePaletteStatusBarMenuAndIntermission(Lump lump) {
-		changePalettePicture(lump, this::convert256to16);
+		changePalettePicture(lump, this::convertVga256toSingleColor);
 	}
 
 	protected void changePalettePicture(Lump lump, Function<Byte, Byte> colorConvertFunction) {

@@ -25,14 +25,9 @@ public abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedCo
 	}
 
 	@Override
-	protected byte convert256to16(byte b) {
-		return convert256to16dithered(b);
-	}
-
-	@Override
 	protected void changePaletteRaw(Lump lump) {
 		for (int i = 0; i < lump.length(); i++) {
-			lump.data()[i] = convert256to16dithered(lump.data()[i]);
+			lump.data()[i] = convertVga256toByte(lump.data()[i]);
 		}
 	}
 

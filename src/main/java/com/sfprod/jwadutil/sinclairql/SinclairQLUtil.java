@@ -13,7 +13,7 @@ import com.sfprod.jwadutil.WadProcessor;
 
 interface SinclairQLUtil {
 
-	static private byte find(int frequencyAverage) {
+	private static byte find(int frequencyAverage) {
 		final int[] FREQUENCIES = { 1313, 1177, 1066, 974, 897, 831, 775, 725, 682, 643, 608, 577, 549, 524, 501, 480,
 				460, 442, 426, 410, 396, 383, 370, 358, 347, 337, 327, 318, 309, 301, 293, 286, 279, 272, 266, 260, 254,
 				248, 243, 238, 233, 228, 224, 220, 215, 211, 208, 203 };

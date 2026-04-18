@@ -58,7 +58,7 @@ public class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 		fillAvailableColorsShuffleMap(Arrays.asList(colors));
 	}
 
-	private static Color createArchimedesColor(int r, int g, int b) {
+	private Color createArchimedesColor(int r, int g, int b) {
 		assert 0 <= r && r < 8;
 		assert 0 <= g && g < 4;
 		assert 0 <= b && b < 8;
@@ -66,8 +66,8 @@ public class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	protected byte convert256to16(byte b) {
-		return convert256to16dithered(b);
+	protected byte convertVga256toSingleColor(byte b) {
+		return convertVga256toByte(b);
 	}
 
 	@Override
@@ -92,12 +92,12 @@ public class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 	@Override
 	protected void changePaletteRaw(Lump lump) {
 		for (int i = 0; i < lump.length(); i++) {
-			lump.data()[i] = convert256to16dithered(lump.data()[i]);
+			lump.data()[i] = convertVga256toByte(lump.data()[i]);
 		}
 	}
 
 	@Override
-	protected List<Integer> createVga256ToDitheredLUT(List<Color> vgaCols, List<Color> availableCols) {
+	protected List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols) {
 		List<Integer> indexes = new ArrayList<>();
 
 		for (Color vgaColor : vgaCols) {

@@ -88,7 +88,7 @@ public class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 			-1 // cream-colored
 	);
 
-	private static final List<Integer> VGA256_TO_DITHERED_LUT = List.of( //
+	private static final List<Integer> VGA256_TO_BYTE_LUT = List.of( //
 			0, 0, 0, // black
 			34, // gray
 			124, // white
@@ -228,13 +228,13 @@ public class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	protected byte convert256to16(byte b) {
+	protected byte convertVga256toSingleColor(byte b) {
 		return toByte(VGA256_TO_8_LUT.get(toInt(b)));
 	}
 
 	@Override
-	protected List<Integer> createVga256ToDitheredLUT(List<Color> vgaCols, List<Color> availableCols) {
-		return VGA256_TO_DITHERED_LUT;
+	protected List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols) {
+		return VGA256_TO_BYTE_LUT;
 	}
 
 	@Override
