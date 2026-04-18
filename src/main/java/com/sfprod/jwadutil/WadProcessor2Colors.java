@@ -14,7 +14,7 @@ import javax.imageio.ImageIO;
 
 import com.sfprod.utils.ByteBufferUtils;
 
-public class WadProcessor2Colors extends WadProcessorLimitedColors {
+public abstract class WadProcessor2Colors extends WadProcessorLimitedColors {
 
 	private static final List<Color> CGA_COLORS = List.of( //
 			new Color(0x00, 0x00, 0x00), // black

@@ -43,19 +43,12 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 			Lump flat = wadFile.getLumpByName(flatname);
 
 			byte[] source = flat.data();
-			int sumr = 0;
-			int sumg = 0;
-			int sumb = 0;
-			for (byte b : source) {
-				Color color = vgaColors.get(toInt(b));
-				sumr += color.r() * color.r();
-				sumg += color.g() * color.g();
-				sumb += color.b() * color.b();
+			Color[] colors = new Color[source.length];
+			for (int i = 0; i < source.length; i++) {
+				byte b = source[i];
+				colors[i] = vgaColors.get(toInt(b));
 			}
-			int averager = (int) Math.sqrt(sumr / (64 * 64));
-			int averageg = (int) Math.sqrt(sumg / (64 * 64));
-			int averageb = (int) Math.sqrt(sumb / (64 * 64));
-			Color averageColor = new Color(averager, averageg, averageb);
+			Color averageColor = Color.blendColors(colors);
 
 			double averageGray = averageColor.gray();
 			int possibleIndex = Math.clamp(Math.abs(Collections.binarySearch(sortedGrays, averageGray)), 0,
