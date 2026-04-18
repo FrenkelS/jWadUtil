@@ -179,4 +179,16 @@ public class WadProcessorDoomtd3 extends WadProcessor {
 			wadFile.removeLump(lumpNum);
 		}
 	}
+
+	@Override
+	protected void changeColors() {
+	}
+
+	@Override
+	protected void shuffleColors() {
+	}
+
+	@Override
+	protected void processRawGraphics() {
+	}
 }

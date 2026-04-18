@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 import com.sfprod.utils.ByteBufferUtils;
 
-public class WadProcessor {
+public abstract class WadProcessor {
 
 	public static final boolean FLAT_SPAN = true;
 
@@ -138,17 +138,13 @@ public class WadProcessor {
 		processRawGraphics();
 	}
 
-	protected void changeColors() {
-	}
+	protected abstract void changeColors();
 
-	protected void processColormap() {
-	}
+	protected abstract void processColormap();
 
-	protected void shuffleColors() {
-	}
+	protected abstract void shuffleColors();
 
-	protected void processRawGraphics() {
-	}
+	protected abstract void processRawGraphics();
 
 	/**
 	 * Remove unused bytes

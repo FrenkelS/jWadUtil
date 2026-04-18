@@ -187,6 +187,10 @@ public class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 	}
 
 	@Override
+	protected void processRawGraphics() {
+	}
+
+	@Override
 	protected void changePaletteRaw(Lump lump) {
 		wadFile.replaceLump(createSinclairQLLump(lump.nameAsString()));
 	}

@@ -30,6 +30,10 @@ public abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedCo
 	}
 
 	@Override
+	protected void processRawGraphics() {
+	}
+
+	@Override
 	protected void changePaletteRaw(Lump lump) {
 		for (int i = 0; i < lump.length(); i++) {
 			lump.data()[i] = convert256to16dithered(lump.data()[i]);

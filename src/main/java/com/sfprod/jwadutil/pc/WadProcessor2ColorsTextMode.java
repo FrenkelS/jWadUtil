@@ -54,15 +54,18 @@ public class WadProcessor2ColorsTextMode extends WadProcessor {
 	public WadProcessor2ColorsTextMode(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, new MapProcessor2ColorsTextMode(byteOrder, wadFile));
 
-		wadFile.replaceLump(new Lump("TITLEPIC", getLump("TP80X25M").data(), ByteBufferUtils.DONT_CARE));
-		wadFile.replaceLump(new Lump("WIMAP0", getLump("WM80X25M").data(), ByteBufferUtils.DONT_CARE));
-		wadFile.replaceLump(new Lump("HELP2", getLump("HL80X25M").data(), ByteBufferUtils.DONT_CARE));
-
 		List<Double> grays = vgaColors.stream().map(Color::gray).toList();
 		List<Double> sortedGrays = grays.stream().sorted().toList();
 
 		this.lookupTableWalls = createLookupTable(grays, sortedGrays, COLORS_WALLS);
 		this.lookupTableSprites = createLookupTable(grays, sortedGrays, COLORS_SPRITES);
+	}
+
+	@Override
+	protected void processRawGraphics() {
+		wadFile.replaceLump(new Lump("TITLEPIC", getLump("TP80X25M").data(), ByteBufferUtils.DONT_CARE));
+		wadFile.replaceLump(new Lump("WIMAP0", getLump("WM80X25M").data(), ByteBufferUtils.DONT_CARE));
+		wadFile.replaceLump(new Lump("HELP2", getLump("HL80X25M").data(), ByteBufferUtils.DONT_CARE));
 	}
 
 	private List<Byte> createLookupTable(List<Double> grays, List<Double> sortedGrays, byte[] colors) {

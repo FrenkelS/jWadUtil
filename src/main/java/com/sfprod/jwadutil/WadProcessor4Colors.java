@@ -145,6 +145,10 @@ public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 	}
 
 	@Override
+	protected void processRawGraphics() {
+	}
+
+	@Override
 	protected void changePaletteRaw(Lump lump) {
 		wadFile.replaceLump(createCgaLump(lump.nameAsString()));
 	}

@@ -10,6 +10,7 @@ import com.sfprod.jwadutil.attunixpc.WadProcessor2ColorsAttUnixPC;
 import com.sfprod.jwadutil.macintosh.WadProcessor2ColorsMacintosh;
 import com.sfprod.jwadutil.pc.WadProcessor16ColorsDitheredPC;
 import com.sfprod.jwadutil.pc.WadProcessor16ColorsDitheredTextMode;
+import com.sfprod.jwadutil.pc.WadProcessor256ColorsPC;
 import com.sfprod.jwadutil.pc.WadProcessor2ColorsTextMode;
 import com.sfprod.jwadutil.pc.WadProcessor4ColorsPC;
 import com.sfprod.jwadutil.sinclairql.WadProcessor2ColorsSinclairQL;
@@ -19,6 +20,7 @@ public interface WadProcessorFactory {
 
 	static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
 		return switch (game) {
+		case DOOM8088, ELKSDOOM -> new WadProcessor256ColorsPC(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_2_COLOR_TEXT_MODE ->
 			new WadProcessor2ColorsTextMode(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_4_COLOR -> new WadProcessor4ColorsPC(game.getTitle(), game.getByteOrder(), wadFile);
@@ -46,7 +48,6 @@ public interface WadProcessorFactory {
 			new WadProcessor16ColorsDitheredTextMode(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOMTD3_BIG_ENDIAN, DOOMTD3_LITTLE_ENDIAN ->
 			new WadProcessorDoomtd3(game.getTitle(), game.getByteOrder(), wadFile);
-		default -> new WadProcessor(game.getTitle(), game.getByteOrder(), wadFile);
 		};
 	}
 
