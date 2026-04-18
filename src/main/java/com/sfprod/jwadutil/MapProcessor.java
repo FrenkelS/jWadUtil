@@ -467,20 +467,30 @@ public class MapProcessor {
 		if (!flatToColor.containsKey(flatname)) {
 			Lump flat = wadFile.getLumpByName(flatname);
 
+			Color averageColor;
 			byte[] source = flat.data();
-			int sumr = 0;
-			int sumg = 0;
-			int sumb = 0;
-			for (byte b : source) {
-				Color color = vgaColors.get(toInt(b));
-				sumr += color.r() * color.r();
-				sumg += color.g() * color.g();
-				sumb += color.b() * color.b();
+			if ("FLOOR4_8".equals(flatname) && source.length != 64 * 64) { // TODO remove this hack
+				int sumr = 0;
+				int sumg = 0;
+				int sumb = 0;
+				for (byte b : source) {
+					Color color = vgaColors.get(toInt(b));
+					sumr += color.r() * color.r();
+					sumg += color.g() * color.g();
+					sumb += color.b() * color.b();
+				}
+				int averager = (int) Math.sqrt(sumr / (64 * 64));
+				int averageg = (int) Math.sqrt(sumg / (64 * 64));
+				int averageb = (int) Math.sqrt(sumb / (64 * 64));
+				averageColor = new Color(averager, averageg, averageb);
+			} else {
+				Color[] colors = new Color[source.length];
+				for (int i = 0; i < source.length; i++) {
+					byte b = source[i];
+					colors[i] = vgaColors.get(toInt(b));
+				}
+				averageColor = Color.blendColors(colors);
 			}
-			int averager = (int) Math.sqrt(sumr / (64 * 64));
-			int averageg = (int) Math.sqrt(sumg / (64 * 64));
-			int averageb = (int) Math.sqrt(sumb / (64 * 64));
-			Color averageColor = new Color(averager, averageg, averageb);
 
 			short closestAverageColorIndex = -1;
 			int minDistance = Integer.MAX_VALUE;
