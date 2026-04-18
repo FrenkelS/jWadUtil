@@ -218,12 +218,6 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 
 		for (int i = 0; i < 256; i++) {
 			int dist = c.calculateDistance(availableColors.get(i));
-			if (dist == 0) {
-				// perfect match
-				closestColor = i;
-				break;
-			}
-
 			if (dist < closestDist) {
 				closestDist = dist;
 				closestColor = i;

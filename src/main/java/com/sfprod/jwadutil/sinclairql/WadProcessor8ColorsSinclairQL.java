@@ -337,12 +337,6 @@ public class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 
 		for (Color possibleColor : SINCLAIR_QL_PALETTE.keySet()) {
 			int dist = c.calculateDistance(possibleColor);
-			if (dist == 0) {
-				// perfect match
-				closestColor = possibleColor;
-				break;
-			}
-
 			if (dist < closestDist) {
 				closestDist = dist;
 				closestColor = possibleColor;

@@ -489,11 +489,6 @@ public class MapProcessor {
 				Color color = entry.getValue();
 
 				int distance = averageColor.calculateDistance(color);
-				if (distance == 0) {
-					closestAverageColorIndex = i;
-					break;
-				}
-
 				if (distance < minDistance) {
 					minDistance = distance;
 					closestAverageColorIndex = i;
