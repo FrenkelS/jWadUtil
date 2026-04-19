@@ -12,6 +12,7 @@ import static com.sfprod.utils.StringUtils.toStringUpperCase;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,7 +51,6 @@ public class MapProcessor {
 
 	protected final List<Color> vgaColors;
 
-	private final Map<String, Short> flatToColor = new HashMap<>();
 	private List<Color> availableColors;
 	private final Map<Short, Color> availableColorsMap = new HashMap<>();
 
@@ -61,8 +61,8 @@ public class MapProcessor {
 		this.vgaColors = createVgaColors(wadFile);
 	}
 
-	public void processMaps(List<Color> availableColors) {
-		this.availableColors = availableColors;
+	public void processMaps(List<Color> availableCols) {
+		this.availableColors = Collections.unmodifiableList(availableCols);
 
 		for (int map = 1; map <= 9; map++) {
 			String mapName = "E1M" + map;
@@ -403,6 +403,7 @@ public class MapProcessor {
 	 * @param lumpNum
 	 */
 	private void processSectors(int lumpNum) {
+		Map<String, Short> flatToColor = new HashMap<>();
 		int sectorsLumpNum = lumpNum + ML_SECTORS;
 		Lump sectors = wadFile.getLumpByNum(sectorsLumpNum);
 		ByteBuffer oldbb = sectors.dataAsByteBuffer();
@@ -428,7 +429,7 @@ public class MapProcessor {
 				if (floorflatname.startsWith("NUKAGE")) {
 					floorpicnum = NUKAGE;
 				} else {
-					floorpicnum = calculateAverageColor(floorflatname);
+					floorpicnum = calculateAverageColor(flatToColor, floorflatname);
 				}
 				newbb.putShort(floorpicnum);
 
@@ -440,7 +441,7 @@ public class MapProcessor {
 				} else if ("F_SKY1".equals(ceilingflatname)) {
 					ceilingpicnum = SKY;
 				} else {
-					ceilingpicnum = calculateAverageColor(ceilingflatname);
+					ceilingpicnum = calculateAverageColor(flatToColor, ceilingflatname);
 				}
 				newbb.putShort(ceilingpicnum);
 			} else {
@@ -457,8 +458,8 @@ public class MapProcessor {
 		wadFile.replaceLump(sectorsLumpNum, newLump);
 	}
 
-	protected short calculateAverageColor(String flatname) {
-		if (availableColorsMap.isEmpty()) {
+	protected short calculateAverageColor(Map<String, Short> flatToColor, String flatname) {
+		if (flatToColor.isEmpty()) {
 			for (short i = 0; i < 256; i++) {
 				this.availableColorsMap.put(i, availableColors.get(i));
 			}

@@ -17,24 +17,24 @@ import org.junit.jupiter.params.provider.EnumSource;
 class JWadUtilTest {
 
 	private static final Map<Game, String> EXPECTED_CHECKSUMS = new EnumMap<>(Map.ofEntries( //
-			Map.entry(Game.DOOM8088, "CDB627A8"), //
-			Map.entry(Game.DOOM8088_2_COLOR_TEXT_MODE, "80AADBE9"), //
-			Map.entry(Game.DOOM8088_4_COLOR, "53DE565"), //
-			Map.entry(Game.DOOM8088_16_COLOR_DITHERED, "2BDE79CF"), //
-			Map.entry(Game.DOOM8088_16_COLOR_DITHERED_TEXT_MODE, "D51B2960"), //
-			Map.entry(Game.DOOM8088_ARCHIMEDES_2_COLOR, "9C6415BB"), //
-			Map.entry(Game.DOOM8088_ARCHIMEDES_256_COLOR, "4074B2F3"), //
-			Map.entry(Game.DOOM8088_AMIGA_2_COLOR, "D298368"), //
-			Map.entry(Game.DOOM8088_AMIGA_16_COLOR, "BB831CE3"), //
-			Map.entry(Game.DOOM8088_AT_T_UNIX_PC_2_COLOR, "76C2CB8D"), //
-			Map.entry(Game.DOOM8088_ATARI_ST_2_COLOR, "EF0C7078"), //
-			Map.entry(Game.DOOM8088_ATARI_ST_16_COLOR, "326E002"), //
-			Map.entry(Game.DOOM8088_MACINTOSH_2_COLOR, "703BD803"), //
-			Map.entry(Game.DOOM8088_SINCLAIR_QL_2_COLOR, "95996BF0"), //
-			Map.entry(Game.DOOM8088_SINCLAIR_QL_8_COLOR, "36438169"), //
-			Map.entry(Game.DOOMTD3_BIG_ENDIAN, "3F272103"), //
-			Map.entry(Game.DOOMTD3_LITTLE_ENDIAN, "37DD23A3"), //
-			Map.entry(Game.ELKSDOOM, "2C61CBE7") //
+			Map.entry(Game.DOOM8088, "75E8CA37"), //
+			Map.entry(Game.DOOM8088_2_COLOR_TEXT_MODE, "FD538E13"), //
+			Map.entry(Game.DOOM8088_4_COLOR, "359C54AD"), //
+			Map.entry(Game.DOOM8088_16_COLOR_DITHERED, "B2CABBA2"), //
+			Map.entry(Game.DOOM8088_16_COLOR_DITHERED_TEXT_MODE, "83653B57"), //
+			Map.entry(Game.DOOM8088_ARCHIMEDES_2_COLOR, "20E75F2"), //
+			Map.entry(Game.DOOM8088_ARCHIMEDES_256_COLOR, "609AD4F"), //
+			Map.entry(Game.DOOM8088_AMIGA_2_COLOR, "E2425A49"), //
+			Map.entry(Game.DOOM8088_AMIGA_16_COLOR, "909F083B"), //
+			Map.entry(Game.DOOM8088_AT_T_UNIX_PC_2_COLOR, "795C58D9"), //
+			Map.entry(Game.DOOM8088_ATARI_ST_2_COLOR, "6E02604B"), //
+			Map.entry(Game.DOOM8088_ATARI_ST_16_COLOR, "6BD4EC4E"), //
+			Map.entry(Game.DOOM8088_MACINTOSH_2_COLOR, "2E4F98B8"), //
+			Map.entry(Game.DOOM8088_SINCLAIR_QL_2_COLOR, "53DA9368"), //
+			Map.entry(Game.DOOM8088_SINCLAIR_QL_8_COLOR, "389B908B"), //
+			Map.entry(Game.DOOMTD3_BIG_ENDIAN, "62614EB0"), //
+			Map.entry(Game.DOOMTD3_LITTLE_ENDIAN, "65E887FA"), //
+			Map.entry(Game.ELKSDOOM, "943F2678") //
 	));
 
 	@ParameterizedTest

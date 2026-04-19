@@ -117,7 +117,7 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 		changePalettePicture(lump, this::convertVga256toSingleColor);
 	}
 
-	protected void changePalettePicture(Lump lump, Function<Byte, Byte> colorConvertFunction) {
+	private void changePalettePicture(Lump lump, Function<Byte, Byte> colorConvertFunction) {
 		ByteBuffer dataByteBuffer = lump.dataAsByteBuffer();
 		short width = dataByteBuffer.getShort();
 		dataByteBuffer.getShort(); // height

@@ -7,7 +7,6 @@ import static com.sfprod.utils.NumberUtils.toShort;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +20,8 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 
 	private final List<Double> sortedGrays;
 
-	private final Map<String, Short> flatToColor = new HashMap<>();
 	private final List<Short> availableColors;
+	private final List<Short> flatAvailableColors = new ArrayList<>();
 
 	public MapProcessor2ColorsTextMode(ByteOrder byteOrder, WadFile wadFile) {
 		super(byteOrder, wadFile);
@@ -34,11 +33,16 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 		for (byte b : COLORS_FLOORS) {
 			colors.add(toShort(b));
 		}
-		this.availableColors = colors;
+		this.availableColors = Collections.unmodifiableList(colors);
 	}
 
 	@Override
-	protected short calculateAverageColor(String flatname) {
+	protected short calculateAverageColor(Map<String, Short> flatToColor, String flatname) {
+		if (flatToColor.isEmpty()) {
+			flatAvailableColors.clear();
+			flatAvailableColors.addAll(availableColors);
+		}
+
 		if (!flatToColor.containsKey(flatname)) {
 			Lump flat = wadFile.getLumpByName(flatname);
 
@@ -54,9 +58,9 @@ public class MapProcessor2ColorsTextMode extends MapProcessor {
 			int possibleIndex = Math.clamp(Math.abs(Collections.binarySearch(sortedGrays, averageGray)), 0,
 					sortedGrays.size() - 1);
 
-			int indexAvailableColors = possibleIndex * availableColors.size() / sortedGrays.size();
-			short c = availableColors.get(indexAvailableColors);
-			availableColors.remove(indexAvailableColors);
+			int indexAvailableColors = possibleIndex * flatAvailableColors.size() / sortedGrays.size();
+			short c = flatAvailableColors.get(indexAvailableColors);
+			flatAvailableColors.remove(indexAvailableColors);
 
 			flatToColor.put(flatname, c);
 			assert flatToColor.size() == new HashSet<>(flatToColor.values()).size();
