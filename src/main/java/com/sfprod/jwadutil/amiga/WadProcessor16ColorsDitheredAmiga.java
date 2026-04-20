@@ -24,20 +24,20 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 
 	private static final List<Color> CUSTOM_AMIGA_COLORS = List.of( //
 			new Color(0, 0, 0), // black
-			new Color(0, 0, 68), //
-			new Color(51, 68, 34), //
-			new Color(153, 136, 102), //
-			new Color(119, 17, 17), //
-			new Color(119, 68, 34), //
-			new Color(136, 102, 85), //
-			new Color(170, 170, 170), // light gray
-			new Color(102, 102, 102), // dark gray
-			new Color(0, 0, 204), //
-			new Color(51, 136, 34), //
-			new Color(238, 170, 119), //
-			new Color(221, 85, 0), //
-			new Color(204, 0, 204), //
-			new Color(255, 238, 68), //
+			new Color(0, 0, 182), //
+			new Color(36, 73, 0), //
+			new Color(73, 0, 0), //
+			new Color(182, 0, 0), //
+			new Color(255, 146, 36), //
+			new Color(146, 109, 73), //
+			new Color(146, 146, 146), // light gray
+			new Color(73, 73, 73), // dark gray
+			new Color(109, 109, 255), //
+			new Color(109, 219, 73), //
+			new Color(255, 219, 182), //
+			new Color(255, 0, 0), //
+			new Color(255, 0, 255), //
+			new Color(255, 255, 36), //
 			new Color(255, 255, 255) // white
 	);
 
@@ -105,14 +105,15 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 
 	@Override
 	protected void changePaletteRaw(Lump lump) {
-		for (int i = 0; i < lump.length(); i++) {
-			lump.data()[i] = convertVga256toByte(lump.data()[i]);
-		}
 	}
 
 	@Override
 	protected void processRawGraphics() {
-		processRawGraphic(wadFile.getLumpByName("STBAR")); // Status bar
+		Lump stbar = wadFile.getLumpByName("STBAR");
+		for (int i = 0; i < stbar.length(); i++) {
+			stbar.data()[i] = convertVga256toSingleColor(stbar.data()[i]);
+		}
+		processRawGraphic(stbar); // Status bar
 
 		Stream.of("HELP2", "TITLEPIC", "WIMAP0", // Raw graphics
 				"FLOOR4_8") // Finale background flat

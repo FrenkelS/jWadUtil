@@ -25,7 +25,7 @@ class JWadUtilTest {
 			Map.entry(Game.DOOM8088_ARCHIMEDES_2_COLOR, "20E75F2"), //
 			Map.entry(Game.DOOM8088_ARCHIMEDES_256_COLOR, "609AD4F"), //
 			Map.entry(Game.DOOM8088_AMIGA_2_COLOR, "E2425A49"), //
-			Map.entry(Game.DOOM8088_AMIGA_16_COLOR, "833C9331"), //
+			Map.entry(Game.DOOM8088_AMIGA_16_COLOR, "1C54C7E8"), //
 			Map.entry(Game.DOOM8088_AT_T_UNIX_PC_2_COLOR, "795C58D9"), //
 			Map.entry(Game.DOOM8088_ATARI_ST_2_COLOR, "6E02604B"), //
 			Map.entry(Game.DOOM8088_ATARI_ST_16_COLOR, "D777D5BE"), //
