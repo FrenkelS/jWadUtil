@@ -227,7 +227,7 @@ public class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	protected List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols) {
+	protected List<Integer> createVga256toByteLUT(List<Color> availableCols) {
 		return VGA256_TO_BYTE_LUT;
 	}
 

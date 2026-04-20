@@ -92,10 +92,10 @@ public class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	protected List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols) {
+	protected List<Integer> createVga256toByteLUT(List<Color> availableCols) {
 		List<Integer> indexes = new ArrayList<>();
 
-		for (Color vgaColor : vgaCols) {
+		for (Color vgaColor : vgaColors) {
 			int minClosestColor = Integer.MAX_VALUE;
 			int indexClosestColor = -1;
 

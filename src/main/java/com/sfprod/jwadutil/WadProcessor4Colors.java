@@ -142,7 +142,7 @@ public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	protected List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols) {
+	protected List<Integer> createVga256toByteLUT(List<Color> availableCols) {
 		return invert ? VGA256_TO_BYTE_LUT.stream().map(this::invert).toList() : VGA256_TO_BYTE_LUT;
 	}
 

@@ -56,11 +56,11 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 
 		this.availableColorsShuffleMap = shuffleMap;
 
-		this.vga256toByteLUT = Collections.unmodifiableList(createVga256toByteLUT(vgaColors, availableColors));
+		this.vga256toByteLUT = Collections.unmodifiableList(createVga256toByteLUT(availableColors));
 		this.vga256toSingleColorLUT = Collections.unmodifiableList(createVga256toSingleColorLUT(vga256toByteLUT));
 	}
 
-	protected abstract List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols);
+	protected abstract List<Integer> createVga256toByteLUT(List<Color> availableCols);
 
 	protected abstract List<Integer> createVga256toSingleColorLUT(List<Integer> vga256toByteLut);
 
