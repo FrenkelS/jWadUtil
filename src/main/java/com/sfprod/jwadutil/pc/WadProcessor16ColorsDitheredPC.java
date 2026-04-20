@@ -4,6 +4,7 @@ import java.nio.ByteOrder;
 import java.util.List;
 
 import com.sfprod.jwadutil.Color;
+import com.sfprod.jwadutil.Lump;
 import com.sfprod.jwadutil.WadFile;
 import com.sfprod.jwadutil.WadProcessor16ColorsDithered;
 
@@ -80,4 +81,10 @@ public class WadProcessor16ColorsDitheredPC extends WadProcessor16ColorsDithered
 		return vga256toByteLUT;
 	}
 
+	@Override
+	protected void changePaletteRaw(Lump lump) {
+		for (int i = 0; i < lump.length(); i++) {
+			lump.data()[i] = convertVga256toByte(lump.data()[i]);
+		}
+	}
 }

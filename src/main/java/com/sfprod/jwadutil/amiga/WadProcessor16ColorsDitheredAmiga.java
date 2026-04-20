@@ -55,6 +55,15 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 
 	@Override
 	protected List<Integer> createVga256toByteLUT(List<Color> availableCols) {
+		return createLUT(availableCols);
+	}
+
+	@Override
+	protected List<Integer> createVga256toSingleColorLUT(List<Integer> vga256toByteLUT) {
+		return createLUT(CUSTOM_AMIGA_COLORS);
+	}
+
+	private List<Integer> createLUT(List<Color> availableCols) {
 		List<Integer> indexes = new ArrayList<>();
 
 		for (Color vgaColor : vgaColors) {
@@ -77,11 +86,6 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 	}
 
 	@Override
-	protected List<Integer> createVga256toSingleColorLUT(List<Integer> vga256toByteLUT) {
-		return vga256toByteLUT.stream().map(i -> i & 0x0f).toList();
-	}
-
-	@Override
 	protected void processColormap() {
 		super.processColormap();
 
@@ -97,6 +101,13 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 		}
 		Lump playpal = new Lump("PLAYPAL", bb.array(), byteOrder);
 		wadFile.addLump(playpal);
+	}
+
+	@Override
+	protected void changePaletteRaw(Lump lump) {
+		for (int i = 0; i < lump.length(); i++) {
+			lump.data()[i] = convertVga256toByte(lump.data()[i]);
+		}
 	}
 
 	@Override

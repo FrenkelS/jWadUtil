@@ -25,13 +25,6 @@ public abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedCo
 	}
 
 	@Override
-	protected void changePaletteRaw(Lump lump) {
-		for (int i = 0; i < lump.length(); i++) {
-			lump.data()[i] = convertVga256toByte(lump.data()[i]);
-		}
-	}
-
-	@Override
 	protected void shuffleColors() {
 		// Raw graphics
 		List<Lump> rawGraphics = new ArrayList<>();
