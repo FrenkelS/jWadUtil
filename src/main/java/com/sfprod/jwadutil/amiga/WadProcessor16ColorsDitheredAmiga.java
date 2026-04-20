@@ -1,7 +1,6 @@
 package com.sfprod.jwadutil.amiga;
 
 import static com.sfprod.utils.NumberUtils.toByte;
-import static com.sfprod.utils.NumberUtils.toInt;
 import static com.sfprod.utils.NumberUtils.toShort;
 
 import java.awt.image.BufferedImage;
@@ -78,9 +77,8 @@ public class WadProcessor16ColorsDitheredAmiga extends WadProcessor16ColorsDithe
 	}
 
 	@Override
-	protected byte convertVga256toSingleColor(byte b) {
-		byte out = convertVga256toByte(b);
-		return toByte(toInt(out) & 0x0f);
+	protected List<Integer> createVga256toSingleColorLUT(List<Integer> vga256toByteLUT) {
+		return vga256toByteLUT.stream().map(i -> i & 0x0f).toList();
 	}
 
 	@Override

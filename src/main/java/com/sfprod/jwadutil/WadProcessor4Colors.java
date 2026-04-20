@@ -10,6 +10,7 @@ import java.io.UncheckedIOException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 import javax.imageio.ImageIO;
 
@@ -146,6 +147,14 @@ public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 	}
 
 	@Override
+	protected List<Integer> createVga256toSingleColorLUT(List<Integer> vga256toByteLUT) {
+		UnaryOperator<Integer> invertFunction = invert ? i -> (i == -1 ? -1 : 3 - i) : i -> i;
+		UnaryOperator<Integer> mostSignificantBitFirstFunction = mostSignificantBitFirst ? i -> (i == -1 ? -1 : i << 6)
+				: i -> i;
+		return VGA256_TO_4_LUT.stream().map(invertFunction).map(mostSignificantBitFirstFunction).toList();
+	}
+
+	@Override
 	protected void changePaletteRaw(Lump lump) {
 		Lump cgaLump = createCgaLump(lump.nameAsString());
 		wadFile.replaceLump(cgaLump);
@@ -182,20 +191,6 @@ public abstract class WadProcessor4Colors extends WadProcessorLimitedColors {
 			return new Lump(lumpname, data, ByteBufferUtils.DONT_CARE);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
-		}
-	}
-
-	@Override
-	protected byte convertVga256toSingleColor(byte b) {
-		int i = VGA256_TO_4_LUT.get(toInt(b));
-		if (invert) {
-			i = 3 - i;
-		}
-
-		if (mostSignificantBitFirst) {
-			return toByte(i << 6);
-		} else {
-			return toByte(i);
 		}
 	}
 

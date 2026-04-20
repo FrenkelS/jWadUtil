@@ -3,7 +3,6 @@ package com.sfprod.jwadutil.sinclairql;
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.ByteBufferUtils.toByteList;
 import static com.sfprod.utils.NumberUtils.toByte;
-import static com.sfprod.utils.NumberUtils.toInt;
 import static com.sfprod.utils.NumberUtils.toShort;
 
 import java.awt.image.BufferedImage;
@@ -228,13 +227,13 @@ public class WadProcessor8ColorsSinclairQL extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	protected byte convertVga256toSingleColor(byte b) {
-		return toByte(VGA256_TO_8_LUT.get(toInt(b)));
+	protected List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols) {
+		return VGA256_TO_BYTE_LUT;
 	}
 
 	@Override
-	protected List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols) {
-		return VGA256_TO_BYTE_LUT;
+	protected List<Integer> createVga256toSingleColorLUT(List<Integer> vga256toByteLUT) {
+		return VGA256_TO_8_LUT;
 	}
 
 	@Override

@@ -66,11 +66,6 @@ public class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 	}
 
 	@Override
-	protected byte convertVga256toSingleColor(byte b) {
-		return convertVga256toByte(b);
-	}
-
-	@Override
 	protected void processColormap() {
 		super.processColormap();
 
@@ -119,5 +114,10 @@ public class WadProcessor256ColorsArchimedes extends WadProcessorLimitedColors {
 		}
 
 		return indexes;
+	}
+
+	@Override
+	protected List<Integer> createVga256toSingleColorLUT(List<Integer> vga256toByteLUT) {
+		return vga256toByteLUT;
 	}
 }

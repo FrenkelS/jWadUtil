@@ -6,6 +6,7 @@ import static com.sfprod.utils.NumberUtils.toInt;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 	private Map<Integer, List<Integer>> availableColorsShuffleMap;
 
 	private List<Integer> vga256toByteLUT;
+	private List<Integer> vga256toSingleColorLUT;
 
 	protected WadProcessorLimitedColors(String title, ByteOrder byteOrder, WadFile wadFile,
 			List<Integer> grayscaleFromDarkToBright, int divisor) {
@@ -54,13 +56,20 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 
 		this.availableColorsShuffleMap = shuffleMap;
 
-		this.vga256toByteLUT = createVga256toByteLUT(vgaColors, availableColors);
+		this.vga256toByteLUT = Collections.unmodifiableList(createVga256toByteLUT(vgaColors, availableColors));
+		this.vga256toSingleColorLUT = Collections.unmodifiableList(createVga256toSingleColorLUT(vga256toByteLUT));
 	}
 
 	protected abstract List<Integer> createVga256toByteLUT(List<Color> vgaCols, List<Color> availableCols);
 
+	protected abstract List<Integer> createVga256toSingleColorLUT(List<Integer> vga256toByteLut);
+
 	protected byte convertVga256toByte(byte b) {
 		return toByte(vga256toByteLUT.get(toInt(b)));
+	}
+
+	protected final byte convertVga256toSingleColor(byte b) {
+		return toByte(vga256toSingleColorLUT.get(toInt(b)));
 	}
 
 	@Override
@@ -106,8 +115,6 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 	}
 
 	protected abstract void changePaletteRaw(Lump lump);
-
-	protected abstract byte convertVga256toSingleColor(byte b);
 
 	private void changePaletteSpritesAndWalls(Lump lump) {
 		changePalettePicture(lump, this::convertVga256toByte);

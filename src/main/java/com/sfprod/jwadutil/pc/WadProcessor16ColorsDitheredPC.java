@@ -76,8 +76,8 @@ public class WadProcessor16ColorsDitheredPC extends WadProcessor16ColorsDithered
 	}
 
 	@Override
-	protected byte convertVga256toSingleColor(byte b) {
-		return convertVga256toByte(b);
+	protected List<Integer> createVga256toSingleColorLUT(List<Integer> vga256toByteLUT) {
+		return vga256toByteLUT;
 	}
 
 }
