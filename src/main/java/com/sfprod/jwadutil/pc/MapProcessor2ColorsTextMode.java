@@ -16,14 +16,14 @@ import com.sfprod.jwadutil.Lump;
 import com.sfprod.jwadutil.MapProcessor;
 import com.sfprod.jwadutil.WadFile;
 
-public class MapProcessor2ColorsTextMode extends MapProcessor {
+class MapProcessor2ColorsTextMode extends MapProcessor {
 
 	private final List<Double> sortedGrays;
 
 	private final List<Short> availableColors;
 	private final List<Short> flatAvailableColors = new ArrayList<>();
 
-	public MapProcessor2ColorsTextMode(ByteOrder byteOrder, WadFile wadFile) {
+	MapProcessor2ColorsTextMode(ByteOrder byteOrder, WadFile wadFile) {
 		super(byteOrder, wadFile);
 
 		List<Double> grays = vgaColors.stream().map(Color::gray).toList();
