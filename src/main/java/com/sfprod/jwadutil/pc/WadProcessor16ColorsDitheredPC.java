@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.sfprod.jwadutil.Color;
 import com.sfprod.jwadutil.Lump;
+import com.sfprod.jwadutil.MapProcessor;
 import com.sfprod.jwadutil.WadFile;
 import com.sfprod.jwadutil.WadProcessor16ColorsDithered;
 
@@ -69,6 +70,11 @@ public class WadProcessor16ColorsDitheredPC extends WadProcessor16ColorsDithered
 
 	public WadProcessor16ColorsDitheredPC(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, CGA_COLORS, 6);
+	}
+
+	protected WadProcessor16ColorsDitheredPC(String title, ByteOrder byteOrder, WadFile wadFile,
+			MapProcessor mapProcessor) {
+		super(title, byteOrder, wadFile, CGA_COLORS, 6, mapProcessor);
 	}
 
 	@Override

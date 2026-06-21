@@ -37,6 +37,13 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 		this.divisor = divisor;
 	}
 
+	protected WadProcessorLimitedColors(String title, ByteOrder byteOrder, WadFile wadFile,
+			List<Integer> grayscaleFromDarkToBright, int divisor, MapProcessor mapProcessor) {
+		super(title, byteOrder, wadFile, mapProcessor);
+		this.grayscaleFromDarkToBright = grayscaleFromDarkToBright;
+		this.divisor = divisor;
+	}
+
 	protected void fillAvailableColorsShuffleMap(List<Color> colors) {
 		setAvailableColors(colors);
 
