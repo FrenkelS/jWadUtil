@@ -151,7 +151,7 @@ public abstract class WadProcessor {
 	/**
 	 * Remove unused bytes
 	 */
-	private void processTexture1() {
+	protected void processTexture1() {
 		Lump texture1 = wadFile.getLumpByName("TEXTURE1");
 		ByteBuffer oldbb = texture1.dataAsByteBuffer();
 		int numtextures = oldbb.getInt();
@@ -660,10 +660,10 @@ public abstract class WadProcessor {
 		return new Lump(picture.name(), size, compressedData);
 	}
 
-	private static record Mappatch(short originx, short originy, short patch, short stepdir, short colormap) {
+	public static record Mappatch(short originx, short originy, short patch, short stepdir, short colormap) {
 	}
 
-	private static record Maptexture(byte[] name, int masked, short width, short height, int columndirectory,
+	public static record Maptexture(byte[] name, int masked, short width, short height, int columndirectory,
 			short patchcount, List<Mappatch> patches) {
 	}
 
