@@ -119,8 +119,8 @@ public abstract class WadProcessor {
 	}
 
 	public void processWad() {
-		processTexture1();
 		processPNames();
+		processTexture1();
 		mapProcessor.processMaps(availableColors);
 		changeColors();
 		processColormap();
