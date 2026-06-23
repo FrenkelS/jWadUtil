@@ -349,7 +349,8 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		}
 
 		Lump processedTexture = new Lump(toByteArray("TEXTUREP"), processedTextureSize, processedTexture1lump);
-		wadFile.addLump(processedTexture);
+		int pnamesNum = wadFile.getLumpNumByName("PNAMES");
+		wadFile.replaceLump(pnamesNum, processedTexture);
 	}
 
 	private byte[] processTexture(int texture_num) {
@@ -431,6 +432,12 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		}
 
 		return textureData.array();
+	}
+
+	@Override
+	protected void processSoundEffects() {
+		wadFile.removeLumps("DS"); // Sound Blaster sound effects
+		wadFile.removeLumps("DP"); // PC speaker sound effects
 	}
 
 }
