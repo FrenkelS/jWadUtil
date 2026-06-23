@@ -84,6 +84,10 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		fillAvailableColorsShuffleMap(Arrays.asList(neoGeoColorArray));
 	}
 
+	@Override
+	protected void shuffleColors() {
+	}
+
 	/**
 	 * @see https://wiki.neogeodev.org/index.php/Colors
 	 * @param vgaColor
