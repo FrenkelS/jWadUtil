@@ -25,7 +25,7 @@ class MapProcessorDoom64KB extends MapProcessor {
 
 		ByteBuffer oldLinesByteBuffer = lines.dataAsByteBuffer();
 		ByteBuffer newLineByteBuffer = newByteBuffer(byteOrder,
-				lineCount * (Line.SIZE_OF_LINE + 2 + 2 + 2 + 4 * 2 + 1 + 1));
+				lineCount * (Line.SIZE_OF_LINE + 2 + 2 + 2 + 4 * 2 + 1 + 2));
 
 		for (short lineno = 0; lineno < lineCount; lineno++) {
 			short v1x = oldLinesByteBuffer.getShort();
@@ -70,7 +70,7 @@ class MapProcessorDoom64KB extends MapProcessor {
 			newLineByteBuffer.putShort(toShort(tag));
 			newLineByteBuffer.put(flags);
 			newLineByteBuffer.put(slopetype);
-			newLineByteBuffer.put(const_special);
+			newLineByteBuffer.putShort(toShort(const_special));
 		}
 
 		Lump newLine = new Lump(lines.name(), newLineByteBuffer);
