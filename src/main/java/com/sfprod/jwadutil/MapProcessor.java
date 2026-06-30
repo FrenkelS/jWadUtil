@@ -245,6 +245,7 @@ public class MapProcessor {
 			byte bottomtexture = sidesByteBuffer.get();
 			byte midtexture = sidesByteBuffer.get();
 			byte sector = sidesByteBuffer.get();
+			byte unused = sidesByteBuffer.get();
 			sidedefs.add(new Sidedef(textureoffset, rowoffset, toptexture, bottomtexture, midtexture, sector));
 		}
 
@@ -328,6 +329,8 @@ public class MapProcessor {
 			newSidedefByteBuffer.put(getTextureNumForName(textureNames, oldSidedef.midtextureAsString())); // midtexture
 
 			newSidedefByteBuffer.put(toByte(oldSidedef.sector())); // sector
+
+			newSidedefByteBuffer.put(toByte(0)); // unused
 		}
 
 		byte[] sidedefsLumpName = wadFile.getLumpByNum(sidesLumpNum).name();
@@ -638,6 +641,7 @@ public class MapProcessor {
 			byte bottomtexture = sidesByteBuffer.get();
 			byte midtexture = sidesByteBuffer.get();
 			byte sector = sidesByteBuffer.get();
+			byte unused = sidesByteBuffer.get();
 			sides.add(new Sidedef(textureoffset, rowoffset, toptexture, bottomtexture, midtexture, sector));
 		}
 
@@ -708,6 +712,7 @@ public class MapProcessor {
 			newSidesByteBuffer.put(sidedef.bottomtexture());
 			newSidesByteBuffer.put(sidedef.midtexture());
 			newSidesByteBuffer.put(sidedef.sector());
+			newSidesByteBuffer.put(toByte(0)); // unused
 		}
 		wadFile.replaceLump(sidesLumpNum, new Lump(oldSidedefs.name(), newSidesByteBuffer));
 	}
@@ -742,7 +747,7 @@ public class MapProcessor {
 
 	private static record Sidedef(short textureoffset, byte rowoffset, byte toptexture, byte bottomtexture,
 			byte midtexture, byte sector) {
-		public static final int SIZE_OF_SIDE = 2 + 1 + 1 + 1 + 1 + 1;
+		public static final int SIZE_OF_SIDE = 2 + 1 + 1 + 1 + 1 + 1 + 1;
 	}
 
 	private static record SidedefWithMetadata(Sidedef sidedef, boolean special) {
