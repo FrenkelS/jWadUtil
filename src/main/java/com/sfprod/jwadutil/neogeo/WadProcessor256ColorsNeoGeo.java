@@ -112,6 +112,7 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 			Color vgaColor = vgaColors.get(toInt(b));
 			int neoGeoColorNumber = toNeoGeoPalette(vgaColor);
 			int index = neoGeoColorNumbers.indexOf(neoGeoColorNumber);
+			assert index != -1;
 
 			colormapLump.data()[i] = toByte(index);
 		}
@@ -121,6 +122,7 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		for (Color vgaColor : vgaColors) {
 			int neoGeoColorNumber = toNeoGeoPalette(vgaColor);
 			int index = neoGeoColorNumbers.indexOf(neoGeoColorNumber);
+			assert index != -1;
 			map.add(index);
 		}
 		List<Integer> emptySlots = new ArrayList<>();
@@ -176,6 +178,7 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		for (Color vgaColor : vgaColors) {
 			int neoGeoColor = toNeoGeoPalette(vgaColor);
 			int index = neoGeoColorNumbers.indexOf(neoGeoColor);
+			assert index != -1;
 			indexes.add(index);
 		}
 
