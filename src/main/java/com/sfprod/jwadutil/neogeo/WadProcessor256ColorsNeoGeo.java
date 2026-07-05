@@ -30,7 +30,7 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 			0xd0, 0xd1, 0xd2, 0xd3, //
 			0xf5, 0xf8, 0xfa, 0xff);
 
-	private List<Integer> neoGeoColorNumbers;
+	private final List<Integer> neoGeoColorNumbers;
 
 	public WadProcessor256ColorsNeoGeo(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, GRAYSCALE_FROM_DARK_TO_BRIGHT, 16,
@@ -39,34 +39,13 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		List<Integer> uniqueNeoGeoColorNumberList = new ArrayList<>(
 				vgaColors.stream().map(this::toNeoGeoPalette).collect(Collectors.toCollection(LinkedHashSet::new)));
 
-		List<Integer> neoGeoColorNumberList = new ArrayList<>();
-		int index = 0;
-		for (int i = 0; i < 16; i++) {
-			neoGeoColorNumberList.add(uniqueNeoGeoColorNumberList.get(index));
-			index++;
-		}
-		outerloop: for (int j = 0; j < 16; j++) {
-			neoGeoColorNumberList.add(0x8000);
-			for (int i = 0; i < 15; i++) {
-				if (index == 236) {
-					neoGeoColorNumberList.add(0x8000);
-					neoGeoColorNumberList.add(0x8000);
-					neoGeoColorNumberList.add(0x8000);
-					neoGeoColorNumberList.add(0x8000);
-					neoGeoColorNumberList.add(0x8000);
-					this.neoGeoColorNumbers = neoGeoColorNumberList;
-					break outerloop;
-				}
-				neoGeoColorNumberList.add(uniqueNeoGeoColorNumberList.get(index));
-				index++;
-			}
-		}
+		this.neoGeoColorNumbers = createNeoGeoColorNumbers(uniqueNeoGeoColorNumberList);
 
 		List<Integer> map = new ArrayList<>();
 		for (Color vgaColor : vgaColors) {
 			int neoGeoColorNumber = toNeoGeoPalette(vgaColor);
-			int index2 = neoGeoColorNumbers.indexOf(neoGeoColorNumber);
-			map.add(index2);
+			int index = neoGeoColorNumbers.indexOf(neoGeoColorNumber);
+			map.add(index);
 		}
 		List<Integer> emptySlots = new ArrayList<>();
 		for (int i = 0; i < 256; i++) {
@@ -82,6 +61,34 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 			neoGeoColorArray[emptySlot] = new Color(0, 0, 0);
 		}
 		fillAvailableColorsShuffleMap(Arrays.asList(neoGeoColorArray));
+	}
+
+	private List<Integer> createNeoGeoColorNumbers(List<Integer> uniqueNeoGeoColorNumberList) {
+		List<Integer> neoGeoColorNumberList = new ArrayList<>();
+		int index = 0;
+		for (int i = 0; i < 16; i++) {
+			neoGeoColorNumberList.add(uniqueNeoGeoColorNumberList.get(index));
+			index++;
+		}
+
+		for (int j = 0; j < 16; j++) {
+			neoGeoColorNumberList.add(0x8000);
+			for (int i = 0; i < 15; i++) {
+				if (index == 236) {
+					neoGeoColorNumberList.add(0x8000);
+					neoGeoColorNumberList.add(0x8000);
+					neoGeoColorNumberList.add(0x8000);
+					neoGeoColorNumberList.add(0x8000);
+					neoGeoColorNumberList.add(0x8000);
+					assert neoGeoColorNumberList.size() == 256;
+					return neoGeoColorNumberList;
+				}
+				neoGeoColorNumberList.add(uniqueNeoGeoColorNumberList.get(index));
+				index++;
+			}
+		}
+
+		throw new IllegalStateException();
 	}
 
 	@Override
@@ -153,6 +160,8 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 					bbPlaypal.putShort(toShort(0x8000));
 				}
 			}
+
+			System.out.println("  " + Integer.toHexString(bbPlaypal.position(0).asShortBuffer().get()));
 			wadFile.replaceLump(new Lump(playpal.name(), bbPlaypal.array(), byteOrder));
 		}
 	}
