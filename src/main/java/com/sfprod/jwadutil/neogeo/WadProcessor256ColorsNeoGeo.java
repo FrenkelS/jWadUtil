@@ -22,17 +22,10 @@ import com.sfprod.utils.ByteBufferUtils;
 
 public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 
-	private static final List<Integer> GRAYSCALE_FROM_DARK_TO_BRIGHT = List.of(//
-			0x00, 0x01, 0x02, 0x03, //
-			0x25, 0x28, 0x2a, 0x2f, //
-			0xd0, 0xd1, 0xd2, 0xd3, //
-			0xf5, 0xf8, 0xfa, 0xff);
-
 	private final List<Integer> neoGeoColorNumbers;
 
 	public WadProcessor256ColorsNeoGeo(String title, ByteOrder byteOrder, WadFile wadFile) {
-		super(title, byteOrder, wadFile, GRAYSCALE_FROM_DARK_TO_BRIGHT, 16,
-				new MapProcessorDoom64KB(byteOrder, wadFile));
+		super(title, byteOrder, wadFile, Collections.emptyList(), -1, new MapProcessorDoom64KB(byteOrder, wadFile));
 
 		this.neoGeoColorNumbers = createNeoGeoColorNumbers();
 
