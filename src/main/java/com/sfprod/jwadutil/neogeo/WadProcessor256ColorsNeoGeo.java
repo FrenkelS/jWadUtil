@@ -12,9 +12,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.sfprod.jwadutil.Color;
 import com.sfprod.jwadutil.Lump;
@@ -61,34 +59,29 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 	}
 
 	private List<Integer> createNeoGeoColorNumbers() {
-		List<Integer> uniqueNeoGeoColorNumberList = new ArrayList<>(
-				vgaColors.stream().map(this::toNeoGeoPalette).collect(Collectors.toCollection(LinkedHashSet::new)));
+		List<Integer> uniqueNeoGeoColorNumberList = vgaColors.stream().map(this::toNeoGeoPalette).distinct().toList();
 
-		List<Integer> neoGeoColorNumberList = new ArrayList<>();
-		int index = 0;
-		for (int i = 0; i < 16; i++) {
-			neoGeoColorNumberList.add(uniqueNeoGeoColorNumberList.get(index));
-			index++;
-		}
+		List<Integer> neoGeoColorNumberList = new ArrayList<>(256);
 
-		for (int j = 0; j < 16; j++) {
+		// First 16 colors
+		neoGeoColorNumberList.addAll(uniqueNeoGeoColorNumberList.subList(0, 16));
+
+		int index = 16;
+
+		// Remaining colors in groups of 15, each preceded by 0x8000
+		while (index < uniqueNeoGeoColorNumberList.size()) {
 			neoGeoColorNumberList.add(0x8000);
-			for (int i = 0; i < 15; i++) {
-				if (index == 236) {
-					neoGeoColorNumberList.add(0x8000);
-					neoGeoColorNumberList.add(0x8000);
-					neoGeoColorNumberList.add(0x8000);
-					neoGeoColorNumberList.add(0x8000);
-					neoGeoColorNumberList.add(0x8000);
-					assert neoGeoColorNumberList.size() == 256;
-					return neoGeoColorNumberList;
-				}
-				neoGeoColorNumberList.add(uniqueNeoGeoColorNumberList.get(index));
-				index++;
-			}
+
+			int end = Math.min(index + 15, uniqueNeoGeoColorNumberList.size());
+			neoGeoColorNumberList.addAll(uniqueNeoGeoColorNumberList.subList(index, end));
+			index = end;
 		}
 
-		throw new IllegalStateException();
+		// Pad to exactly 256 entries
+		int pad = 256 - neoGeoColorNumberList.size();
+		neoGeoColorNumberList.addAll(Collections.nCopies(pad, 0x8000));
+
+		return neoGeoColorNumberList;
 	}
 
 	@Override
