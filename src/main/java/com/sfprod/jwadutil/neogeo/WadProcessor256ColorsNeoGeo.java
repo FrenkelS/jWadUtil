@@ -12,6 +12,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.sfprod.jwadutil.Color;
@@ -19,6 +20,7 @@ import com.sfprod.jwadutil.Lump;
 import com.sfprod.jwadutil.WadFile;
 import com.sfprod.jwadutil.WadProcessorLimitedColors;
 import com.sfprod.utils.ByteBufferUtils;
+import com.sfprod.utils.NumberUtils;
 
 public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 
@@ -33,6 +35,7 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		for (Color vgaColor : vgaColors) {
 			int neoGeoColorNumber = toNeoGeoPalette(vgaColor);
 			int index = neoGeoColorNumbers.indexOf(neoGeoColorNumber);
+			assert index != -1;
 			map.add(index);
 		}
 		List<Integer> emptySlots = new ArrayList<>();
@@ -105,25 +108,47 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 	protected void processColormap() {
 		// Colormap
 		Lump colormapLump = wadFile.getLumpByName("COLORMAP");
+		int index = 0;
 
-		for (int i = 0; i < colormapLump.length(); i++) {
-			byte b = colormapLump.data()[i];
+		// colormap 0-31 from bright to dark
+		int colormap = 0;
+		for (int i = 0; i < 32; i++) {
+			List<Byte> colormapBytes = createColormap(colormap);
+			for (byte b : colormapBytes) {
+				colormapLump.data()[index] = b;
+				index++;
+			}
+			colormap++;
+		}
 
-			Color vgaColor = vgaColors.get(toInt(b));
-			int neoGeoColorNumber = toNeoGeoPalette(vgaColor);
-			int index = neoGeoColorNumbers.indexOf(neoGeoColorNumber);
-			assert index != -1;
+		// colormap 32 invulnerability powerup
+		List<Integer> grayscaleFromDarkToBright = availableColors.stream().filter(Color::isGrayish).distinct()
+				.sorted(Comparator.comparing(Color::gray)).map(c -> availableColors.indexOf(c)).toList();
 
-			colormapLump.data()[i] = toByte(index);
+		List<Double> grays = availableColors.stream().map(Color::gray).distinct().sorted(Comparator.reverseOrder())
+				.toList();
+
+		List<Byte> colormapInvulnerability = availableColors.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf)
+				.map(i -> i / 8).map(grayscaleFromDarkToBright::get).mapToObj(NumberUtils::toByte).toList();
+
+		for (int i = 0; i < 256; i++) {
+			colormapLump.data()[index] = colormapInvulnerability.get(i);
+			index++;
+		}
+
+		// colormap 33 all black
+		for (int i = 0; i < 256; i++) {
+			colormapLump.data()[index] = 0;
+			index++;
 		}
 
 		// Playpal
 		List<Integer> map = new ArrayList<>();
 		for (Color vgaColor : vgaColors) {
 			int neoGeoColorNumber = toNeoGeoPalette(vgaColor);
-			int index = neoGeoColorNumbers.indexOf(neoGeoColorNumber);
-			assert index != -1;
-			map.add(index);
+			int index2 = neoGeoColorNumbers.indexOf(neoGeoColorNumber);
+			assert index2 != -1;
+			map.add(index2);
 		}
 		List<Integer> emptySlots = new ArrayList<>();
 		for (int i = 0; i < 256; i++) {
@@ -196,6 +221,15 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		// Finale background flat
 		rawGraphics.add(wadFile.getLumpByName("FLOOR4_8"));
 		rawGraphics.forEach(this::changePaletteRaw);
+
+		// Graphics in picture format
+		List<Lump> spritesAndWallsGraphics = new ArrayList<>(256);
+		// Sprites
+		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("S_START", "S_END"));
+		// Walls
+		spritesAndWallsGraphics.addAll(wadFile.getLumpsBetween("P1_START", "P1_END"));
+
+		spritesAndWallsGraphics.forEach(this::changePaletteSpritesAndWalls);
 	}
 
 	@Override
