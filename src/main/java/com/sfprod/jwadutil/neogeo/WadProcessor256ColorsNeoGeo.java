@@ -213,14 +213,12 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 	@Override
 	protected void changeColors() {
 		// Raw graphics
-		List<Lump> rawGraphics = new ArrayList<>();
-		rawGraphics.add(wadFile.getLumpByName("HELP2"));
-		// rawGraphics.add(wadFile.getLumpByName("STBAR"));
-		rawGraphics.add(wadFile.getLumpByName("TITLEPIC"));
-		rawGraphics.add(wadFile.getLumpByName("WIMAP0"));
-		// Finale background flat
-		rawGraphics.add(wadFile.getLumpByName("FLOOR4_8"));
-		rawGraphics.forEach(this::changePaletteRaw);
+		wadFile.replaceLump(getLump("/NeoGeo", "HELP2"));
+		// wadFile.replaceLump(getLump("/NeoGeo", "STBAR"));
+		wadFile.replaceLump(getLump("/NeoGeo", "TITLEPIC"));
+		wadFile.replaceLump(getLump("/NeoGeo", "WIMAP0"));
+
+		wadFile.replaceLump(getLump("/NeoGeo", "FLOOR4_8"));
 
 		// Graphics in picture format
 		List<Lump> spritesAndWallsGraphics = new ArrayList<>(256);

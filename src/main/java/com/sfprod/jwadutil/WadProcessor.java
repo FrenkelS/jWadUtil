@@ -106,8 +106,13 @@ public abstract class WadProcessor {
 	}
 
 	protected Lump getLump(String lumpname) {
+		return getLump("", lumpname);
+	}
+
+	protected Lump getLump(String directory, String lumpname) {
 		try {
-			byte[] data = WadProcessor.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
+			String resourceName = directory + '/' + lumpname + ".LMP";
+			byte[] data = WadProcessor.class.getResourceAsStream(resourceName).readAllBytes();
 			return new Lump(lumpname, data, ByteOrder.LITTLE_ENDIAN);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
