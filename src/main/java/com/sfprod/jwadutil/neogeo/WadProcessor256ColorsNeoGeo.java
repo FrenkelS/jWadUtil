@@ -45,7 +45,7 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 	);
 	// @formatter:on
 
-	private static final List<Integer> NEO_GEO_COLOR_NUMBERS = NEO_GEO_RGBS.stream()
+	private static final List<Integer> NEO_GEO_COLOR_NUMBERS = NEO_GEO_RGBS.stream().map(Color::new)
 			.map(WadProcessor256ColorsNeoGeo::toNeoGeoPalette).toList();
 
 	public WadProcessor256ColorsNeoGeo(String title, ByteOrder byteOrder, WadFile wadFile) {
@@ -83,25 +83,10 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 	 * @param vgaColor
 	 * @return
 	 */
-	private int toNeoGeoPalette(Color vgaColor) {
+	private static int toNeoGeoPalette(Color vgaColor) {
 		int red = vgaColor.r();
 		int green = vgaColor.g();
 		int blue = vgaColor.b();
-
-		int luma = (int) Math.floor((54.213 * red) + (182.376 * green) + (18.411 * blue)) & 1;
-
-		red = (int) Math.floor(red / 8);
-		green = (int) Math.floor(green / 8);
-		blue = (int) Math.floor(blue / 8);
-
-		return (((luma ^ 1) << 15) | ((red & 1) << 14) | ((green & 1) << 13) | ((blue & 1) << 12) | ((red & 0x1E) << 7)
-				| ((green & 0x1E) << 3) | (blue >> 1));
-	}
-
-	private static int toNeoGeoPalette(int rgb) {
-		int red = (rgb >> 16) & 0xff;
-		int green = (rgb >> 8) & 0xff;
-		int blue = (rgb >> 0) & 0xff;
 
 		int luma = (int) Math.floor((54.213 * red) + (182.376 * green) + (18.411 * blue)) & 1;
 
