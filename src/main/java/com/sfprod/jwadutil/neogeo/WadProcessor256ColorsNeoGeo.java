@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.sfprod.jwadutil.Color;
 import com.sfprod.jwadutil.Lump;
@@ -144,10 +146,11 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 			assert index2 != -1;
 			map.add(index2);
 		}
-		List<Integer> emptySlots = new ArrayList<>();
+
+		Map<Integer, Integer> duplicateSlots = new HashMap<>();
 		for (int i = 0; i < 256; i++) {
-			if (!map.contains(i)) {
-				emptySlots.add(i);
+			if (((i % 16) != 0) && !map.contains(i)) {
+				duplicateSlots.put(i, NEO_GEO_COLOR_NUMBERS.indexOf(NEO_GEO_COLOR_NUMBERS.get(i)));
 			}
 		}
 
@@ -162,9 +165,23 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 					bbPlaypal.position(256 * 2 * palette + map.get(i) * 2);
 					bbPlaypal.putShort(toShort(neoGeoColorNumber));
 				}
-				for (int emptySlot : emptySlots) {
-					bbPlaypal.position(256 * 2 * palette + emptySlot * 2);
-					bbPlaypal.putShort(toShort(0x8000));
+
+				bbPlaypal.position(256 * 2 * palette + 0 * 16 * 2);
+				short black = bbPlaypal.getShort();
+				for (int i = 1; i < 16; i++) {
+					bbPlaypal.position(256 * 2 * palette + i * 16 * 2);
+					bbPlaypal.putShort(black);
+				}
+
+				for (Map.Entry<Integer, Integer> entry : duplicateSlots.entrySet()) {
+					int duplicateSlot = entry.getKey();
+					int originalSlot = entry.getValue();
+
+					bbPlaypal.position(256 * 2 * palette + originalSlot * 2);
+					short originalValue = bbPlaypal.getShort();
+
+					bbPlaypal.position(256 * 2 * palette + duplicateSlot * 2);
+					bbPlaypal.putShort(originalValue);
 				}
 			}
 			wadFile.replaceLump(new Lump(playpal.name(), bbPlaypal.array(), byteOrder));
