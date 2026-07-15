@@ -10,7 +10,7 @@ import com.sfprod.utils.NumberUtils;
 /**
  * This class tests {@link JWadUtil}
  */
-public class JWadUtilNeoGeoTest {
+class JWadUtilNeoGeoTest {
 
 	@Test
 	void createWad() throws Exception {
