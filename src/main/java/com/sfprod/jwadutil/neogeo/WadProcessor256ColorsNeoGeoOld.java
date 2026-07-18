@@ -1,7 +1,10 @@
 package com.sfprod.jwadutil.neogeo;
 
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
+import static com.sfprod.utils.NumberUtils.toByte;
+import static com.sfprod.utils.NumberUtils.toShort;
 import static com.sfprod.utils.StringUtils.toByteArray;
+import static com.sfprod.utils.StringUtils.toStringUpperCase;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -18,11 +21,13 @@ public class WadProcessor256ColorsNeoGeoOld extends WadProcessor {
 		super(title, byteOrder, wadFile, new MapProcessorDoom64KB(byteOrder, wadFile));
 	}
 
+	private int numtextures;
+
 	@Override
 	protected void processTexture1() {
 		Lump texture1 = wadFile.getLumpByName("TEXTURE1");
 		ByteBuffer oldbb = texture1.dataAsByteBuffer();
-		int numtextures = oldbb.getInt();
+		numtextures = oldbb.getInt();
 		List<Integer> oldoffsets = new ArrayList<>();
 		for (int i = 0; i < numtextures; i++) {
 			oldoffsets.add(oldbb.getInt());
@@ -95,6 +100,9 @@ public class WadProcessor256ColorsNeoGeoOld extends WadProcessor {
 		wadFile.addLump(textureheightLump);
 	}
 
+	private record TexPatch(short originx, short originy, short patch_num, short patch_width) {
+	}
+
 	@Override
 	protected void duplicateMaps() {
 		int lumpNumE1M1 = wadFile.getLumpNumByName("E1M1");
@@ -111,6 +119,113 @@ public class WadProcessor256ColorsNeoGeoOld extends WadProcessor {
 				wadFile.replaceLump(lumpNumE1M2 + 1 + i, e1m1Lumps.get(i));
 			}
 		}
+
+		processTexture1Again();
+	}
+
+	private void processTexture1Again() {
+		ByteBuffer processedTexture1lump = newByteBuffer(byteOrder);
+		for (int i = 0; i < numtextures; i++) {
+			processedTexture1lump.putShort(toShort(-1));
+		}
+
+		List<Integer> newoffsetsProcessedTexture = new ArrayList<>();
+		for (int i = 0; i < numtextures; i++) {
+			newoffsetsProcessedTexture.add(processedTexture1lump.position());
+			processedTexture1lump.put(processTexture(i));
+		}
+
+		int processedTextureSize = processedTexture1lump.position();
+
+		processedTexture1lump.position(0);
+		for (int newoffsetProcessedTexture : newoffsetsProcessedTexture) {
+			processedTexture1lump.putShort(toShort(newoffsetProcessedTexture));
+		}
+
+		Lump processedTexture = new Lump(toByteArray("TEXTUREP"), processedTextureSize, processedTexture1lump);
+		int pnamesNum = wadFile.getLumpNumByName("PNAMES");
+		wadFile.replaceLump(pnamesNum, processedTexture);
+	}
+
+	private byte[] processTexture(int texture_num) {
+		Lump pnames = wadFile.getLumpByName("PNAMES");
+		ByteBuffer pnamesbb = pnames.dataAsByteBuffer();
+
+		Lump texture1 = wadFile.getLumpByName("TEXTURE1");
+		ByteBuffer bb = texture1.dataAsByteBuffer();
+		bb.position(4 + texture_num * 4);
+		bb.position(bb.getInt());
+
+		byte[] name = new byte[8];
+		bb.get(name);
+		short width = bb.getShort();
+		short height = bb.getShort();
+		short patchcount = bb.getShort();
+
+		List<Mappatch> mappatches = new ArrayList<>();
+		for (int i = 0; i < patchcount; i++) {
+			short originx = bb.getShort();
+			short originy = bb.getShort();
+			short patch = bb.getShort();
+			mappatches.add(new Mappatch(originx, originy, patch, Short.MIN_VALUE, Short.MIN_VALUE));
+		}
+
+		ByteBuffer textureData = newByteBuffer(byteOrder, 2 + 2 + 2 + 1 + 1 + patchcount * (2 + 2 + 2 + 2));
+		int w = 1;
+		while (w * 2 <= width) {
+			w <<= 1;
+		}
+		int widthmask = w - 1;
+		textureData.putShort(toShort(widthmask));
+		textureData.putShort(width);
+		textureData.putShort(height);
+
+		boolean overlapped = false;
+
+		List<TexPatch> texpatches = new ArrayList<>();
+		for (int j = 0; j < patchcount; j++) {
+			byte[] pname = new byte[8];
+			Mappatch mappatch = mappatches.get(j);
+			pnamesbb.position(4 + mappatch.patch() * 8);
+			pnamesbb.get(pname);
+			int patch_num = wadFile.getLumpNumByName(toStringUpperCase(pname));
+			Lump lump = wadFile.getLumpByNum(patch_num);
+			ByteBuffer lumpbb = lump.dataAsByteBuffer();
+			short patch_width = lumpbb.getShort();
+			texpatches.add(new TexPatch(mappatch.originx(), mappatch.originy(),
+					toShort(patch_num - 0xf2 - 200 + 8 + 434), patch_width));
+		}
+
+		for (int j = 0; j < patchcount; j++) {
+			TexPatch texpatch = texpatches.get(j);
+			short l1 = texpatch.originx();
+			short r1 = toShort(l1 + texpatch.patch_width());
+
+			for (int k = j + 1; k < patchcount; k++) {
+				TexPatch p2 = texpatches.get(k);
+				short l2 = p2.originx();
+				short r2 = toShort(l2 + p2.patch_width());
+
+				if (r1 > l2 && l1 < r2) {
+					overlapped = true;
+					break;
+				}
+			}
+			if (overlapped) {
+				break;
+			}
+		}
+
+		textureData.put(toByte(overlapped ? 1 : 0));
+		textureData.put(toByte(patchcount));
+		for (TexPatch texpatch : texpatches) {
+			textureData.putShort(texpatch.originx());
+			textureData.putShort(texpatch.originy());
+			textureData.putShort(texpatch.patch_num());
+			textureData.putShort(texpatch.patch_width());
+		}
+
+		return textureData.array();
 	}
 
 	@Override
