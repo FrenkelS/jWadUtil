@@ -104,21 +104,19 @@ public class WadProcessor256ColorsNeoGeoOld extends WadProcessor {
 	}
 
 	@Override
-	protected void duplicateMaps() {
-		int lumpNumE1M1 = wadFile.getLumpNumByName("E1M1");
-
-		List<Lump> e1m1Lumps = new ArrayList<>();
-		for (int i = 0; i < 9; i++) {
-			e1m1Lumps.add(wadFile.getLumpByNum(lumpNumE1M1 + 1 + i));
-		}
-
-		List<Integer> mapNumbers = List.of(2, 3, 4, 5, 6, 7, 9);
-		for (int mapNumber : mapNumbers) {
-			int lumpNumE1M2 = wadFile.getLumpNumByName("E1M" + mapNumber);
-			for (int i = 0; i < 9; i++) {
-				wadFile.replaceLump(lumpNumE1M2 + 1 + i, e1m1Lumps.get(i));
+	protected void storeMapsInSeparateWad() {
+		WadFile maps = new WadFile();
+		for (int mapNumber = 1; mapNumber <= 9; mapNumber++) {
+			int lumpNumE1Mx = wadFile.getLumpNumByName("E1M" + mapNumber);
+			for (int i = 0; i < 10; i++) {
+				maps.addLump(wadFile.getLumpByNum(lumpNumE1Mx + i));
+			}
+			for (int i = 10 - 1; i >= 0; i--) {
+				wadFile.removeLump(lumpNumE1Mx + i);
 			}
 		}
+		String wadPath = byteOrder == ByteOrder.LITTLE_ENDIAN ? "DOOMMAPL.WAD" : "DOOMMAPB.WAD";
+		maps.saveWadFile(byteOrder, wadPath);
 
 		processTexture1Again();
 	}

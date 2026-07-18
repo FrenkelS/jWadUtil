@@ -33,7 +33,7 @@ public class WadProcessor16ColorsDitheredTextModeNeoGeo extends WadProcessor16Co
 	}
 
 	@Override
-	protected void duplicateMaps() {
+	protected void storeMapsInSeparateWad() {
 		int lumpNumE1M1 = wadFile.getLumpNumByName("E1M1");
 
 		List<Lump> e1m1Lumps = new ArrayList<>();

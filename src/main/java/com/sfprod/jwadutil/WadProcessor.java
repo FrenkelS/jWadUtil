@@ -139,10 +139,10 @@ public abstract class WadProcessor {
 		shuffleColors();
 		processRawGraphics();
 
-		duplicateMaps();
+		storeMapsInSeparateWad();
 	}
 
-	protected void duplicateMaps() {
+	protected void storeMapsInSeparateWad() {
 	}
 
 	protected abstract void changeColors();

@@ -41,4 +41,21 @@ class JWadUtilNeoGeoTest {
 			return "0x" + Integer.toHexString(i);
 		}
 	}
+
+	@Test
+	void createWadMap() throws Exception {
+		byte[] bytes = Files.readAllBytes(Path.of("target", "DOOMMAPB.WAD"));
+
+		System.out.println("static const unsigned char doom_iwad_maps[" + bytes.length + "] = {");
+		int i = 1;
+		for (byte b : bytes) {
+			System.out.print(toHex(b) + ',');
+			if (i % 40 == 0) {
+				System.out.println();
+			}
+			i++;
+		}
+		System.out.println();
+		System.out.println("};");
+	}
 }

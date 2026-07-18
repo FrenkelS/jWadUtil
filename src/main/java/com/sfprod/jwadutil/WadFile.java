@@ -29,6 +29,9 @@ public class WadFile {
 	private static record Filelump(int filepos, int size, byte[] name) {
 	}
 
+	public WadFile() {
+	}
+
 	public WadFile(String wadPath) {
 		ByteBuffer byteBuffer = preprocessWad(wadPath);
 
