@@ -26,6 +26,20 @@ import com.sfprod.utils.NumberUtils;
 
 public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 
+	private static final List<String> SPRNAMES = List.of( //
+			"TROO", "SHTG", "PUNG", "PISG", "PISF", "SHTF", "CHGG", "CHGF", "MISG", //
+			"MISF", "SAWG", "BLUD", "PUFF", "BAL1", //
+			"MISL", "TFOG", "PLAY", "POSS", //
+			"SPOS", "SARG", //
+			"BAL7", "BOSS", //
+			"ARM1", "ARM2", "BAR1", "BEXP", //
+			"BON1", "BON2", "BKEY", "RKEY", "YKEY", "STIM", "MEDI", //
+			"SOUL", "PINS", "SUIT", "PMAP", "PVIS", "CLIP", "AMMO", //
+			"ROCK", "BROK", "SHEL", "SBOX", "BPAK", "MGUN", "CSAW", //
+			"LAUN", "SHOT", "COLU", "POL5", //
+			"CAND", "CBRA", "ELEC", //
+			"TRED");
+
 	// @formatter:off
 	private static final List<Integer> NEO_GEO_RGBS = List.of(
 			0x000000, 0x131313, 0x2b230f, 0x372313, 0x4f3b27, 0x8f2b2b, 0x53573b, 0x575757, 0x775f4b, 0x6f7357, 0xcf8353, 0x9f9f9f, 0xb79f87, 0xffb37b, 0xffb7b7, 0xffff47,
@@ -49,6 +63,8 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 
 	private static final List<Integer> NEO_GEO_COLOR_NUMBERS = NEO_GEO_RGBS.stream().map(Color::new)
 			.map(WadProcessor256ColorsNeoGeo::toNeoGeoPalette).toList();
+
+	private int numtextures;
 
 	public WadProcessor256ColorsNeoGeo(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, Collections.emptyList(), -1, new MapProcessorDoom64KB(byteOrder, wadFile));
@@ -270,8 +286,6 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		wiLumps.stream().filter(l -> !"WIMAP0".equals(l.nameAsString())).forEach(wadFile::removeLump);
 	}
 
-	private int numtextures;
-
 	@Override
 	protected void processTexture1() {
 		Lump texture1 = wadFile.getLumpByName("TEXTURE1");
@@ -368,6 +382,7 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		maps.saveWadFile(byteOrder, wadPath);
 
 		processTexture1Again();
+		processSprites();
 	}
 
 	private void processTexture1Again() {
@@ -473,6 +488,50 @@ public class WadProcessor256ColorsNeoGeo extends WadProcessorLimitedColors {
 		}
 
 		return textureData.array();
+	}
+
+	private void processSprites() {
+		List<Lump> spriteLumps = wadFile.getLumpsBetween("S_START", "S_END");
+
+		int spriteframesize = 8 * 2 + 1 + 1;
+		ByteBuffer bb = newByteBuffer(byteOrder, SPRNAMES.size() * 23 * spriteframesize);
+		for (int i = 0; i < SPRNAMES.size(); i++) {
+			String sprname = SPRNAMES.get(i);
+			List<Lump> lumps = spriteLumps.stream().filter(l -> l.nameAsString().startsWith(sprname)).toList();
+
+			for (Lump lump : lumps) {
+				String suffix = lump.nameAsString().substring(4);
+				int frame = suffix.charAt(0) - 'A';
+				int rotation = suffix.charAt(1) - '0';
+
+				short lumpNum = toShort(wadFile.getLumpNumByName(lump.nameAsString()));
+				if (rotation == 0) {
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + rotation * 2);
+					for (int j = 0; j < 8; j++) {
+						bb.putShort(lumpNum);
+					}
+				} else {
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + (rotation - 1) * 2);
+					bb.putShort(lumpNum);
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + 8 * 2 + 1);
+					bb.put(toByte(1));
+				}
+
+				if (suffix.length() == 4) {
+					assert suffix.charAt(0) == suffix.charAt(2);
+					rotation = suffix.charAt(3) - '0';
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + (rotation - 1) * 2);
+					bb.putShort(lumpNum);
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + 8 * 2);
+
+					byte flipmask = bb.get();
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + 8 * 2);
+					bb.put(toByte(toInt(flipmask) | (1 << (rotation - 1))));
+				}
+			}
+		}
+
+		wadFile.addLump(new Lump("SPRITES", bb.array(), byteOrder));
 	}
 
 	@Override

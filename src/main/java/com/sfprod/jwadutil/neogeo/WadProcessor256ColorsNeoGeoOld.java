@@ -2,6 +2,7 @@ package com.sfprod.jwadutil.neogeo;
 
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.NumberUtils.toByte;
+import static com.sfprod.utils.NumberUtils.toInt;
 import static com.sfprod.utils.NumberUtils.toShort;
 import static com.sfprod.utils.StringUtils.toByteArray;
 import static com.sfprod.utils.StringUtils.toStringUpperCase;
@@ -17,11 +18,25 @@ import com.sfprod.jwadutil.WadProcessor;
 
 public class WadProcessor256ColorsNeoGeoOld extends WadProcessor {
 
+	private static final List<String> SPRNAMES = List.of( //
+			"TROO", "SHTG", "PUNG", "PISG", "PISF", "SHTF", "CHGG", "CHGF", "MISG", //
+			"MISF", "SAWG", "BLUD", "PUFF", "BAL1", //
+			"MISL", "TFOG", "PLAY", "POSS", //
+			"SPOS", "SARG", //
+			"BAL7", "BOSS", //
+			"ARM1", "ARM2", "BAR1", "BEXP", //
+			"BON1", "BON2", "BKEY", "RKEY", "YKEY", "STIM", "MEDI", //
+			"SOUL", "PINS", "SUIT", "PMAP", "PVIS", "CLIP", "AMMO", //
+			"ROCK", "BROK", "SHEL", "SBOX", "BPAK", "MGUN", "CSAW", //
+			"LAUN", "SHOT", "COLU", "POL5", //
+			"CAND", "CBRA", "ELEC", //
+			"TRED");
+
+	private int numtextures;
+
 	public WadProcessor256ColorsNeoGeoOld(String title, ByteOrder byteOrder, WadFile wadFile) {
 		super(title, byteOrder, wadFile, new MapProcessorDoom64KB(byteOrder, wadFile));
 	}
-
-	private int numtextures;
 
 	@Override
 	protected void processTexture1() {
@@ -119,6 +134,7 @@ public class WadProcessor256ColorsNeoGeoOld extends WadProcessor {
 		maps.saveWadFile(byteOrder, wadPath);
 
 		processTexture1Again();
+		processSprites();
 	}
 
 	private void processTexture1Again() {
@@ -224,6 +240,50 @@ public class WadProcessor256ColorsNeoGeoOld extends WadProcessor {
 		}
 
 		return textureData.array();
+	}
+
+	private void processSprites() {
+		List<Lump> spriteLumps = wadFile.getLumpsBetween("S_START", "S_END");
+
+		int spriteframesize = 8 * 2 + 1 + 1;
+		ByteBuffer bb = newByteBuffer(byteOrder, SPRNAMES.size() * 23 * spriteframesize);
+		for (int i = 0; i < SPRNAMES.size(); i++) {
+			String sprname = SPRNAMES.get(i);
+			List<Lump> lumps = spriteLumps.stream().filter(l -> l.nameAsString().startsWith(sprname)).toList();
+
+			for (Lump lump : lumps) {
+				String suffix = lump.nameAsString().substring(4);
+				int frame = suffix.charAt(0) - 'A';
+				int rotation = suffix.charAt(1) - '0';
+
+				short lumpNum = toShort(wadFile.getLumpNumByName(lump.nameAsString()));
+				if (rotation == 0) {
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + rotation * 2);
+					for (int j = 0; j < 8; j++) {
+						bb.putShort(lumpNum);
+					}
+				} else {
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + (rotation - 1) * 2);
+					bb.putShort(lumpNum);
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + 8 * 2 + 1);
+					bb.put(toByte(1));
+				}
+
+				if (suffix.length() == 4) {
+					assert suffix.charAt(0) == suffix.charAt(2);
+					rotation = suffix.charAt(3) - '0';
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + (rotation - 1) * 2);
+					bb.putShort(lumpNum);
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + 8 * 2);
+
+					byte flipmask = bb.get();
+					bb.position(i * 23 * spriteframesize + frame * spriteframesize + 8 * 2);
+					bb.put(toByte(toInt(flipmask) | (1 << (rotation - 1))));
+				}
+			}
+		}
+
+		wadFile.addLump(new Lump("SPRITES", bb.array(), byteOrder));
 	}
 
 	@Override
