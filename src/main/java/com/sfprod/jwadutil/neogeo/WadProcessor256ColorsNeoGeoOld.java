@@ -120,18 +120,17 @@ public class WadProcessor256ColorsNeoGeoOld extends WadProcessor {
 
 	@Override
 	protected void storeMapsInSeparateWad() {
-		WadFile maps = new WadFile();
+		WadFile mapsWadFile = new WadFile();
 		for (int mapNumber = 1; mapNumber <= 9; mapNumber++) {
 			int lumpNumE1Mx = wadFile.getLumpNumByName("E1M" + mapNumber);
 			for (int i = 0; i < 10; i++) {
-				maps.addLump(wadFile.getLumpByNum(lumpNumE1Mx + i));
+				mapsWadFile.addLump(wadFile.getLumpByNum(lumpNumE1Mx + i));
 			}
 			for (int i = 10 - 1; i >= 0; i--) {
 				wadFile.removeLump(lumpNumE1Mx + i);
 			}
 		}
-		String wadPath = byteOrder == ByteOrder.LITTLE_ENDIAN ? "DOOMMAPL.WAD" : "DOOMMAPB.WAD";
-		maps.saveWadFile(byteOrder, wadPath);
+		mapsWadFile.saveWadFile(byteOrder, "DOOM64ML.WAD");
 
 		processTexture1Again();
 		processSprites();
