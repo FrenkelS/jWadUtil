@@ -26,11 +26,11 @@ public class MapProcessor {
 	// Lump order in a map WAD: each map needs a couple of lumps
 	// to provide a complete scene geometry description.
 	private static final int ML_THINGS = 1; // Monsters, items..
-	private static final int ML_LINEDEFS = 2; // LineDefs, from editing
+	protected static final int ML_LINEDEFS = 2; // LineDefs, from editing
 	private static final int ML_SIDEDEFS = 3; // SideDefs, from editing
 	private static final int ML_VERTEXES = 4; // Vertices, edited and BSP splits generated
 	private static final int ML_SEGS = 5; // LineSegs, from LineDefs split by BSP
-	private static final int ML_SSECTORS = 6; // SubSectors, list of LineSegs
+	protected static final int ML_SSECTORS = 6; // SubSectors, list of LineSegs
 	private static final int ML_NODES = 7; // BSP nodes
 	private static final int ML_SECTORS = 8; // Sectors, from editing
 	private static final int ML_BLOCKMAP = 10; // LUT, motion clipping, walls/grid element
@@ -46,7 +46,7 @@ public class MapProcessor {
 	private static final short SKY = (short) -2;
 	private static final short NUKAGE = (short) -3;
 
-	private final ByteOrder byteOrder;
+	protected final ByteOrder byteOrder;
 	protected final WadFile wadFile;
 
 	protected final List<Color> vgaColors;
@@ -83,6 +83,8 @@ public class MapProcessor {
 		processNodes(lumpNum);
 		processSectors(lumpNum);
 		processBlockmap(lumpNum);
+
+		processLinedefs2(lumpNum);
 	}
 
 	/**
@@ -173,6 +175,9 @@ public class MapProcessor {
 		wadFile.replaceLump(lineLumpNum, newLine);
 	}
 
+	protected void processLinedefs2(@SuppressWarnings("unused") int lumpNum) {
+	}
+
 	private List<Vertex> getVertexes(int lumpNum) {
 		int vtxLumpNum = lumpNum + ML_VERTEXES;
 		Lump vxl = wadFile.getLumpByNum(vtxLumpNum);
@@ -240,6 +245,7 @@ public class MapProcessor {
 			byte bottomtexture = sidesByteBuffer.get();
 			byte midtexture = sidesByteBuffer.get();
 			byte sector = sidesByteBuffer.get();
+			byte unused = sidesByteBuffer.get();
 			sidedefs.add(new Sidedef(textureoffset, rowoffset, toptexture, bottomtexture, midtexture, sector));
 		}
 
@@ -323,6 +329,8 @@ public class MapProcessor {
 			newSidedefByteBuffer.put(getTextureNumForName(textureNames, oldSidedef.midtextureAsString())); // midtexture
 
 			newSidedefByteBuffer.put(toByte(oldSidedef.sector())); // sector
+
+			newSidedefByteBuffer.put(toByte(0)); // unused
 		}
 
 		byte[] sidedefsLumpName = wadFile.getLumpByNum(sidesLumpNum).name();
@@ -359,7 +367,7 @@ public class MapProcessor {
 	 *
 	 * @param lumpNum
 	 */
-	private void processSsectors(int lumpNum) {
+	protected void processSsectors(int lumpNum) {
 		int ssectorsLumpNum = lumpNum + ML_SSECTORS;
 		Lump ssectors = wadFile.getLumpByNum(ssectorsLumpNum);
 		ByteBuffer byteBuffer = ssectors.dataAsByteBuffer();
@@ -633,6 +641,7 @@ public class MapProcessor {
 			byte bottomtexture = sidesByteBuffer.get();
 			byte midtexture = sidesByteBuffer.get();
 			byte sector = sidesByteBuffer.get();
+			byte unused = sidesByteBuffer.get();
 			sides.add(new Sidedef(textureoffset, rowoffset, toptexture, bottomtexture, midtexture, sector));
 		}
 
@@ -703,6 +712,7 @@ public class MapProcessor {
 			newSidesByteBuffer.put(sidedef.bottomtexture());
 			newSidesByteBuffer.put(sidedef.midtexture());
 			newSidesByteBuffer.put(sidedef.sector());
+			newSidesByteBuffer.put(toByte(0)); // unused
 		}
 		wadFile.replaceLump(sidesLumpNum, new Lump(oldSidedefs.name(), newSidesByteBuffer));
 	}
@@ -713,7 +723,7 @@ public class MapProcessor {
 	private static record Vertex(short x, short y) {
 	}
 
-	private static record Line(Vertex v1, Vertex v2, short[] sidenum, byte flags, byte special, byte tag) {
+	protected static record Line(Vertex v1, Vertex v2, short[] sidenum, byte flags, byte special, byte tag) {
 		public static final int SIZE_OF_LINE = 2 * 2 + 2 * 2 + 2 * 2 + 1 + 1 + 1;
 	}
 
@@ -737,7 +747,7 @@ public class MapProcessor {
 
 	private static record Sidedef(short textureoffset, byte rowoffset, byte toptexture, byte bottomtexture,
 			byte midtexture, byte sector) {
-		public static final int SIZE_OF_SIDE = 2 + 1 + 1 + 1 + 1 + 1;
+		public static final int SIZE_OF_SIDE = 2 + 1 + 1 + 1 + 1 + 1 + 1;
 	}
 
 	private static record SidedefWithMetadata(Sidedef sidedef, boolean special) {

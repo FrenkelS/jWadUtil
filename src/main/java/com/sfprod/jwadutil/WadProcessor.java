@@ -106,8 +106,13 @@ public abstract class WadProcessor {
 	}
 
 	protected Lump getLump(String lumpname) {
+		return getLump("", lumpname);
+	}
+
+	protected Lump getLump(String directory, String lumpname) {
 		try {
-			byte[] data = WadProcessor.class.getResourceAsStream('/' + lumpname + ".LMP").readAllBytes();
+			String resourceName = directory + '/' + lumpname + ".LMP";
+			byte[] data = WadProcessor.class.getResourceAsStream(resourceName).readAllBytes();
 			return new Lump(lumpname, data, ByteOrder.LITTLE_ENDIAN);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
@@ -119,8 +124,8 @@ public abstract class WadProcessor {
 	}
 
 	public void processWad() {
-		processTexture1();
 		processPNames();
+		processTexture1();
 		mapProcessor.processMaps(availableColors);
 		changeColors();
 		processColormap();
@@ -133,6 +138,11 @@ public abstract class WadProcessor {
 
 		shuffleColors();
 		processRawGraphics();
+
+		storeMapsInSeparateWad();
+	}
+
+	protected void storeMapsInSeparateWad() {
 	}
 
 	protected abstract void changeColors();
@@ -146,7 +156,7 @@ public abstract class WadProcessor {
 	/**
 	 * Remove unused bytes
 	 */
-	private void processTexture1() {
+	protected void processTexture1() {
 		Lump texture1 = wadFile.getLumpByName("TEXTURE1");
 		ByteBuffer oldbb = texture1.dataAsByteBuffer();
 		int numtextures = oldbb.getInt();
@@ -655,10 +665,10 @@ public abstract class WadProcessor {
 		return new Lump(picture.name(), size, compressedData);
 	}
 
-	private static record Mappatch(short originx, short originy, short patch, short stepdir, short colormap) {
+	public static record Mappatch(short originx, short originy, short patch, short stepdir, short colormap) {
 	}
 
-	private static record Maptexture(byte[] name, int masked, short width, short height, int columndirectory,
+	public static record Maptexture(byte[] name, int masked, short width, short height, int columndirectory,
 			short patchcount, List<Mappatch> patches) {
 	}
 

@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.sfprod.utils.ByteBufferUtils;
 import com.sfprod.utils.NumberUtils;
@@ -33,6 +32,13 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 	protected WadProcessorLimitedColors(String title, ByteOrder byteOrder, WadFile wadFile,
 			List<Integer> grayscaleFromDarkToBright, int divisor) {
 		super(title, byteOrder, wadFile);
+		this.grayscaleFromDarkToBright = grayscaleFromDarkToBright;
+		this.divisor = divisor;
+	}
+
+	protected WadProcessorLimitedColors(String title, ByteOrder byteOrder, WadFile wadFile,
+			List<Integer> grayscaleFromDarkToBright, int divisor, MapProcessor mapProcessor) {
+		super(title, byteOrder, wadFile, mapProcessor);
 		this.grayscaleFromDarkToBright = grayscaleFromDarkToBright;
 		this.divisor = divisor;
 	}
@@ -116,7 +122,7 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 
 	protected abstract void changePaletteRaw(Lump lump);
 
-	private void changePaletteSpritesAndWalls(Lump lump) {
+	protected void changePaletteSpritesAndWalls(Lump lump) {
 		changePalettePicture(lump, this::convertVga256toByte);
 	}
 
@@ -195,8 +201,8 @@ public abstract class WadProcessorLimitedColors extends WadProcessor {
 	}
 
 	protected List<Byte> createColormapInvulnerability() {
-		List<Double> grays = availableColors.stream().map(Color::gray).collect(Collectors.toSet()).stream()
-				.sorted(Comparator.reverseOrder()).toList();
+		List<Double> grays = availableColors.stream().map(Color::gray).distinct().sorted(Comparator.reverseOrder())
+				.toList();
 
 		return availableColors.stream().mapToDouble(Color::gray).mapToInt(grays::indexOf).map(i -> i / divisor)
 				.map(grayscaleFromDarkToBright::get).mapToObj(NumberUtils::toByte).toList();

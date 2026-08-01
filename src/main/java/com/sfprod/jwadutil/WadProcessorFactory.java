@@ -8,6 +8,9 @@ import com.sfprod.jwadutil.atarist.WadProcessor16ColorsDitheredAtariST;
 import com.sfprod.jwadutil.atarist.WadProcessor2ColorsAtariST;
 import com.sfprod.jwadutil.attunixpc.WadProcessor2ColorsAttUnixPC;
 import com.sfprod.jwadutil.macintosh.WadProcessor2ColorsMacintosh;
+import com.sfprod.jwadutil.neogeo.WadProcessor16ColorsDitheredTextModeNeoGeo;
+import com.sfprod.jwadutil.neogeo.WadProcessor256ColorsNeoGeo;
+import com.sfprod.jwadutil.neogeo.WadProcessor256ColorsNeoGeoOld;
 import com.sfprod.jwadutil.pc.WadProcessor16ColorsDitheredPC;
 import com.sfprod.jwadutil.pc.WadProcessor16ColorsDitheredTextMode;
 import com.sfprod.jwadutil.pc.WadProcessor256ColorsPC;
@@ -20,6 +23,12 @@ public interface WadProcessorFactory {
 
 	static WadProcessor getWadProcessor(Game game, WadFile wadFile) {
 		return switch (game) {
+		case DOOM64KB_LITTLE_ENDIAN ->
+			new WadProcessor256ColorsNeoGeoOld(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM64KB_NEO_GEO_256_COLOR ->
+			new WadProcessor256ColorsNeoGeo(game.getTitle(), game.getByteOrder(), wadFile);
+		case DOOM64KB_TEXT_MODE_BIG_ENDIAN, DOOM64KB_TEXT_MODE_LITTLE_ENDIAN ->
+			new WadProcessor16ColorsDitheredTextModeNeoGeo(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088, ELKSDOOM -> new WadProcessor256ColorsPC(game.getTitle(), game.getByteOrder(), wadFile);
 		case DOOM8088_2_COLOR_TEXT_MODE ->
 			new WadProcessor2ColorsTextMode(game.getTitle(), game.getByteOrder(), wadFile);

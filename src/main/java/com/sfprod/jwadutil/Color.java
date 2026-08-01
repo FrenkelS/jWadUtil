@@ -8,6 +8,10 @@ public record Color(int r, int g, int b) {
 		assert 0x00 <= b && b <= 0xff;
 	}
 
+	public Color(int rgb) {
+		this((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, (rgb >> 0) & 0xff);
+	}
+
 	public int getRGB() {
 		return 0xff000000 | (r << 16) | (g << 8) | b;
 	}

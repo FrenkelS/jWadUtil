@@ -2,6 +2,8 @@ package com.sfprod.jwadutil;
 
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.ByteBufferUtils.toArray;
+import static com.sfprod.utils.NumberUtils.toByte;
+import static com.sfprod.utils.NumberUtils.toInt;
 import static com.sfprod.utils.NumberUtils.toShort;
 import static com.sfprod.utils.StringUtils.toByteArray;
 
@@ -26,6 +28,9 @@ public class WadFile {
 	private final List<Lump> lumps = new ArrayList<>();
 
 	private static record Filelump(int filepos, int size, byte[] name) {
+	}
+
+	public WadFile() {
 	}
 
 	public WadFile(String wadPath) {
@@ -102,8 +107,22 @@ public class WadFile {
 	}
 
 	public void saveWadFile(ByteOrder byteOrder, String wadPath) {
+		byte[] bytes = toByteArrayPrivate(byteOrder);
+
+		Path path = Path.of("target", wadPath);
+
+		try {
+			Files.write(path, bytes);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+
+		System.out.println("WAD file of size " + bytes.length + " written to " + path.toAbsolutePath());
+	}
+
+	private byte[] toByteArrayPrivate(ByteOrder byteOrder) {
 		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
-		int filesize = filepos + lumps.stream().mapToInt(Lump::length).sum();
+		int filesize = filepos + lumps.stream().mapToInt(Lump::length).map(this::align).sum();
 
 		ByteBuffer byteBuffer = newByteBuffer(byteOrder, filesize);
 
@@ -130,7 +149,7 @@ public class WadFile {
 				} else {
 					duplicateDataMap.put(key, filepos);
 					byteBuffer.putInt(filepos);
-					filepos += lump.length();
+					filepos += align(lump.length());
 				}
 			}
 
@@ -142,19 +161,48 @@ public class WadFile {
 
 		for (Lump lump : lumps) {
 			byteBuffer.put(lump.data());
+			for (int i = 0; i < align(lump.length()) - lump.length(); i++) {
+				byteBuffer.put(toByte(0));
+			}
 		}
 
-		Path path = Path.of("target", wadPath);
 		int filesizeWithoutDuplicates = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8)
-				+ lumps.stream().mapToInt(Lump::length).sum();
+				+ lumps.stream().mapToInt(Lump::length).map(this::align).sum();
 
-		try {
-			Files.write(path, toArray(byteBuffer, filesizeWithoutDuplicates));
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
+		return toArray(byteBuffer, filesizeWithoutDuplicates);
+	}
+
+	private int align(int x) {
+		return (x + 3) & ~3;
+	}
+
+	public String toCByteArrayString(ByteOrder byteOrder, String variableName) {
+		byte[] bytes = toByteArrayPrivate(byteOrder);
+
+		StringBuilder sb = new StringBuilder(
+				"static const unsigned char %s[%d] = {".formatted(variableName, bytes.length));
+		sb.append(System.lineSeparator());
+
+		int i = 1;
+		for (byte b : bytes) {
+			sb.append(toHex(b)).append(',');
+			if (i % 40 == 0) {
+				sb.append(System.lineSeparator());
+			}
+			i++;
 		}
+		sb.append(System.lineSeparator());
+		sb.append("};");
+		return sb.toString();
+	}
 
-		System.out.println("WAD file of size " + filesizeWithoutDuplicates + " written to " + path.toAbsolutePath());
+	private String toHex(byte b) {
+		int i = toInt(b);
+		if (i < 16) {
+			return "0x0" + Integer.toHexString(i);
+		} else {
+			return "0x" + Integer.toHexString(i);
+		}
 	}
 
 	public Lump getLumpByName(String name) {

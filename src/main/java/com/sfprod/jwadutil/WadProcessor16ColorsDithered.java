@@ -24,6 +24,21 @@ public abstract class WadProcessor16ColorsDithered extends WadProcessorLimitedCo
 		fillAvailableColorsShuffleMap(colors);
 	}
 
+	protected WadProcessor16ColorsDithered(String title, ByteOrder byteOrder, WadFile wadFile,
+			List<Color> sixteenColors, int divisor, MapProcessor mapProcessor) {
+		super(title, byteOrder, wadFile, GRAYSCALE_FROM_DARK_TO_BRIGHT, divisor, mapProcessor);
+
+		List<Color> colors = new ArrayList<>();
+		for (int h = 0; h < 16; h++) {
+			for (int l = 0; l < 16; l++) {
+				Color ch = sixteenColors.get(h);
+				Color cl = sixteenColors.get(l);
+				colors.add(ch.blendColors(cl));
+			}
+		}
+		fillAvailableColorsShuffleMap(colors);
+	}
+
 	@Override
 	protected void shuffleColors() {
 		// Raw graphics
