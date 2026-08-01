@@ -3,6 +3,7 @@ package com.sfprod.jwadutil;
 import static com.sfprod.utils.ByteBufferUtils.newByteBuffer;
 import static com.sfprod.utils.ByteBufferUtils.toArray;
 import static com.sfprod.utils.NumberUtils.toByte;
+import static com.sfprod.utils.NumberUtils.toInt;
 import static com.sfprod.utils.NumberUtils.toShort;
 import static com.sfprod.utils.StringUtils.toByteArray;
 
@@ -106,6 +107,20 @@ public class WadFile {
 	}
 
 	public void saveWadFile(ByteOrder byteOrder, String wadPath) {
+		byte[] bytes = toByteArrayPrivate(byteOrder);
+
+		Path path = Path.of("target", wadPath);
+
+		try {
+			Files.write(path, bytes);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+
+		System.out.println("WAD file of size " + bytes.length + " written to " + path.toAbsolutePath());
+	}
+
+	private byte[] toByteArrayPrivate(ByteOrder byteOrder) {
 		int filepos = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8);
 		int filesize = filepos + lumps.stream().mapToInt(Lump::length).map(this::align).sum();
 
@@ -151,21 +166,43 @@ public class WadFile {
 			}
 		}
 
-		Path path = Path.of("target", wadPath);
 		int filesizeWithoutDuplicates = 4 + 4 + 4 + lumps.size() * (4 + 4 + 8)
 				+ lumps.stream().mapToInt(Lump::length).map(this::align).sum();
 
-		try {
-			Files.write(path, toArray(byteBuffer, filesizeWithoutDuplicates));
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
-
-		System.out.println("WAD file of size " + filesizeWithoutDuplicates + " written to " + path.toAbsolutePath());
+		return toArray(byteBuffer, filesizeWithoutDuplicates);
 	}
 
 	private int align(int x) {
 		return (x + 3) & ~3;
+	}
+
+	public String toCByteArrayString(ByteOrder byteOrder, String variableName) {
+		byte[] bytes = toByteArrayPrivate(byteOrder);
+
+		StringBuilder sb = new StringBuilder(
+				"static const unsigned char %s[%d] = {".formatted(variableName, bytes.length));
+		sb.append(System.lineSeparator());
+
+		int i = 1;
+		for (byte b : bytes) {
+			sb.append(toHex(b)).append(',');
+			if (i % 40 == 0) {
+				sb.append(System.lineSeparator());
+			}
+			i++;
+		}
+		sb.append(System.lineSeparator());
+		sb.append("};");
+		return sb.toString();
+	}
+
+	private String toHex(byte b) {
+		int i = toInt(b);
+		if (i < 16) {
+			return "0x0" + Integer.toHexString(i);
+		} else {
+			return "0x" + Integer.toHexString(i);
+		}
 	}
 
 	public Lump getLumpByName(String name) {

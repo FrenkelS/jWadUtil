@@ -13,24 +13,18 @@ import com.sfprod.utils.NumberUtils;
 class JWadUtilNeoGeoTest {
 
 	@Test
-	void createWad() throws Exception {
+	void createWad() {
 //		Game game = Game.DOOM64KB_TEXT_MODE_BIG_ENDIAN;
 //		Game game = Game.DOOM64KB_LITTLE_ENDIAN;
 		Game game = Game.DOOM64KB_NEO_GEO_256_COLOR;
-		JWadUtil.createWad(game);
-		byte[] bytes = Files.readAllBytes(Path.of("target", game.getWadFile()));
 
-		System.out.println("static const unsigned char doom_iwad[" + bytes.length + "] = {");
-		int i = 1;
-		for (byte b : bytes) {
-			System.out.print(toHex(b) + ',');
-			if (i % 40 == 0) {
-				System.out.println();
-			}
-			i++;
-		}
-		System.out.println();
-		System.out.println("};");
+		WadFile wadFile = new WadFile("/doom1.wad");
+
+		WadProcessor wadProcessor = WadProcessorFactory.getWadProcessor(game, wadFile);
+		wadProcessor.processWad();
+
+		String cByteArray = wadFile.toCByteArrayString(game.getByteOrder(), "doom_iwad");
+		System.out.println(cByteArray);
 	}
 
 	private String toHex(byte b) {
